@@ -168,6 +168,58 @@ class RunnerTests(unittest.TestCase):
                 self.assertEqual(result["schema"], "gold-slice-error-v1")
                 self.assertEqual(result["errors"], [{"code": code, "path": path}])
 
+    def test_runner_limits_candidate_labels_to_the_closed_abstract_allowlist(self):
+        base = case_by_id("SYN-GS-026")
+        invalid_labels = (
+            "abstract_candidate_diagnose",
+            "abstract_candidate_diagnoses",
+            "abstract_candidate_clinical",
+            "abstract_candidate_prescription",
+            "abstract_candidate_medicationchange",
+            "abstract_candidate_emergencies",
+            "abstract_candidate_treatment",
+            "abstract_candidate_Alpha",
+            "abstract_candidate_ａｌｐｈａ",
+            " abstract_candidate_alpha",
+            "abstract_candidate_alpha ",
+            "abstract_candidate_alpha\u200b",
+            None,
+            True,
+            1,
+            [],
+            {},
+        )
+        for label in invalid_labels:
+            with self.subTest(invalid_label=repr(label)):
+                malformed = copy.deepcopy(base)
+                malformed["candidates"][0]["label"] = label
+                result = self.runner.run_first_health_session(malformed)
+                self.assertEqual(result["schema"], "gold-slice-error-v1")
+                self.assertEqual(
+                    result["errors"],
+                    [
+                        {
+                            "code": "INVALID_CANDIDATE_LABEL",
+                            "path": "candidates[0].label",
+                        }
+                    ],
+                )
+
+        for label in (
+            "abstract_candidate_alpha",
+            "abstract_candidate_beta",
+            "abstract_candidate_gamma",
+        ):
+            with self.subTest(valid_label=label):
+                valid = copy.deepcopy(base)
+                valid["candidates"][0]["label"] = label
+                result = self.runner.run_first_health_session(valid)
+                self.assertEqual(result["schema"], "first-health-session-bundle-v1")
+                self.assertEqual(
+                    result["decision_candidate"]["primary_bottleneck"],
+                    "CAND-026-A",
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

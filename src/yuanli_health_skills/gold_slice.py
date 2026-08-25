@@ -40,12 +40,11 @@ _DOWNSTREAM_REQUESTS = frozenset(
 _REQUEST_TYPES = _RED_REQUESTS | _DOWNSTREAM_REQUESTS | {"non_clinical"}
 _RISK_FLAGS = frozenset({"clinical_escalation", "emergency", "guardrail_requested"})
 _CANDIDATE_ID_PATTERN = re.compile(r"CAND-[0-9]{3}-[A-Z]")
-_CANDIDATE_LABEL_PATTERN = re.compile(r"abstract_candidate_[a-z]+")
-_RESERVED_CANDIDATE_LABELS = frozenset(
+_CANDIDATE_LABELS = frozenset(
     {
-        "abstract_candidate_diagnosis",
-        "abstract_candidate_medication",
-        "abstract_candidate_emergency",
+        "abstract_candidate_alpha",
+        "abstract_candidate_beta",
+        "abstract_candidate_gamma",
     }
 )
 
@@ -163,8 +162,7 @@ def _validate_case(value: Any) -> list[dict[str, str]]:
                 errors.append(_error("INVALID_CANDIDATE_ID", f"{path}.candidate_id"))
             valid_label = (
                 isinstance(candidate["label"], str)
-                and _CANDIDATE_LABEL_PATTERN.fullmatch(candidate["label"]) is not None
-                and candidate["label"] not in _RESERVED_CANDIDATE_LABELS
+                and candidate["label"] in _CANDIDATE_LABELS
             )
             if not valid_label:
                 errors.append(_error("INVALID_CANDIDATE_LABEL", f"{path}.label"))
