@@ -2,5 +2,9 @@ __pycache__/
 *.py[cod]
 .coverage
 build/
-dist/
+dist/*
+!dist/codex/
+dist/codex/*
+!dist/codex/yuanli-health/
+!dist/codex/yuanli-health/**
 *.egg-info/

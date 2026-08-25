@@ -1,0 +1,40 @@
+{
+  "schema": "health-skill-contract-v1",
+  "source_capability_id": "yuanli.health.kernel.out",
+  "registry_capability_id": null,
+  "class": "kernel",
+  "profile_of": [
+    "OUT"
+  ],
+  "transition_intent": "adjudicate_out",
+  "mutates_canon": false,
+  "authority": {
+    "final_authority": "subject",
+    "ai": "assistive",
+    "device": "evidence_source",
+    "automation": "non_final",
+    "router": "non_final"
+  },
+  "privacy": {
+    "repository_phi": "forbidden"
+  },
+  "runtime_requirements": {
+    "ephemeral": true,
+    "persistence": "none",
+    "logs": "none"
+  },
+  "lifecycle": "qualified",
+  "qualification": {
+    "basis": "synthetic_only",
+    "status": "passed"
+  },
+  "objects": [
+    "ACT",
+    "OUT"
+  ],
+  "health_clock": "experimental",
+  "claims": [
+    "non_clinical",
+    "non_release"
+  ]
+}
