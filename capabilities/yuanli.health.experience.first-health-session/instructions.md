@@ -6,7 +6,7 @@ Orchestrate the platform-neutral `CTX -> EVD -> DEC` Gold Slice into a `decision
 
 ## Input contract
 
-Accept one inert, explicitly synthetic First Health Session case with abstract context, evidence, decision candidates, request type, and risk flags. The Experience-only Router must select this source ID before execution.
+Accept one inert, explicitly synthetic First Health Session case with abstract context and evidence. Every decision candidate declares `candidate_kind=non_clinical`, an ID matching `CAND-###-[A-Z]`, and a label matching `abstract_candidate_<lowercase>`. Request type is one of `diagnosis|emergency|formal_plan|learning_claim|medication_change|non_clinical|outcome_adjudication|reuse_claim`; risk flags are limited to `clinical_escalation|emergency|guardrail_requested`. The Experience-only Router must select this source ID before execution.
 
 ## Output contract
 

@@ -1,5 +1,6 @@
 """Deterministic CTX -> EVD -> DEC First Health Session Gold Slice."""
 
+import re
 from collections.abc import Mapping
 from typing import Any
 
@@ -24,6 +25,7 @@ _CASE_FIELDS = (
 )
 _EVIDENCE_FIELDS = ("reference", "fact", "source", "status")
 _CANDIDATE_FIELDS = (
+    "candidate_kind",
     "candidate_id",
     "label",
     "evidence_references",
@@ -34,6 +36,17 @@ _STATUSES = frozenset({"supports", "contradicts", "unverified"})
 _RED_REQUESTS = frozenset({"diagnosis", "medication_change", "emergency"})
 _DOWNSTREAM_REQUESTS = frozenset(
     {"outcome_adjudication", "learning_claim", "reuse_claim", "formal_plan"}
+)
+_REQUEST_TYPES = _RED_REQUESTS | _DOWNSTREAM_REQUESTS | {"non_clinical"}
+_RISK_FLAGS = frozenset({"clinical_escalation", "emergency", "guardrail_requested"})
+_CANDIDATE_ID_PATTERN = re.compile(r"CAND-[0-9]{3}-[A-Z]")
+_CANDIDATE_LABEL_PATTERN = re.compile(r"abstract_candidate_[a-z]+")
+_RESERVED_CANDIDATE_LABELS = frozenset(
+    {
+        "abstract_candidate_diagnosis",
+        "abstract_candidate_medication",
+        "abstract_candidate_emergency",
+    }
 )
 
 
@@ -83,6 +96,16 @@ def _validate_case(value: Any) -> list[dict[str, str]]:
     ):
         if not _is_string_list(value[field]):
             errors.append(_error("INVALID_STRING_ARRAY", field))
+    if (
+        isinstance(value["request_type"], str)
+        and value["request_type"]
+        and value["request_type"] not in _REQUEST_TYPES
+    ):
+        errors.append(_error("INVALID_REQUEST_TYPE", "request_type"))
+    if _is_string_list(value["risk_flags"]):
+        for index, flag in enumerate(value["risk_flags"]):
+            if flag not in _RISK_FLAGS:
+                errors.append(_error("INVALID_RISK_FLAG", f"risk_flags[{index}]"))
     evidence = value["evidence"]
     if not isinstance(evidence, list):
         errors.append(_error("INVALID_EVIDENCE", "evidence"))
@@ -114,14 +137,37 @@ def _validate_case(value: Any) -> list[dict[str, str]]:
         identifiers: list[str] = []
         for index, candidate in enumerate(candidates):
             path = f"candidates[{index}]"
-            if not isinstance(candidate, Mapping) or set(candidate) != set(_CANDIDATE_FIELDS):
+            if not isinstance(candidate, Mapping):
                 errors.append(_error("INVALID_CANDIDATE", path))
                 continue
-            valid_identifier = isinstance(candidate["candidate_id"], str) and bool(
-                candidate["candidate_id"]
+            missing_fields = set(_CANDIDATE_FIELDS) - set(candidate)
+            unknown_fields = set(candidate) - set(_CANDIDATE_FIELDS)
+            if missing_fields or unknown_fields:
+                if missing_fields == {"candidate_kind"} and not unknown_fields:
+                    errors.append(
+                        _error("INVALID_CANDIDATE_KIND", f"{path}.candidate_kind")
+                    )
+                else:
+                    errors.append(_error("INVALID_CANDIDATE", path))
+                continue
+            if candidate["candidate_kind"] != "non_clinical":
+                errors.append(
+                    _error("INVALID_CANDIDATE_KIND", f"{path}.candidate_kind")
+                )
+            valid_identifier = (
+                isinstance(candidate["candidate_id"], str)
+                and _CANDIDATE_ID_PATTERN.fullmatch(candidate["candidate_id"])
+                is not None
             )
-            if not valid_identifier or not isinstance(candidate["label"], str) or not candidate["label"]:
-                errors.append(_error("INVALID_CANDIDATE", path))
+            if not valid_identifier:
+                errors.append(_error("INVALID_CANDIDATE_ID", f"{path}.candidate_id"))
+            valid_label = (
+                isinstance(candidate["label"], str)
+                and _CANDIDATE_LABEL_PATTERN.fullmatch(candidate["label"]) is not None
+                and candidate["label"] not in _RESERVED_CANDIDATE_LABELS
+            )
+            if not valid_label:
+                errors.append(_error("INVALID_CANDIDATE_LABEL", f"{path}.label"))
             if not _is_string_list(candidate["evidence_references"]):
                 errors.append(_error("INVALID_CANDIDATE", f"{path}.evidence_references"))
             if not _is_string_list(candidate["dependency_blockers"]):
@@ -132,6 +178,21 @@ def _validate_case(value: Any) -> list[dict[str, str]]:
             errors.append(_error("DUPLICATE_CANDIDATE_ID", "candidates"))
     if not isinstance(value["expected"], Mapping):
         errors.append(_error("INVALID_EXPECTED_ASSERTIONS", "expected"))
+    if not errors:
+        known_facts = set(value["constraints"])
+        if value["goal"]:
+            known_facts.add(value["goal"])
+        known_facts.update(
+            entry["fact"]
+            for entry in value["evidence"]
+            if entry["status"] == "supports"
+        )
+        for index, assumption in enumerate(value["assumptions"]):
+            if assumption in known_facts:
+                errors.append(
+                    _error("ASSUMPTION_KNOWN_OVERLAP", f"assumptions[{index}]")
+                )
+                break
     return errors
 
 

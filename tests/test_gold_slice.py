@@ -173,6 +173,93 @@ class GoldSliceTests(unittest.TestCase):
         self.assertEqual(result["schema"], "gold-slice-error-v1")
         self.assertEqual(result["errors"][0]["code"], "INVALID_INERT_JSON_KEY")
 
+    def test_assumptions_cannot_overlap_any_fact_that_enters_known(self):
+        base = next(case for case in load_cases() if case["case_id"] == "SYN-GS-026")
+        overlap_facts = {
+            "goal": base["goal"],
+            "constraint": base["constraints"][0],
+            "supported_evidence": base["evidence"][0]["fact"],
+        }
+        for label, fact in overlap_facts.items():
+            with self.subTest(overlap=label):
+                malformed = copy.deepcopy(base)
+                malformed["assumptions"].append(fact)
+                result = self.gold_slice.process_first_health_session(malformed)
+                self.assertEqual(result["schema"], "gold-slice-error-v1")
+                self.assertEqual(
+                    result["errors"],
+                    [
+                        {
+                            "code": "ASSUMPTION_KNOWN_OVERLAP",
+                            "path": "assumptions[1]",
+                        }
+                    ],
+                )
+
+    def test_unknown_or_alias_request_and_risk_vocabulary_is_rejected(self):
+        base = next(case for case in load_cases() if case["case_id"] == "SYN-GS-026")
+        invalid_inputs = (
+            ("request_type", "diagnostic", "INVALID_REQUEST_TYPE", "request_type"),
+            ("request_type", "medication-change", "INVALID_REQUEST_TYPE", "request_type"),
+            ("request_type", "urgent_request", "INVALID_REQUEST_TYPE", "request_type"),
+            ("risk_flags", ["clinical"], "INVALID_RISK_FLAG", "risk_flags[0]"),
+            ("risk_flags", ["urgent"], "INVALID_RISK_FLAG", "risk_flags[0]"),
+            ("risk_flags", ["guardrail"], "INVALID_RISK_FLAG", "risk_flags[0]"),
+        )
+        for field, value, code, path in invalid_inputs:
+            with self.subTest(field=field, value=value):
+                malformed = copy.deepcopy(base)
+                malformed[field] = value
+                result = self.gold_slice.process_first_health_session(malformed)
+                self.assertEqual(result["schema"], "gold-slice-error-v1")
+                self.assertEqual(result["errors"], [{"code": code, "path": path}])
+
+    def test_candidate_scope_and_abstract_identity_grammar_are_closed(self):
+        base = next(case for case in load_cases() if case["case_id"] == "SYN-GS-026")
+        variants = (
+            (
+                "missing_kind",
+                ("candidate_kind", None),
+                "INVALID_CANDIDATE_KIND",
+                "candidates[0].candidate_kind",
+            ),
+            (
+                "clinical_kind",
+                ("candidate_kind", "clinical"),
+                "INVALID_CANDIDATE_KIND",
+                "candidates[0].candidate_kind",
+            ),
+            (
+                "diagnosis_id",
+                ("candidate_id", "diagnosis_candidate"),
+                "INVALID_CANDIDATE_ID",
+                "candidates[0].candidate_id",
+            ),
+            (
+                "medication_label",
+                ("label", "abstract_candidate_medication"),
+                "INVALID_CANDIDATE_LABEL",
+                "candidates[0].label",
+            ),
+            (
+                "emergency_label",
+                ("label", "abstract_candidate_emergency"),
+                "INVALID_CANDIDATE_LABEL",
+                "candidates[0].label",
+            ),
+        )
+        for label, mutation, code, path in variants:
+            with self.subTest(injection=label):
+                malformed = copy.deepcopy(base)
+                field, value = mutation
+                if field == "candidate_kind" and value is None:
+                    malformed["candidates"][0].pop(field, None)
+                else:
+                    malformed["candidates"][0][field] = value
+                result = self.gold_slice.process_first_health_session(malformed)
+                self.assertEqual(result["schema"], "gold-slice-error-v1")
+                self.assertEqual(result["errors"], [{"code": code, "path": path}])
+
 
 if __name__ == "__main__":
     unittest.main()

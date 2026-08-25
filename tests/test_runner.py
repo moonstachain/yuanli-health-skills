@@ -1,4 +1,5 @@
 import contextlib
+import copy
 import importlib
 import io
 import os
@@ -6,7 +7,7 @@ import sys
 import tempfile
 import unittest
 
-from tests._gold_support import ROOT, case_by_id
+from tests._gold_support import ROOT, case_by_id, load_cases
 
 
 sys.path.insert(0, str(ROOT / "src"))
@@ -17,6 +18,7 @@ class RunnerTests(unittest.TestCase):
         try:
             self.runner = importlib.import_module("yuanli_health_skills.runner")
             self.ephemeral = importlib.import_module("yuanli_health_skills.ephemeral")
+            self.validator = importlib.import_module("yuanli_health_skills.validator")
         except ModuleNotFoundError as exc:
             self.fail(f"host-neutral Gold Slice runner is not implemented: {exc}")
 
@@ -69,6 +71,102 @@ class RunnerTests(unittest.TestCase):
         second = self.runner.run_first_health_session(case)
         self.assertEqual(second["evidence_catalog"][0]["fact"], "abstract_evidence_supported_alpha")
         self.assertNotEqual(second["learner_view"]["reason"], "caller_mutation")
+
+    def test_runner_rejects_assumptions_that_overlap_any_known_fact_source(self):
+        base = case_by_id("SYN-GS-026")
+        overlap_facts = {
+            "goal": base["goal"],
+            "constraint": base["constraints"][0],
+            "supported_evidence": base["evidence"][0]["fact"],
+        }
+        for label, fact in overlap_facts.items():
+            with self.subTest(overlap=label):
+                malformed = copy.deepcopy(base)
+                malformed["assumptions"].append(fact)
+                result = self.runner.run_first_health_session(malformed)
+                self.assertEqual(result["schema"], "gold-slice-error-v1")
+                self.assertEqual(
+                    result["errors"],
+                    [
+                        {
+                            "code": "ASSUMPTION_KNOWN_OVERLAP",
+                            "path": "assumptions[1]",
+                        }
+                    ],
+                )
+
+    def test_every_successful_runner_bundle_has_three_valid_stage_envelopes(self):
+        for case in load_cases():
+            with self.subTest(case_id=case["case_id"]):
+                result = self.runner.run_first_health_session(case)
+                self.assertEqual(result["schema"], "first-health-session-bundle-v1")
+                self.assertEqual(set(result["stage_envelopes"]), {"ctx", "evd", "dec"})
+                for envelope in result["stage_envelopes"].values():
+                    self.assertEqual(self.validator.validate_envelope(envelope).errors, ())
+
+    def test_runner_rejects_unknown_or_alias_request_and_risk_vocabulary(self):
+        base = case_by_id("SYN-GS-026")
+        invalid_inputs = (
+            ("request_type", "diagnostic", "INVALID_REQUEST_TYPE", "request_type"),
+            ("request_type", "medication-change", "INVALID_REQUEST_TYPE", "request_type"),
+            ("request_type", "urgent_request", "INVALID_REQUEST_TYPE", "request_type"),
+            ("risk_flags", ["clinical"], "INVALID_RISK_FLAG", "risk_flags[0]"),
+            ("risk_flags", ["urgent"], "INVALID_RISK_FLAG", "risk_flags[0]"),
+            ("risk_flags", ["guardrail"], "INVALID_RISK_FLAG", "risk_flags[0]"),
+        )
+        for field, value, code, path in invalid_inputs:
+            with self.subTest(field=field, value=value):
+                malformed = copy.deepcopy(base)
+                malformed[field] = value
+                result = self.runner.run_first_health_session(malformed)
+                self.assertEqual(result["schema"], "gold-slice-error-v1")
+                self.assertEqual(result["errors"], [{"code": code, "path": path}])
+
+    def test_runner_rejects_clinical_candidate_scope_and_identity_injection(self):
+        base = case_by_id("SYN-GS-026")
+        variants = (
+            (
+                "missing_kind",
+                ("candidate_kind", None),
+                "INVALID_CANDIDATE_KIND",
+                "candidates[0].candidate_kind",
+            ),
+            (
+                "clinical_kind",
+                ("candidate_kind", "clinical"),
+                "INVALID_CANDIDATE_KIND",
+                "candidates[0].candidate_kind",
+            ),
+            (
+                "diagnosis_id",
+                ("candidate_id", "diagnosis_candidate"),
+                "INVALID_CANDIDATE_ID",
+                "candidates[0].candidate_id",
+            ),
+            (
+                "medication_label",
+                ("label", "abstract_candidate_medication"),
+                "INVALID_CANDIDATE_LABEL",
+                "candidates[0].label",
+            ),
+            (
+                "emergency_label",
+                ("label", "abstract_candidate_emergency"),
+                "INVALID_CANDIDATE_LABEL",
+                "candidates[0].label",
+            ),
+        )
+        for label, mutation, code, path in variants:
+            with self.subTest(injection=label):
+                malformed = copy.deepcopy(base)
+                field, value = mutation
+                if field == "candidate_kind" and value is None:
+                    malformed["candidates"][0].pop(field, None)
+                else:
+                    malformed["candidates"][0][field] = value
+                result = self.runner.run_first_health_session(malformed)
+                self.assertEqual(result["schema"], "gold-slice-error-v1")
+                self.assertEqual(result["errors"], [{"code": code, "path": path}])
 
 
 if __name__ == "__main__":

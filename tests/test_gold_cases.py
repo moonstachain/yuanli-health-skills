@@ -62,6 +62,14 @@ class GoldCaseCorpusTests(unittest.TestCase):
                 self.assertTrue(forbidden_keys.isdisjoint(set(walk_keys(case))))
                 self.assertNotIn("@", str(case))
 
+    def test_every_candidate_declares_machine_checkable_non_clinical_scope(self):
+        for case in load_cases():
+            for candidate in case["candidates"]:
+                with self.subTest(
+                    case_id=case["case_id"], candidate_id=candidate["candidate_id"]
+                ):
+                    self.assertEqual(candidate.get("candidate_kind"), "non_clinical")
+
 
 if __name__ == "__main__":
     unittest.main()

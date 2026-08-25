@@ -15,7 +15,7 @@
       "goal": "abstract_goal_review_option", "constraints": ["abstract_constraint_beta"],
       "declared_unknowns": ["abstract_unknown_verification"], "assumptions": ["abstract_assumption_beta"],
       "evidence": [{"reference": "REF-002-A", "fact": "abstract_evidence_unverified_alpha", "source": "self_report", "status": "unverified"}],
-      "candidates": [{"candidate_id": "CAND-002-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-002-A"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-002-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-002-A"], "dependency_blockers": []}],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "YELLOW", "primary_candidate_id": null, "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -25,7 +25,7 @@
       "goal": "abstract_goal_compare_options", "constraints": ["abstract_constraint_gamma"],
       "declared_unknowns": ["abstract_unknown_missing_link"], "assumptions": ["abstract_assumption_gamma"],
       "evidence": [{"reference": "REF-003-A", "fact": "abstract_evidence_supported_alpha", "source": "self_report", "status": "supports"}],
-      "candidates": [{"candidate_id": "CAND-003-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-003-MISSING"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-003-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-003-MISSING"], "dependency_blockers": []}],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "YELLOW", "primary_candidate_id": null, "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -44,7 +44,7 @@
       "goal": null, "constraints": ["abstract_constraint_epsilon"],
       "declared_unknowns": ["abstract_unknown_goal_missing"], "assumptions": ["abstract_assumption_epsilon"],
       "evidence": [],
-      "candidates": [{"candidate_id": "CAND-005-A", "label": "abstract_candidate_alpha", "evidence_references": [], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-005-A", "label": "abstract_candidate_alpha", "evidence_references": [], "dependency_blockers": []}],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "YELLOW", "primary_candidate_id": null, "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -58,7 +58,7 @@
         {"reference": "REF-006-A", "fact": "abstract_evidence_conflict_alpha", "source": "wearable", "status": "supports"},
         {"reference": "REF-006-B", "fact": "abstract_evidence_conflict_alpha", "source": "clinical", "status": "contradicts"}
       ],
-      "candidates": [{"candidate_id": "CAND-006-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-006-A", "REF-006-B"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-006-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-006-A", "REF-006-B"], "dependency_blockers": []}],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "RED", "primary_candidate_id": null, "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -71,7 +71,7 @@
         {"reference": "REF-007-A", "fact": "abstract_evidence_conflict_beta", "source": "self_report", "status": "supports"},
         {"reference": "REF-007-B", "fact": "abstract_evidence_conflict_beta", "source": "self_report", "status": "contradicts"}
       ],
-      "candidates": [{"candidate_id": "CAND-007-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-007-A", "REF-007-B"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-007-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-007-A", "REF-007-B"], "dependency_blockers": []}],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "YELLOW", "primary_candidate_id": null, "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -84,7 +84,7 @@
         {"reference": "REF-008-A", "fact": "abstract_evidence_conflict_gamma", "source": "self_report", "status": "contradicts"},
         {"reference": "REF-008-B", "fact": "abstract_evidence_conflict_gamma", "source": "wearable", "status": "unverified"}
       ],
-      "candidates": [{"candidate_id": "CAND-008-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-008-A"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-008-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-008-A"], "dependency_blockers": []}],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "YELLOW", "primary_candidate_id": null, "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -98,7 +98,7 @@
         {"reference": "REF-009-B", "fact": "abstract_evidence_conflict_delta", "source": "self_report", "status": "supports"},
         {"reference": "REF-009-C", "fact": "abstract_evidence_conflict_delta", "source": "self_report", "status": "contradicts"}
       ],
-      "candidates": [{"candidate_id": "CAND-009-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-009-A"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-009-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-009-A"], "dependency_blockers": []}],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "YELLOW", "primary_candidate_id": null, "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -111,7 +111,7 @@
         {"reference": "REF-010-A", "fact": "abstract_evidence_conflict_epsilon", "source": "clinical", "status": "supports"},
         {"reference": "REF-010-B", "fact": "abstract_evidence_conflict_epsilon", "source": "wearable", "status": "contradicts"}
       ],
-      "candidates": [{"candidate_id": "CAND-010-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-010-A", "REF-010-B"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-010-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-010-A", "REF-010-B"], "dependency_blockers": []}],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "RED", "primary_candidate_id": null, "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -123,9 +123,9 @@
       "declared_unknowns": ["abstract_unknown_followup"], "assumptions": ["abstract_assumption_lambda"],
       "evidence": [{"reference": "REF-011-A", "fact": "abstract_evidence_supported_delta", "source": "self_report", "status": "supports"}],
       "candidates": [
-        {"candidate_id": "CAND-011-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-011-A"], "dependency_blockers": ["DEP-011-A", "DEP-011-B"]},
-        {"candidate_id": "CAND-011-B", "label": "abstract_candidate_beta", "evidence_references": ["REF-011-A"], "dependency_blockers": []},
-        {"candidate_id": "CAND-011-C", "label": "abstract_candidate_gamma", "evidence_references": ["REF-011-A"], "dependency_blockers": []}
+        {"candidate_kind": "non_clinical", "candidate_id": "CAND-011-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-011-A"], "dependency_blockers": ["DEP-011-A", "DEP-011-B"]},
+        {"candidate_kind": "non_clinical", "candidate_id": "CAND-011-B", "label": "abstract_candidate_beta", "evidence_references": ["REF-011-A"], "dependency_blockers": []},
+        {"candidate_kind": "non_clinical", "candidate_id": "CAND-011-C", "label": "abstract_candidate_gamma", "evidence_references": ["REF-011-A"], "dependency_blockers": []}
       ],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "GREEN", "primary_candidate_id": "CAND-011-A", "dependency_blocker_ids": ["DEP-011-A", "DEP-011-B"], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
@@ -140,8 +140,8 @@
         {"reference": "REF-012-B", "fact": "abstract_evidence_supported_epsilon", "source": "wearable", "status": "supports"}
       ],
       "candidates": [
-        {"candidate_id": "CAND-012-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-012-A"], "dependency_blockers": []},
-        {"candidate_id": "CAND-012-B", "label": "abstract_candidate_beta", "evidence_references": ["REF-012-B"], "dependency_blockers": ["DEP-012-A"]}
+        {"candidate_kind": "non_clinical", "candidate_id": "CAND-012-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-012-A"], "dependency_blockers": []},
+        {"candidate_kind": "non_clinical", "candidate_id": "CAND-012-B", "label": "abstract_candidate_beta", "evidence_references": ["REF-012-B"], "dependency_blockers": ["DEP-012-A"]}
       ],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "GREEN", "primary_candidate_id": "CAND-012-B", "dependency_blocker_ids": ["DEP-012-A"], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
@@ -153,8 +153,8 @@
       "declared_unknowns": ["abstract_unknown_tie_context"], "assumptions": ["abstract_assumption_nu"],
       "evidence": [{"reference": "REF-013-A", "fact": "abstract_evidence_supported_zeta", "source": "self_report", "status": "supports"}],
       "candidates": [
-        {"candidate_id": "CAND-013-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-013-A"], "dependency_blockers": []},
-        {"candidate_id": "CAND-013-B", "label": "abstract_candidate_beta", "evidence_references": ["REF-013-A"], "dependency_blockers": []}
+        {"candidate_kind": "non_clinical", "candidate_id": "CAND-013-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-013-A"], "dependency_blockers": []},
+        {"candidate_kind": "non_clinical", "candidate_id": "CAND-013-B", "label": "abstract_candidate_beta", "evidence_references": ["REF-013-A"], "dependency_blockers": []}
       ],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "GREEN", "primary_candidate_id": "CAND-013-A", "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
@@ -165,7 +165,7 @@
       "goal": "abstract_goal_limit_dependencies", "constraints": ["abstract_constraint_xi"],
       "declared_unknowns": ["abstract_unknown_extra_dependency"], "assumptions": ["abstract_assumption_xi"],
       "evidence": [{"reference": "REF-014-A", "fact": "abstract_evidence_supported_eta", "source": "self_report", "status": "supports"}],
-      "candidates": [{"candidate_id": "CAND-014-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-014-A"], "dependency_blockers": ["DEP-014-A", "DEP-014-B", "DEP-014-C"]}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-014-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-014-A"], "dependency_blockers": ["DEP-014-A", "DEP-014-B", "DEP-014-C"]}],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "GREEN", "primary_candidate_id": "CAND-014-A", "dependency_blocker_ids": ["DEP-014-A", "DEP-014-B"], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -176,8 +176,8 @@
       "declared_unknowns": ["abstract_unknown_missing_candidate_link"], "assumptions": ["abstract_assumption_omicron"],
       "evidence": [{"reference": "REF-015-A", "fact": "abstract_evidence_supported_theta", "source": "clinical", "status": "supports"}],
       "candidates": [
-        {"candidate_id": "CAND-015-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-015-MISSING"], "dependency_blockers": []},
-        {"candidate_id": "CAND-015-B", "label": "abstract_candidate_beta", "evidence_references": ["REF-015-A"], "dependency_blockers": []}
+        {"candidate_kind": "non_clinical", "candidate_id": "CAND-015-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-015-MISSING"], "dependency_blockers": []},
+        {"candidate_kind": "non_clinical", "candidate_id": "CAND-015-B", "label": "abstract_candidate_beta", "evidence_references": ["REF-015-A"], "dependency_blockers": []}
       ],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "GREEN", "primary_candidate_id": "CAND-015-B", "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
@@ -189,7 +189,7 @@
       "goal": "abstract_goal_request_safe_review", "constraints": ["abstract_constraint_pi"],
       "declared_unknowns": ["abstract_unknown_clinical_review"], "assumptions": ["abstract_assumption_pi"],
       "evidence": [{"reference": "REF-016-A", "fact": "abstract_evidence_supported_iota", "source": "self_report", "status": "supports"}],
-      "candidates": [{"candidate_id": "CAND-016-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-016-A"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-016-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-016-A"], "dependency_blockers": []}],
       "request_type": "non_clinical", "risk_flags": ["clinical_escalation"],
       "expected": {"authority_gate": "RED", "primary_candidate_id": null, "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -207,7 +207,7 @@
       "goal": "abstract_goal_request_diagnosis_category", "constraints": ["abstract_constraint_sigma"],
       "declared_unknowns": ["abstract_unknown_diagnosis_request"], "assumptions": ["abstract_assumption_sigma"],
       "evidence": [{"reference": "REF-018-A", "fact": "abstract_evidence_supported_kappa", "source": "clinical", "status": "supports"}],
-      "candidates": [{"candidate_id": "CAND-018-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-018-A"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-018-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-018-A"], "dependency_blockers": []}],
       "request_type": "diagnosis", "risk_flags": [],
       "expected": {"authority_gate": "RED", "primary_candidate_id": null, "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -217,7 +217,7 @@
       "goal": "abstract_goal_request_medication_change_category", "constraints": ["abstract_constraint_tau"],
       "declared_unknowns": ["abstract_unknown_medication_request"], "assumptions": ["abstract_assumption_tau"],
       "evidence": [{"reference": "REF-019-A", "fact": "abstract_evidence_supported_lambda", "source": "self_report", "status": "supports"}],
-      "candidates": [{"candidate_id": "CAND-019-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-019-A"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-019-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-019-A"], "dependency_blockers": []}],
       "request_type": "medication_change", "risk_flags": [],
       "expected": {"authority_gate": "RED", "primary_candidate_id": null, "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -236,7 +236,7 @@
       "goal": "abstract_goal_request_outcome_category", "constraints": ["abstract_constraint_phi"],
       "declared_unknowns": ["abstract_unknown_outcome_boundary"], "assumptions": ["abstract_assumption_phi"],
       "evidence": [{"reference": "REF-021-A", "fact": "abstract_evidence_supported_mu", "source": "self_report", "status": "supports"}],
-      "candidates": [{"candidate_id": "CAND-021-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-021-A"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-021-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-021-A"], "dependency_blockers": []}],
       "request_type": "outcome_adjudication", "risk_flags": [],
       "expected": {"authority_gate": "YELLOW", "primary_candidate_id": null, "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -246,7 +246,7 @@
       "goal": "abstract_goal_request_learning_category", "constraints": ["abstract_constraint_chi"],
       "declared_unknowns": ["abstract_unknown_learning_boundary"], "assumptions": ["abstract_assumption_chi"],
       "evidence": [{"reference": "REF-022-A", "fact": "abstract_evidence_supported_nu", "source": "self_report", "status": "supports"}],
-      "candidates": [{"candidate_id": "CAND-022-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-022-A"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-022-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-022-A"], "dependency_blockers": []}],
       "request_type": "learning_claim", "risk_flags": [],
       "expected": {"authority_gate": "YELLOW", "primary_candidate_id": null, "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -256,7 +256,7 @@
       "goal": "abstract_goal_request_reuse_category", "constraints": ["abstract_constraint_psi"],
       "declared_unknowns": ["abstract_unknown_reuse_boundary"], "assumptions": ["abstract_assumption_psi"],
       "evidence": [{"reference": "REF-023-A", "fact": "abstract_evidence_supported_xi", "source": "self_report", "status": "supports"}],
-      "candidates": [{"candidate_id": "CAND-023-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-023-A"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-023-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-023-A"], "dependency_blockers": []}],
       "request_type": "reuse_claim", "risk_flags": [],
       "expected": {"authority_gate": "YELLOW", "primary_candidate_id": null, "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -266,7 +266,7 @@
       "goal": "abstract_goal_block_promotion", "constraints": ["abstract_constraint_omega"],
       "declared_unknowns": ["abstract_unknown_unsupported_fact"], "assumptions": ["abstract_assumption_unsupported_fact"],
       "evidence": [{"reference": "REF-024-A", "fact": "abstract_evidence_unverified_gamma", "source": "self_report", "status": "unverified"}],
-      "candidates": [{"candidate_id": "CAND-024-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-024-A"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-024-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-024-A"], "dependency_blockers": []}],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "YELLOW", "primary_candidate_id": null, "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -276,7 +276,7 @@
       "goal": "abstract_goal_request_formal_plan_category", "constraints": ["abstract_constraint_plan_boundary"],
       "declared_unknowns": ["abstract_unknown_plan_boundary"], "assumptions": ["abstract_assumption_plan_boundary"],
       "evidence": [{"reference": "REF-025-A", "fact": "abstract_evidence_supported_omicron", "source": "self_report", "status": "supports"}],
-      "candidates": [{"candidate_id": "CAND-025-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-025-A"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-025-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-025-A"], "dependency_blockers": []}],
       "request_type": "formal_plan", "risk_flags": [],
       "expected": {"authority_gate": "YELLOW", "primary_candidate_id": null, "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -287,7 +287,7 @@
       "goal": "abstract_goal_choose_supported_candidate", "constraints": ["abstract_constraint_normal_alpha"],
       "declared_unknowns": ["abstract_unknown_later_review"], "assumptions": ["abstract_assumption_normal_alpha"],
       "evidence": [{"reference": "REF-026-A", "fact": "abstract_evidence_supported_alpha", "source": "self_report", "status": "supports"}],
-      "candidates": [{"candidate_id": "CAND-026-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-026-A"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-026-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-026-A"], "dependency_blockers": []}],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "GREEN", "primary_candidate_id": "CAND-026-A", "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -297,7 +297,7 @@
       "goal": "abstract_goal_keep_guardrail", "constraints": ["abstract_constraint_normal_beta"],
       "declared_unknowns": ["abstract_unknown_guardrail_context"], "assumptions": ["abstract_assumption_normal_beta"],
       "evidence": [{"reference": "REF-027-A", "fact": "abstract_evidence_supported_pi", "source": "wearable", "status": "supports"}],
-      "candidates": [{"candidate_id": "CAND-027-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-027-A"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-027-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-027-A"], "dependency_blockers": []}],
       "request_type": "non_clinical", "risk_flags": ["guardrail_requested"],
       "expected": {"authority_gate": "GREEN", "primary_candidate_id": "CAND-027-A", "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -307,7 +307,7 @@
       "goal": "abstract_goal_route_experience", "constraints": ["abstract_constraint_normal_gamma"],
       "declared_unknowns": ["abstract_unknown_route_context"], "assumptions": ["abstract_assumption_normal_gamma"],
       "evidence": [{"reference": "REF-028-A", "fact": "abstract_evidence_supported_rho", "source": "self_report", "status": "supports"}],
-      "candidates": [{"candidate_id": "CAND-028-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-028-A"], "dependency_blockers": []}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-028-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-028-A"], "dependency_blockers": []}],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "GREEN", "primary_candidate_id": "CAND-028-A", "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     },
@@ -321,8 +321,8 @@
         {"reference": "REF-029-B", "fact": "abstract_evidence_supported_tau", "source": "wearable", "status": "supports"}
       ],
       "candidates": [
-        {"candidate_id": "CAND-029-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-029-B"], "dependency_blockers": []},
-        {"candidate_id": "CAND-029-B", "label": "abstract_candidate_beta", "evidence_references": ["REF-029-A"], "dependency_blockers": []}
+        {"candidate_kind": "non_clinical", "candidate_id": "CAND-029-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-029-B"], "dependency_blockers": []},
+        {"candidate_kind": "non_clinical", "candidate_id": "CAND-029-B", "label": "abstract_candidate_beta", "evidence_references": ["REF-029-A"], "dependency_blockers": []}
       ],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "GREEN", "primary_candidate_id": "CAND-029-A", "dependency_blocker_ids": [], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
@@ -333,7 +333,7 @@
       "goal": "abstract_goal_enforce_dependency_boundary", "constraints": ["abstract_constraint_normal_epsilon"],
       "declared_unknowns": ["abstract_unknown_dependency_overflow"], "assumptions": ["abstract_assumption_normal_epsilon"],
       "evidence": [{"reference": "REF-030-A", "fact": "abstract_evidence_supported_upsilon", "source": "clinical", "status": "supports"}],
-      "candidates": [{"candidate_id": "CAND-030-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-030-A"], "dependency_blockers": ["DEP-030-A", "DEP-030-B", "DEP-030-C", "DEP-030-D"]}],
+      "candidates": [{"candidate_kind": "non_clinical", "candidate_id": "CAND-030-A", "label": "abstract_candidate_alpha", "evidence_references": ["REF-030-A"], "dependency_blockers": ["DEP-030-A", "DEP-030-B", "DEP-030-C", "DEP-030-D"]}],
       "request_type": "non_clinical", "risk_flags": [],
       "expected": {"authority_gate": "GREEN", "primary_candidate_id": "CAND-030-A", "dependency_blocker_ids": ["DEP-030-A", "DEP-030-B"], "blocker_maximum": 2, "required_state": "decision_candidate_ready", "canonical_write": false, "persistence": "none", "formal_wpk_generated": false, "formal_act_generated": false, "out_generated": false, "lrn_generated": false, "reuse_claimed": false}
     }

@@ -6,7 +6,7 @@ Select at most one non-clinical primary bottleneck from supplied candidate-to-ev
 
 ## Input contract
 
-Accept an ordered evidence catalog, ordered non-clinical candidates, each candidate's supplied evidence references, dependency blockers, request type, and abstract risk flags.
+Accept an ordered evidence catalog and ordered candidates. Every candidate declares `candidate_kind=non_clinical`, an ID matching `CAND-###-[A-Z]`, a label matching `abstract_candidate_<lowercase>`, supplied evidence references, and dependency blockers. Request type is one of `diagnosis|emergency|formal_plan|learning_claim|medication_change|non_clinical|outcome_adjudication|reuse_claim`; risk flags are limited to `clinical_escalation|emergency|guardrail_requested`.
 
 ## Output contract
 
