@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://yuanli.example/contracts/suite-source-manifest-v1.schema.json",
+  "title": "Yuanli Health Source Suite Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "source_suite_id", "catalog_suite_id", "name", "version", "member_count", "license", "release_basis", "members"],
+  "properties": {
+    "schema": {"const": "suite-source-manifest-v1"},
+    "source_suite_id": {"const": "YL-SUITE-HEALTH-20260823-0001"},
+    "catalog_suite_id": {"const": "zk:suite:yuanli-health"},
+    "name": {"const": "yuanli-health"},
+    "version": {"const": "0.1.0"},
+    "member_count": {"const": 16},
+    "license": {"const": "Apache-2.0"},
+    "release_basis": {"const": "synthetic_qualification_only"},
+    "members": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "prefixItems": [
+        {"$ref": "#/$defs/member_ctx"}, {"$ref": "#/$defs/member_evd"}, {"$ref": "#/$defs/member_dec"}, {"$ref": "#/$defs/member_wpk"},
+        {"$ref": "#/$defs/member_act"}, {"$ref": "#/$defs/member_out"}, {"$ref": "#/$defs/member_lrn"}, {"$ref": "#/$defs/member_first"},
+        {"$ref": "#/$defs/member_ninety"}, {"$ref": "#/$defs/member_weekly"}, {"$ref": "#/$defs/member_doctor"}, {"$ref": "#/$defs/member_outcome"},
+        {"$ref": "#/$defs/member_learning"}, {"$ref": "#/$defs/member_build"}, {"$ref": "#/$defs/member_review"}, {"$ref": "#/$defs/member_qualify"}
+      ],
+      "items": false
+    }
+  },
+  "$defs": {
+    "member": {"type": "object", "additionalProperties": false, "required": ["source_capability_id", "registry_capability_id"], "properties": {"source_capability_id": {"type": "string"}, "registry_capability_id": {"type": "null"}}},
+    "member_ctx": {"$ref": "#/$defs/member", "properties": {"source_capability_id": {"const": "yuanli.health.kernel.ctx"}}},
+    "member_evd": {"$ref": "#/$defs/member", "properties": {"source_capability_id": {"const": "yuanli.health.kernel.evd"}}},
+    "member_dec": {"$ref": "#/$defs/member", "properties": {"source_capability_id": {"const": "yuanli.health.kernel.dec"}}},
+    "member_wpk": {"$ref": "#/$defs/member", "properties": {"source_capability_id": {"const": "yuanli.health.kernel.wpk"}}},
+    "member_act": {"$ref": "#/$defs/member", "properties": {"source_capability_id": {"const": "yuanli.health.kernel.act"}}},
+    "member_out": {"$ref": "#/$defs/member", "properties": {"source_capability_id": {"const": "yuanli.health.kernel.out"}}},
+    "member_lrn": {"$ref": "#/$defs/member", "properties": {"source_capability_id": {"const": "yuanli.health.kernel.lrn"}}},
+    "member_first": {"$ref": "#/$defs/member", "properties": {"source_capability_id": {"const": "yuanli.health.experience.first-health-session"}}},
+    "member_ninety": {"$ref": "#/$defs/member", "properties": {"source_capability_id": {"const": "yuanli.health.experience.ninety-day-health-experiment"}}},
+    "member_weekly": {"$ref": "#/$defs/member", "properties": {"source_capability_id": {"const": "yuanli.health.experience.weekly-health-checkpoint"}}},
+    "member_doctor": {"$ref": "#/$defs/member", "properties": {"source_capability_id": {"const": "yuanli.health.experience.doctor-visit-prep"}}},
+    "member_outcome": {"$ref": "#/$defs/member", "properties": {"source_capability_id": {"const": "yuanli.health.experience.outcome-review"}}},
+    "member_learning": {"$ref": "#/$defs/member", "properties": {"source_capability_id": {"const": "yuanli.health.experience.learning-reuse"}}},
+    "member_build": {"$ref": "#/$defs/member", "properties": {"source_capability_id": {"const": "yuanli.health.meta.build"}}},
+    "member_review": {"$ref": "#/$defs/member", "properties": {"source_capability_id": {"const": "yuanli.health.meta.review"}}},
+    "member_qualify": {"$ref": "#/$defs/member", "properties": {"source_capability_id": {"const": "yuanli.health.meta.qualify"}}}
+  }
+}

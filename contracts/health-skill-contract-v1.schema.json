@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://yuanli.example/contracts/health-skill-contract-v1.schema.json",
+  "title": "Yuanli Health Skill Contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "source_capability_id", "registry_capability_id", "class", "profile_of", "transition_intent", "mutates_canon", "authority", "privacy", "runtime_requirements", "lifecycle", "qualification", "objects", "health_clock", "claims"],
+  "properties": {
+    "schema": {"const": "health-skill-contract-v1"},
+    "source_capability_id": {"type": "string", "pattern": "^yuanli\\.health\\.(kernel|experience|meta)\\.[a-z0-9.-]+$"},
+    "registry_capability_id": {"type": "null"},
+    "class": {"enum": ["kernel", "experience", "meta"]},
+    "profile_of": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/domain_object"}},
+    "transition_intent": {"type": "string", "minLength": 1},
+    "mutates_canon": {"const": false},
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["final_authority", "ai", "device", "automation", "router"],
+      "properties": {
+        "final_authority": {"enum": ["subject", "clinician", "system_contract"]},
+        "ai": {"enum": ["assistive", "non_final"]},
+        "device": {"enum": ["evidence_source", "non_final"]},
+        "automation": {"const": "non_final"},
+        "router": {"const": "non_final"}
+      }
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository_phi"],
+      "properties": {"repository_phi": {"const": "forbidden"}}
+    },
+    "runtime_requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ephemeral", "persistence", "logs"],
+      "properties": {"ephemeral": {"const": true}, "persistence": {"const": "none"}, "logs": {"const": "none"}}
+    },
+    "lifecycle": {"enum": ["proposed", "qualified", "human_review_ready"]},
+    "qualification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["basis", "status"],
+      "properties": {"basis": {"const": "synthetic_only"}, "status": {"enum": ["pending", "passed"]}}
+    },
+    "objects": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/domain_object"}},
+    "health_clock": {"enum": ["behavioral", "clinical", "experimental", "immediate"]},
+    "claims": {"type": "array", "uniqueItems": true, "items": {"enum": ["non_clinical", "non_release"]}}
+  },
+  "$defs": {"domain_object": {"enum": ["ACT", "CTX", "DEC", "EVD", "LRN", "OUT", "WPK"]}}
+}
