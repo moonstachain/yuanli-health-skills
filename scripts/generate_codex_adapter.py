@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from codex_adapter_reference import render_reference
+from codex_adapter_reference import render_reference, render_root
 
 
 PACKAGE_RELATIVE = Path("dist/codex/yuanli-health")
@@ -35,59 +35,6 @@ def _load_validators(root: Path):
     return validate_contract, validate_source_registry
 
 
-def _root_skill(source_ids: tuple[str, ...]) -> bytes:
-    experience_routes = (
-        ("first health session / 首次健康会话", "yuanli.health.experience.first-health-session"),
-        ("90-day health experiment / 90 天健康实验", "yuanli.health.experience.ninety-day-health-experiment"),
-        ("weekly health checkpoint / 每周健康检查点", "yuanli.health.experience.weekly-health-checkpoint"),
-        ("doctor visit preparation / 问诊准备", "yuanli.health.experience.doctor-visit-prep"),
-        ("outcome review / 结果复盘", "yuanli.health.experience.outcome-review"),
-        ("learning reuse / 学习复用", "yuanli.health.experience.learning-reuse"),
-    )
-    route_lines = "\n".join(
-        f"- {trigger}: read [the exact member reference](references/{source_id}.md)."
-        for trigger, source_id in experience_routes
-    )
-    internal_lines = "\n".join(
-        f"- `{source_id}`: [member reference](references/{source_id}.md)"
-        for source_id in source_ids
-        if source_id not in {item[1] for item in experience_routes}
-    )
-    return f"""---
-name: yuanli-health
-description: Use when handling synthetic Yuanli Health candidate work, including First Health Session, health experiments or checkpoints, doctor-visit preparation, outcome review, learning reuse, and explicit internal Kernel or Meta requests.
----
-
-# Yuanli Health
-
-Use this adapter to select one bounded source capability and preserve its machine contract. Inputs stay synthetic and in memory. Never copy real or re-identifiable health material into repository files, receipts, logs, or generated references.
-
-## Decide before routing
-
-Clinical diagnosis, prescription, medication change, chest-pain or urgent/emergency risk never become model conclusions. Stop with concise bilingual guidance to contact a clinician or local emergency services; do not create WPK/ACT or protect a deadline. Refuse persistence and logging even when an owner requests them.
-
-Route only these user JTBDs to Experiences:
-
-{route_lines}
-
-If none matches, return no route. Never fall back to Kernel or Meta and never decide health priority. Kernel and Meta are direct/internal only; read their reference only when the request explicitly names that capability and supplies its prerequisites:
-
-{internal_lines}
-
-## Execute the selected contract
-
-Read only the selected reference and its packaged JSON contract. Preserve supplied facts with evidence references, explicit unknowns and assumptions, final Authority, candidate state, escalation/guardrail, `canonical_write=false`, and `persistence=none`. Do not invent IDs, evidence, receipts, unknown labels, machine fields, or missing prerequisites.
-
-- First Health Session ends at `decision_candidate_ready`; it emits no WPK or ACT.
-- OUT requires ACT plus observation; LRN requires OUT; REUSE requires LRN and distinct Task-2 preload/use receipts.
-- DEC selects zero or one primary bottleneck and at most two blockers.
-- Doctor Visit Prep prepares only supplied questions. Delegate provider selection, booking, pricing, and payment to `yuanli-medical-appointment-operator`; perform none here.
-- Meta never self-admits, assigns Registry IDs, claims Human acceptance, tags, releases, publishes, or deploys.
-
-If strict input cannot satisfy the selected member contract, stop at that contract's stable error boundary instead of fabricating an aggregate result. Qualification is synthetic-only: never claim a health outcome, clinical effectiveness, runtime observation, Canon mutation, Registry admission, or publication.
-""".encode("utf-8")
-
-
 def build_package(root: Path) -> tuple[dict[str, bytes], dict[str, Any]]:
     validate_contract, validate_source_registry = _load_validators(root)
     registry = _load_json(root / "registry/source-capabilities.json")
@@ -96,7 +43,7 @@ def build_package(root: Path) -> tuple[dict[str, bytes], dict[str, Any]]:
         raise ValueError("source registry is invalid: " + ", ".join(f"{e.code}:{e.path}" for e in registry_result.errors))
     source_ids = tuple(member["source_capability_id"] for member in registry["members"])
     files: dict[str, bytes] = {
-        "SKILL.md": _root_skill(source_ids),
+        "SKILL.md": render_root(source_ids),
         "LICENSE": (root / "LICENSE").read_bytes(),
         "NOTICE": (root / "NOTICE").read_bytes(),
         "contracts/suite-source-manifest.json": _json_bytes(registry),

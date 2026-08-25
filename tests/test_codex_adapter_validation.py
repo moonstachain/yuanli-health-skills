@@ -80,6 +80,58 @@ class CodexAdapterValidationTests(unittest.TestCase):
                         "unsupported Markdown link syntax",
                     )
 
+    def test_container_reference_forms_and_bare_email_autolink_are_rejected_after_rehash(self):
+        email_autolink = "<nobody" + "@" + "example.invalid>"
+        attacks = (
+            ("blockquote shortcut", "> [dead]\n>\n> [dead]: references/missing.md"),
+            ("list shortcut", "- [dead]\n- [dead]: references/missing.md"),
+            ("blockquote full", "> [label][dead]\n>\n> [dead]: references/missing.md"),
+            ("list collapsed", "- [dead][]\n- [dead]: references/missing.md"),
+            ("blockquote escaped", "> [de\\]ad]\n>\n> [de\\]ad]: references/missing.md"),
+            ("list multiline definition", "- [dead]\n- [dead]:\n    references/missing.md"),
+            ("bare email autolink", email_autolink),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            for index, (label, attack) in enumerate(attacks):
+                with self.subTest(label=label):
+                    repository = copy_repository(temporary / f"container-{index}")
+                    self._assert_self_consistent_markdown_rejected(
+                        repository,
+                        attack,
+                        "generated Markdown byte mismatch",
+                    )
+
+    def test_repository_rejects_any_rehashed_root_or_reference_byte_mismatch(self):
+        mutations = (
+            ("SKILL.md", "\nBenign-looking but non-generated prose.\n"),
+            (
+                "references/yuanli.health.kernel.ctx.md",
+                "\nLink-like prose [without a destination] must not become generated truth.\n",
+            ),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            for index, (relative, addition) in enumerate(mutations):
+                with self.subTest(relative=relative):
+                    repository = copy_repository(temporary / f"byte-proof-{index}")
+                    package = repository / "dist/codex/yuanli-health"
+                    metadata = repository / "releases/v0.1.0/release-metadata.json"
+                    generate(package, root=repository, metadata=metadata)
+                    target = package / relative
+                    target.write_text(target.read_text(encoding="utf-8") + addition, encoding="utf-8")
+                    rewrite_checksums(package)
+                    rewrite_metadata_hash(package, metadata)
+                    rejected = validate(
+                        package,
+                        root=repository,
+                        metadata=metadata,
+                        repository=True,
+                    )
+                    output = rejected.stdout + rejected.stderr
+                    self.assertNotEqual(rejected.returncode, 0, output)
+                    self.assertIn("generated Markdown byte mismatch", output)
+
     def test_local_target_failures_reject_standalone_and_repository_after_rehash(self):
         inline_attacks = (
             ("missing", "[missing](references/missing.md)"),

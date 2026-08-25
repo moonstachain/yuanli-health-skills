@@ -12,7 +12,7 @@ import tomllib
 from pathlib import Path, PurePosixPath
 from typing import Any
 
-from codex_adapter_reference import render_reference
+from codex_adapter_reference import mask_markdown_code_literals, render_reference, render_root
 
 
 PACKAGE_RELATIVE = Path("dist/codex/yuanli-health")
@@ -140,6 +140,7 @@ def _destination_token(raw_target: str) -> str:
 
 def _markdown_analysis(content: str) -> tuple[tuple[str, ...], tuple[str, ...]]:
     """Accept only same-line non-image inline links; conservatively reject other link grammar."""
+    active = mask_markdown_code_literals(content)
     targets: list[str] = []
     findings: list[str] = []
 
@@ -148,47 +149,46 @@ def _markdown_analysis(content: str) -> tuple[tuple[str, ...], tuple[str, ...]]:
             findings.append(finding)
 
     index = 0
-    while index < len(content):
-        if content[index] == "<" and not _escaped(content, index):
-            close = content.find(">", index + 1)
-            if close >= 0 and re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", content[index + 1:close]):
-                add_finding("URI schemes")
+    while index < len(active):
+        if active[index] == "<" and not _escaped(active, index):
+            close = active.find(">", index + 1)
+            body = active[index + 1:close] if close >= 0 else ""
+            if close >= 0 and (
+                re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", body)
+                or re.fullmatch(r"[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9.-]+", body)
+            ):
+                add_finding("autolinks")
                 index = close + 1
                 continue
-        if content[index:index + 2] == "![" and not _escaped(content, index):
+        if active[index:index + 2] == "![" and not _escaped(active, index):
             add_finding("images or resources")
             index += 2
             continue
-        if content[index] != "[" or _escaped(content, index):
+        if active[index] != "[" or _escaped(active, index):
             index += 1
             continue
 
-        close, label_multiline = _balanced_close(content, index, "[", "]")
+        close, label_multiline = _balanced_close(active, index, "[", "]")
         if close is None:
+            add_finding("unterminated bracket syntax")
             index += 1
             continue
         after = close + 1
-        line_start = content.rfind("\n", 0, index) + 1
-        indentation = content[line_start:index]
-        if (
-            after < len(content)
-            and content[after] == ":"
-            and len(indentation) <= 3
-            and indentation == " " * len(indentation)
-        ):
+        if after < len(active) and active[after] == ":":
             add_finding("reference definitions")
             index = after + 1
             continue
-        if after < len(content) and content[after] == "[":
+        if after < len(active) and active[after] == "[":
             add_finding("reference-style or collapsed links")
-            second_close, _ = _balanced_close(content, after, "[", "]")
+            second_close, _ = _balanced_close(active, after, "[", "]")
             index = (second_close + 1) if second_close is not None else after + 1
             continue
-        if after >= len(content) or content[after] != "(":
+        if after >= len(active) or active[after] != "(":
+            add_finding("shortcut or bracket reference syntax")
             index = after
             continue
 
-        destination_close, destination_multiline = _balanced_close(content, after, "(", ")")
+        destination_close, destination_multiline = _balanced_close(active, after, "(", ")")
         if destination_close is None:
             add_finding("unterminated inline links")
             index = after + 1
@@ -280,6 +280,20 @@ def validate_package(root: Path, package: Path) -> tuple[list[str], str | None, 
     if issues:
         return issues, None, len(files)
 
+    expected_markdown: dict[str, bytes] = {"SKILL.md": render_root(source_ids)}
+    for source_id in source_ids:
+        source_directory = root / "capabilities" / source_id
+        source_contract = _json(source_directory / "contract.json")
+        source_instructions = (source_directory / "instructions.md").read_text(encoding="utf-8")
+        expected_markdown[f"references/{source_id}.md"] = render_reference(
+            source_id,
+            source_contract,
+            source_instructions,
+        )
+    for markdown_path, expected_bytes in expected_markdown.items():
+        if files[markdown_path] != expected_bytes:
+            issues.append(f"generated Markdown byte mismatch: {markdown_path}")
+
     checksum_entries: list[tuple[str, str]] = []
     for line in files["SHA256SUMS"].decode("utf-8").splitlines():
         match = re.fullmatch(r"([0-9a-f]{64})  (.+)", line)
@@ -333,9 +347,6 @@ def validate_package(root: Path, package: Path) -> tuple[list[str], str | None, 
         reference = reference_bytes.decode("utf-8")
         if reference.count(f"Source capability: `{source_id}`") != 1:
             issues.append(f"reference identity mismatch: {source_id}")
-        source_instructions = (root / "capabilities" / source_id / "instructions.md").read_text(encoding="utf-8")
-        if reference_bytes != render_reference(source_id, source_contract, source_instructions):
-            issues.append(f"reference source correspondence mismatch: {source_id}")
 
     if files["LICENSE"] != (root / "LICENSE").read_bytes() or not files["LICENSE"].startswith(b"Apache License\nVersion 2.0"):
         issues.append("license mismatch")

@@ -100,6 +100,152 @@ class PublicContentScanTests(unittest.TestCase):
                 self.assertNotIn(private_value, current_output)
                 self.assertNotIn(private_value, history_output)
 
+    def test_wrapped_escaped_and_subscript_labels_fail_both_modes_without_echo(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            git(repository, "init", "-q")
+            identifier_label = "patient" + "_id"
+            measurement_label = "heart" + "_rate"
+            identifier_value = "SUBJECT" + "-7711"
+            measurement_value = "91" + " bpm"
+            (repository / "wrapped.md").write_text(
+                "Collected `"
+                + identifier_label
+                + "`: "
+                + identifier_value
+                + "\n**"
+                + identifier_label
+                + "** = "
+                + identifier_value
+                + "\n`"
+                + identifier_label
+                + "`: "
+                + identifier_value
+                + "; **"
+                + measurement_label
+                + "** = "
+                + measurement_value
+                + "\n",
+                encoding="utf-8",
+            )
+            (repository / "escaped-mapping.py").write_text(
+                "payload[\\\""
+                + identifier_label
+                + "\\\"] = \\\""
+                + identifier_value
+                + "\\\"\n"
+                + "payload['"
+                + measurement_label
+                + "'] = '"
+                + measurement_value
+                + "'\n",
+                encoding="utf-8",
+            )
+            commit_all(repository, "wrapped label relations")
+            commit = git(repository, "rev-parse", "HEAD").stdout.strip()
+
+            for mode, prefix in (("--check-current", "PHI_CURRENT"), ("--check-history", "PHI_HISTORY")):
+                result = run_script(PUBLIC_SCAN, "--root", repository, mode)
+                output = result.stdout + result.stderr
+                self.assertNotEqual(result.returncode, 0, output)
+                for finding_class in ("patient_identifier", "health_measurement"):
+                    self.assertIn(finding_class, output)
+                self.assertIn("wrapped.md", output)
+                self.assertIn("escaped-mapping.py", output)
+                if prefix == "PHI_HISTORY":
+                    self.assertIn(commit, output)
+                self.assertNotIn(identifier_value, output)
+                self.assertNotIn(measurement_value, output)
+
+    def test_structured_text_values_cover_every_closed_taxonomy_class_without_echo(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            git(repository, "init", "-q")
+            private_values = (
+                "SUBJECT" + "-8801",
+                "RECORD" + "-8802",
+                "contact" + "-8803",
+                "phone" + "-8804",
+                "Alice" + " Example",
+                "123" + " Example Street",
+                "1980" + "-04-15",
+                "88" + " bpm",
+            )
+            relations = (
+                ("patient" + "_id", '{"raw":"' + private_values[0] + '"}'),
+                ("medical" + "RecordNumber", "{'nested': {'raw': '" + private_values[1] + "'}}"),
+                ("Email" + "Address", '["' + private_values[2] + '"]'),
+                ("phone" + "Number", "{'values': ['" + private_values[3] + "']}"),
+                ("Full" + "Name", '{"parts":["Alice","Example"]}'),
+                ("Home" + "Address", '["123", {"street":"Example Street"}]'),
+                ("Date" + "OfBirth", '{"parts":{"year":1980,"month":4,"day":15}}'),
+                ("Heart" + "Rate", '{"reading":{"value":88,"unit":"bpm"}}'),
+            )
+            (repository / "structured-values.md").write_text(
+                "\n".join(label + ": " + value for label, value in relations) + "\n",
+                encoding="utf-8",
+            )
+            commit_all(repository, "structured label values")
+            commit = git(repository, "rev-parse", "HEAD").stdout.strip()
+
+            current = run_script(PUBLIC_SCAN, "--root", repository, "--check-current")
+            history = run_script(PUBLIC_SCAN, "--root", repository, "--check-history")
+            current_output = current.stdout + current.stderr
+            history_output = history.stdout + history.stderr
+            self.assertNotEqual(current.returncode, 0, current_output)
+            self.assertNotEqual(history.returncode, 0, history_output)
+            for finding_class in (
+                "patient_identifier",
+                "medical_record_identifier",
+                "email_address",
+                "phone_number",
+                "person_name",
+                "postal_address",
+                "date_of_birth",
+                "health_measurement",
+            ):
+                self.assertIn(f"PHI_CURRENT:{finding_class}:structured-values.md", current_output)
+                self.assertIn(f"PHI_HISTORY:{finding_class}:{commit}:structured-values.md", history_output)
+            for private_value in private_values:
+                self.assertNotIn(private_value, current_output)
+                self.assertNotIn(private_value, history_output)
+
+    def test_only_one_exact_placeholder_token_is_inert_at_the_brace_boundary(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            git(repository, "init", "-q")
+            label = "patient" + "_id"
+            (repository / "placeholder.md").write_text(
+                label + ": {placeholder_name}\n",
+                encoding="utf-8",
+            )
+            commit_all(repository, "exact placeholder control")
+            for mode in ("--check-current", "--check-history"):
+                accepted = run_script(PUBLIC_SCAN, "--root", repository, mode)
+                self.assertEqual(accepted.returncode, 0, accepted.stdout + accepted.stderr)
+
+            private_value = "SUBJECT" + "-9901"
+            (repository / "brace-negatives.md").write_text(
+                label
+                + ': {"raw":"'
+                + private_value
+                + '"}\n'
+                + label
+                + ": {placeholder_name} populated\n"
+                + label
+                + ": {{placeholder_name}}\n"
+                + label
+                + ": {placeholder-name}\n",
+                encoding="utf-8",
+            )
+            commit_all(repository, "populated brace negatives")
+            for mode in ("--check-current", "--check-history"):
+                rejected = run_script(PUBLIC_SCAN, "--root", repository, mode)
+                output = rejected.stdout + rejected.stderr
+                self.assertNotEqual(rejected.returncode, 0, output)
+                self.assertIn("patient_identifier", output)
+                self.assertNotIn(private_value, output)
+
     def test_structured_json_key_variants_and_measurements_fail_current_and_history_without_echo(self):
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory)
@@ -229,6 +375,33 @@ class PublicContentScanTests(unittest.TestCase):
                 self.assertNotIn(private_identifier, output)
                 self.assertNotIn(private_measurement, output)
 
+    def test_wrapped_structured_source_relation_propagates_and_is_redacted_in_both_modes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repository = copy_repository(Path(directory))
+            git(repository, "init", "-q")
+            label = "patient" + "_id"
+            private_identifier = "SUBJECT" + "-6612"
+            probe = "Collected `" + label + "`: {\"raw\":\"" + private_identifier + "\"}"
+            instruction = repository / "capabilities/yuanli.health.kernel.ctx/instructions.md"
+            instruction.write_text(
+                instruction.read_text(encoding="utf-8") + "\n" + probe + "\n",
+                encoding="utf-8",
+            )
+            package = repository / "dist/codex/yuanli-health"
+            generate(package, root=repository, metadata=repository / "releases/v0.1.0/release-metadata.json")
+            reference = package / "references/yuanli.health.kernel.ctx.md"
+            self.assertIn(probe, reference.read_text(encoding="utf-8"))
+            commit_all(repository, "wrapped structured source relation")
+
+            for mode in ("--check-current", "--check-history"):
+                result = run_script(PUBLIC_SCAN, "--root", repository, mode)
+                output = result.stdout + result.stderr
+                self.assertNotEqual(result.returncode, 0, output)
+                self.assertIn("patient_identifier", output)
+                self.assertIn("capabilities/yuanli.health.kernel.ctx/instructions.md", output)
+                self.assertIn("dist/codex/yuanli-health/references/yuanli.health.kernel.ctx.md", output)
+                self.assertNotIn(private_identifier, output)
+
     def test_closed_taxonomy_positive_controls_pass_current_and_history(self):
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory)
@@ -263,11 +436,11 @@ class PublicContentScanTests(unittest.TestCase):
             template_address = "Address"
             (repository / "inert-templates.py").write_text(
                 template_email
-                + ' = " + "fixture"\n'
+                + ": {private_email}\n"
                 + template_name
                 + ": {private_name}\n"
                 + template_address
-                + ": private_values[2]\n",
+                + ": {private_address}\n",
                 encoding="utf-8",
             )
             commit_all(repository, "positive controls")

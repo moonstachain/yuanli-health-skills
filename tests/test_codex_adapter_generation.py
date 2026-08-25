@@ -143,6 +143,56 @@ class CodexAdapterGenerationTests(unittest.TestCase):
             self.assertNotEqual(rejected.returncode, 0)
             self.assertFalse((temporary / "invalid").exists())
 
+    def test_generation_rejects_source_markdown_outside_the_single_contract_link_policy(self):
+        attacks = (
+            "\n[external](https://example.invalid/source)\n",
+            "\n[second contract](contract.json)\n",
+            "\n[shortcut]\n\n[shortcut]: contract.json\n",
+            "\n<https://example.invalid/source>\n",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            for index, attack in enumerate(attacks):
+                with self.subTest(attack=index):
+                    repository = copy_repository(temporary / f"source-policy-{index}")
+                    source_id = "yuanli.health.kernel.ctx"
+                    instruction = repository / "capabilities" / source_id / "instructions.md"
+                    instruction.write_text(
+                        instruction.read_text(encoding="utf-8") + attack,
+                        encoding="utf-8",
+                    )
+                    rejected = run_script(
+                        GENERATOR,
+                        "--root",
+                        repository,
+                        "--output",
+                        temporary / f"rejected-{index}",
+                    )
+                    self.assertNotEqual(rejected.returncode, 0, rejected.stdout + rejected.stderr)
+                    self.assertIn("source Markdown link policy", rejected.stderr)
+
+    def test_generation_requires_the_exact_contract_link_destination_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            repository = copy_repository(temporary)
+            source_id = "yuanli.health.kernel.ctx"
+            instruction = repository / "capabilities" / source_id / "instructions.md"
+            content = instruction.read_text(encoding="utf-8")
+            self.assertEqual(content.count("](contract.json)"), 1)
+            instruction.write_text(
+                content.replace("](contract.json)", "]( contract.json )", 1),
+                encoding="utf-8",
+            )
+            rejected = run_script(
+                GENERATOR,
+                "--root",
+                repository,
+                "--output",
+                temporary / "rejected-spaced-target",
+            )
+            self.assertNotEqual(rejected.returncode, 0, rejected.stdout + rejected.stderr)
+            self.assertIn("source Markdown link policy", rejected.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
