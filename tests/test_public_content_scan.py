@@ -28,6 +28,78 @@ def commit_all(repository: Path, message: str) -> None:
 
 
 class PublicContentScanTests(unittest.TestCase):
+    def test_diagnostic_prefix_does_not_exempt_an_actual_sensitive_alias(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            git(repository, "init", "-q")
+            private_value = "SUBJECT" + "-9999"
+            sensitive_alias = "patient" + "_id"
+            (repository / "spoofed-diagnostic.txt").write_text(
+                "PHI_CURRENT:" + sensitive_alias + ": " + private_value + "\n",
+                encoding="utf-8",
+            )
+            commit_all(repository, "spoofed diagnostic")
+            result = run_script(PUBLIC_SCAN, "--root", repository, "--check-current")
+            output = result.stdout + result.stderr
+            self.assertNotEqual(result.returncode, 0, output)
+            self.assertIn("PHI_CURRENT:patient_identifier:spoofed-diagnostic.txt", output)
+            self.assertNotIn(private_value, output)
+
+    def test_machine_labels_at_safe_text_boundaries_fail_current_and_history_without_echo(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            git(repository, "init", "-q")
+            labels_and_values = (
+                ("patient" + "_id", "SUBJECT" + "-4815", "patient_identifier"),
+                ("subject" + "Id", "SUBJECT" + "-4816", "patient_identifier"),
+                ("Person" + "Identifier", "PERSON" + "-4817", "patient_identifier"),
+                ("member" + "-id", "MEMBER" + "-4818", "patient_identifier"),
+                ("User" + " Identifier", "USER" + "-4819", "patient_identifier"),
+                ("medical" + "RecordNumber", "RECORD" + "-4820", "medical_record_identifier"),
+                ("Email" + "Address", "private.person" + "@" + "example.com", "email_address"),
+                ("phone" + "-number", "+1 " + "415 555 0123", "phone_number"),
+                ("Full" + " Name", "Alice" + " Example", "person_name"),
+                ("Home" + "Address", "123" + " Example Street", "postal_address"),
+                ("Date" + " Of Birth", "1980" + "-04-15", "date_of_birth"),
+                ("heart" + "_rate", "88" + " bpm", "health_measurement"),
+                ("Blood" + "Pressure", "128" + "/82 mmHg", "health_measurement"),
+                ("blood" + "-glucose", "110" + " mg/dL", "health_measurement"),
+            )
+            multi_label_line = "; ".join(f"({label}: {value})" for label, value, _ in labels_and_values)
+            first_label, first_value, _ = labels_and_values[0]
+            prose_forms = (
+                f"Collected {first_label}: {first_value}",
+                f"({first_label}: {first_value})",
+                f"> {first_label}: {first_value}",
+                f"- Recorded {first_label}: {first_value}",
+                f"| field | {first_label}: {first_value} |",
+                multi_label_line,
+            )
+            (repository / "boundaries.md").write_text("\n".join(prose_forms) + "\n", encoding="utf-8")
+            (repository / "nested.yaml").write_text(f"record:\n  note: ({first_label}: {first_value})\n", encoding="utf-8")
+            (repository / "mapping.py").write_text(
+                f'payload["{first_label}"] = "{first_value}"\n',
+                encoding="utf-8",
+            )
+            commit_all(repository, "safe-boundary machine labels")
+            commit = git(repository, "rev-parse", "HEAD").stdout.strip()
+
+            current = run_script(PUBLIC_SCAN, "--root", repository, "--check-current")
+            history = run_script(PUBLIC_SCAN, "--root", repository, "--check-history")
+            current_output = current.stdout + current.stderr
+            history_output = history.stdout + history.stderr
+            self.assertNotEqual(current.returncode, 0, current_output)
+            self.assertNotEqual(history.returncode, 0, history_output)
+            for finding_class in {item[2] for item in labels_and_values}:
+                self.assertIn(f"PHI_CURRENT:{finding_class}:boundaries.md", current_output)
+                self.assertIn(f"PHI_HISTORY:{finding_class}:{commit}:boundaries.md", history_output)
+            for relative in ("nested.yaml", "mapping.py"):
+                self.assertIn(f"PHI_CURRENT:patient_identifier:{relative}", current_output)
+                self.assertIn(f"PHI_HISTORY:patient_identifier:{commit}:{relative}", history_output)
+            for _, private_value, _ in labels_and_values:
+                self.assertNotIn(private_value, current_output)
+                self.assertNotIn(private_value, history_output)
+
     def test_structured_json_key_variants_and_measurements_fail_current_and_history_without_echo(self):
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory)
@@ -128,11 +200,16 @@ class PublicContentScanTests(unittest.TestCase):
             private_identifier = "SUBJECT" + "-1234"
             private_measurement = "128" + "/82 mmHg"
             instruction = repository / "capabilities/yuanli.health.kernel.ctx/instructions.md"
-            probe = json.dumps(
-                {
-                    "patient" + "Id": private_identifier,
-                    "Blood" + "Pressure": private_measurement,
-                }
+            probe = (
+                "Collected "
+                + "patient"
+                + "_id: "
+                + private_identifier
+                + "; ("
+                + "Blood"
+                + "Pressure: "
+                + private_measurement
+                + ")"
             )
             instruction.write_text(instruction.read_text(encoding="utf-8") + "\n" + probe + "\n", encoding="utf-8")
             package = repository / "dist/codex/yuanli-health"
@@ -166,14 +243,31 @@ class PublicContentScanTests(unittest.TestCase):
                 "heart_rate_limit": 100,
             }
             (repository / "controls.json").write_text(json.dumps(controls, indent=2) + "\n", encoding="utf-8")
+            empty_label = "patient" + "_id"
             (repository / "controls.md").write_text(
-                "Suite YL-SUITE-HEALTH-20260823-0001 has 120 synthetic cases under Apache-2.0.\n",
+                "Suite YL-SUITE-HEALTH-20260823-0001 has 120 synthetic cases under Apache-2.0.\n"
+                "Documentation mentions patient_id, medicalRecordId, and heart-rate labels without values.\n"
+                "An unrelated patient_id mention is not a label/value pair.\n"
+                + empty_label
+                + ": \n",
                 encoding="utf-8",
             )
             classifier_key = "patient" + "_id"
             classifier_value = "patient" + "_identifier"
             (repository / "scanner-taxonomy.py").write_text(
                 f'    "{classifier_key}": "{classifier_value}",\n',
+                encoding="utf-8",
+            )
+            template_email = "email"
+            template_name = "Full" + " Name"
+            template_address = "Address"
+            (repository / "inert-templates.py").write_text(
+                template_email
+                + ' = " + "fixture"\n'
+                + template_name
+                + ": {private_name}\n"
+                + template_address
+                + ": private_values[2]\n",
                 encoding="utf-8",
             )
             commit_all(repository, "positive controls")

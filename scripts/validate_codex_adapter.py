@@ -101,34 +101,127 @@ def _expected_paths(source_ids: tuple[str, ...]) -> set[str]:
     return paths
 
 
+def _escaped(content: str, index: int) -> bool:
+    backslashes = 0
+    index -= 1
+    while index >= 0 and content[index] == "\\":
+        backslashes += 1
+        index -= 1
+    return backslashes % 2 == 1
+
+
+def _balanced_close(content: str, start: int, opener: str, closer: str) -> tuple[int | None, bool]:
+    depth = 1
+    multiline = False
+    index = start + 1
+    while index < len(content):
+        character = content[index]
+        if character == "\n":
+            multiline = True
+        if character == "\\":
+            index += 2
+            continue
+        if character == opener:
+            depth += 1
+        elif character == closer:
+            depth -= 1
+            if depth == 0:
+                return index, multiline
+        index += 1
+    return None, multiline
+
+
+def _destination_token(raw_target: str) -> str:
+    target = raw_target.strip()
+    if target.startswith("<") and target.endswith(">"):
+        return target[1:-1]
+    return target.split(maxsplit=1)[0] if target else ""
+
+
+def _markdown_analysis(content: str) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Accept only same-line non-image inline links; conservatively reject other link grammar."""
+    targets: list[str] = []
+    findings: list[str] = []
+
+    def add_finding(finding: str) -> None:
+        if finding not in findings:
+            findings.append(finding)
+
+    index = 0
+    while index < len(content):
+        if content[index] == "<" and not _escaped(content, index):
+            close = content.find(">", index + 1)
+            if close >= 0 and re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", content[index + 1:close]):
+                add_finding("URI schemes")
+                index = close + 1
+                continue
+        if content[index:index + 2] == "![" and not _escaped(content, index):
+            add_finding("images or resources")
+            index += 2
+            continue
+        if content[index] != "[" or _escaped(content, index):
+            index += 1
+            continue
+
+        close, label_multiline = _balanced_close(content, index, "[", "]")
+        if close is None:
+            index += 1
+            continue
+        after = close + 1
+        line_start = content.rfind("\n", 0, index) + 1
+        indentation = content[line_start:index]
+        if (
+            after < len(content)
+            and content[after] == ":"
+            and len(indentation) <= 3
+            and indentation == " " * len(indentation)
+        ):
+            add_finding("reference definitions")
+            index = after + 1
+            continue
+        if after < len(content) and content[after] == "[":
+            add_finding("reference-style or collapsed links")
+            second_close, _ = _balanced_close(content, after, "[", "]")
+            index = (second_close + 1) if second_close is not None else after + 1
+            continue
+        if after >= len(content) or content[after] != "(":
+            index = after
+            continue
+
+        destination_close, destination_multiline = _balanced_close(content, after, "(", ")")
+        if destination_close is None:
+            add_finding("unterminated inline links")
+            index = after + 1
+            continue
+        if label_multiline or destination_multiline:
+            add_finding("multiline inline links")
+            index = destination_close + 1
+            continue
+        raw_target = content[after + 1:destination_close]
+        token = _destination_token(raw_target)
+        if re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", token):
+            add_finding("URI schemes")
+        else:
+            targets.append(raw_target)
+        index = destination_close + 1
+    return tuple(targets), tuple(findings)
+
+
 def _markdown_targets(content: str) -> tuple[str, ...]:
-    return tuple(re.findall(r"(?<!!)\[[^]\n]*\]\(([^)\n]+)\)", content))
+    return _markdown_analysis(content)[0]
 
 
 def _unsupported_markdown_link_syntax(content: str) -> tuple[str, ...]:
-    """Return unsupported local-resource forms; the package permits inline non-image links only."""
-    findings: list[str] = []
-    if re.search(r"!\[[^]\n]*\]", content):
-        findings.append("images")
-    if re.search(r"(?m)^[ ]{0,3}\[[^]\n]+\]:[ \t]*\S", content):
-        findings.append("reference definitions")
-    if re.search(r"(?<!!)\[[^]\n]+\]\[[^]\n]*\]", content):
-        findings.append("reference-style or collapsed links")
-    return tuple(findings)
+    return _markdown_analysis(content)[1]
 
 
 def _local_link_path(markdown_path: str, raw_target: str) -> tuple[str | None, str | None]:
-    target = raw_target.strip()
-    if target.startswith("<") and target.endswith(">"):
-        target = target[1:-1]
-    else:
-        target = target.split(maxsplit=1)[0]
+    target = _destination_token(raw_target)
     if re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", target):
-        scheme = target.split(":", 1)[0].lower()
-        return (None, None) if scheme in {"http", "https", "mailto"} else (None, "unsupported link scheme")
+        return None, "URI scheme forbidden"
     target = target.split("#", 1)[0].split("?", 1)[0]
     if not target:
-        return None, None
+        return None, "empty or fragment-only link forbidden"
     path = PurePosixPath(target)
     if path.is_absolute() or "\\" in target:
         return None, "absolute link forbidden"
@@ -150,9 +243,10 @@ def _validate_markdown_links(files: dict[str, bytes], expected: set[str], source
     markdown_paths = ("SKILL.md", *(f"references/{source_id}.md" for source_id in source_ids))
     for markdown_path in markdown_paths:
         content = files[markdown_path].decode("utf-8")
-        for syntax in _unsupported_markdown_link_syntax(content):
+        targets, unsupported = _markdown_analysis(content)
+        for syntax in unsupported:
             issues.append(f"unsupported Markdown link syntax: {markdown_path}: {syntax}")
-        for raw_target in _markdown_targets(content):
+        for raw_target in targets:
             target, error = _local_link_path(markdown_path, raw_target)
             if error is not None:
                 issues.append(f"markdown link invalid: {markdown_path}: {error}")

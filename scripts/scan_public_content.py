@@ -27,10 +27,13 @@ _PATTERNS = (
 )
 
 _MACHINE_LABEL = re.compile(
-    r'''(?mx)
-    (?:^|[{,])[ \t]*(?:[-*+][ \t]+)?["']?
-    (?P<key>[A-Za-z][A-Za-z0-9]*(?:[ _-]+[A-Za-z0-9]+)*)
-    ["']?[ \t]*[:=][ \t]*(?P<value>[^\r\n,}]*)
+    r'''(?x)
+    (?<![A-Za-z0-9_-])
+    (?=
+        (?P<key>[A-Za-z][A-Za-z0-9]*(?:[ _-]+[A-Za-z0-9]+){0,4})
+        ["']?(?:[ \t]*\])?[ \t]*[:=][ \t]*
+        (?P<value>[^\s\r\n;,|)\]}][^\r\n;,|)\]}]*)
+    )
     ''',
 )
 
@@ -136,7 +139,18 @@ def _machine_label_classes(text: str) -> set[str]:
         finding = _machine_key_class(match.group("key"))
         if finding is None:
             continue
-        value_token = match.group("value").strip().strip("\"'`")
+        raw_value = match.group("value").strip()
+        value_token = raw_value.strip("\"'`")
+        prefix = text[max(0, match.start("key") - 16):match.start("key")]
+        normalized_key = "_".join(_normalize_machine_key(match.group("key")))
+        if prefix.endswith(("PHI_CURRENT:", "PHI_HISTORY:")) and normalized_key == finding:
+            continue
+        if not value_token:
+            continue
+        if value_token.lstrip().startswith(("+", "{")):
+            continue
+        if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_.]*\[\d*", value_token):
+            continue
         if "_".join(_normalize_machine_key(value_token)) == finding:
             continue
         if finding != "health_measurement" or _measurement_value(match.group("value")):

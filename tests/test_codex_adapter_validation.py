@@ -16,6 +16,119 @@ from tests._adapter_support import (
 
 
 class CodexAdapterValidationTests(unittest.TestCase):
+    def _assert_self_consistent_markdown_rejected(self, repository: Path, attack: str, diagnostic: str) -> None:
+        package = repository / "dist/codex/yuanli-health"
+        metadata = repository / "releases/v0.1.0/release-metadata.json"
+        generate(package, root=repository, metadata=metadata)
+        skill = package / "SKILL.md"
+        skill.write_text(skill.read_text(encoding="utf-8") + "\n" + attack + "\n", encoding="utf-8")
+        rewrite_checksums(package)
+        rewrite_metadata_hash(package, metadata)
+        for repository_mode in (False, True):
+            rejected = validate(
+                package,
+                root=repository,
+                metadata=metadata,
+                repository=repository_mode,
+            )
+            output = rejected.stdout + rejected.stderr
+            self.assertNotEqual(rejected.returncode, 0, output)
+            self.assertIn(diagnostic, output)
+
+    def test_all_uri_schemes_and_multiline_inline_links_are_rejected_after_rehash(self):
+        attacks = (
+            ("https", "[external](https://example.invalid/x)"),
+            ("http", "[external](http://example.invalid/x)"),
+            ("mailto", "[external](mailto:" + "private" + "@" + "example.invalid)"),
+            ("file", "[external](file:///etc/passwd)"),
+            ("ftp", "[external](ftp://example.invalid/x)"),
+            ("custom", "[external](custom+scheme:value)"),
+            ("https autolink", "<https://example.invalid/x>"),
+            ("mailto autolink", "<mailto:" + "private" + "@" + "example.invalid>"),
+            ("multiline label", "[missing\ncontract](contracts/missing.json)"),
+            ("multiline destination", "[missing](contracts/\nmissing.json)"),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            for index, (label, attack) in enumerate(attacks):
+                with self.subTest(label=label):
+                    repository = copy_repository(temporary / f"inline-{index}")
+                    self._assert_self_consistent_markdown_rejected(
+                        repository,
+                        attack,
+                        "unsupported Markdown link syntax",
+                    )
+
+    def test_multiline_and_escaped_reference_grammar_is_rejected_after_rehash(self):
+        attacks = (
+            ("next-line shortcut", "[dead]\n\n[dead]:\n  references/missing.md"),
+            ("next-line full", "[label][dead]\n\n[dead]:\n  references/missing.md"),
+            ("next-line collapsed", "[dead][]\n\n[dead]:\n  references/missing.md"),
+            ("escaped shortcut", "[de\\]ad]\n\n[de\\]ad]: references/missing.md"),
+            ("escaped next-line", "[de\\]ad]\n\n[de\\]ad]:\n  references/missing.md"),
+            ("multiline image", "![diagram\nalt](references/yuanli.health.kernel.ctx.md)"),
+            ("shortcut image", "![diagram][ctx]\n\n[ctx]: references/yuanli.health.kernel.ctx.md"),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            for index, (label, attack) in enumerate(attacks):
+                with self.subTest(label=label):
+                    repository = copy_repository(temporary / f"reference-{index}")
+                    self._assert_self_consistent_markdown_rejected(
+                        repository,
+                        attack,
+                        "unsupported Markdown link syntax",
+                    )
+
+    def test_local_target_failures_reject_standalone_and_repository_after_rehash(self):
+        inline_attacks = (
+            ("missing", "[missing](references/missing.md)"),
+            ("absolute", "[absolute](/etc/passwd)"),
+            ("traversal", "[outside](../../outside.md)"),
+            ("empty", "[empty]()"),
+            ("fragment-only", "[fragment](#section)"),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            for index, (label, attack) in enumerate(inline_attacks):
+                with self.subTest(label=label):
+                    repository = copy_repository(temporary / f"local-{index}")
+                    self._assert_self_consistent_markdown_rejected(repository, attack, "markdown link")
+
+            repository = copy_repository(temporary / "wrong-member")
+            package = repository / "dist/codex/yuanli-health"
+            metadata = repository / "releases/v0.1.0/release-metadata.json"
+            generate(package, root=repository, metadata=metadata)
+            reference = package / "references/yuanli.health.kernel.ctx.md"
+            reference.write_text(
+                reference.read_text(encoding="utf-8").replace(
+                    "](../contracts/capabilities/yuanli.health.kernel.ctx.json)",
+                    "](../contracts/capabilities/yuanli.health.kernel.evd.json)",
+                    1,
+                ),
+                encoding="utf-8",
+            )
+            rewrite_checksums(package)
+            rewrite_metadata_hash(package, metadata)
+            for repository_mode in (False, True):
+                rejected = validate(package, root=repository, metadata=metadata, repository=repository_mode)
+                self.assertNotEqual(rejected.returncode, 0, rejected.stdout + rejected.stderr)
+                self.assertIn("member contract link mismatch", rejected.stderr)
+
+            repository = copy_repository(temporary / "nonregular")
+            package = repository / "dist/codex/yuanli-health"
+            metadata = repository / "releases/v0.1.0/release-metadata.json"
+            generate(package, root=repository, metadata=metadata)
+            reference = package / "references/yuanli.health.kernel.ctx.md"
+            reference.unlink()
+            reference.symlink_to(repository / "capabilities/yuanli.health.kernel.ctx/instructions.md")
+            rewrite_checksums(package)
+            rewrite_metadata_hash(package, metadata)
+            for repository_mode in (False, True):
+                rejected = validate(package, root=repository, metadata=metadata, repository=repository_mode)
+                self.assertNotEqual(rejected.returncode, 0, rejected.stdout + rejected.stderr)
+                self.assertIn("symlink forbidden", rejected.stderr)
+
     def test_reference_style_collapsed_shortcut_and_images_are_explicitly_rejected_after_rehash(self):
         attacks = (
             ("missing definition target", "[missing][dead]\n\n[dead]: references/missing.md"),
