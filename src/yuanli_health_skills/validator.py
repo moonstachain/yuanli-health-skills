@@ -1,5 +1,6 @@
 """Deterministic, network-free validators for the public health-skill ABI."""
 
+import re
 from dataclasses import dataclass
 from typing import Any, Mapping
 
@@ -83,6 +84,18 @@ def _nested_shape(value: Any, path: str, required: tuple[str, ...]) -> list[Vali
     return errors
 
 
+def _has_duplicates(values: list[Any]) -> bool:
+    return any(values[index] == previous for index, value in enumerate(values) for previous in values[:index])
+
+
+def _is_non_empty_string_array(value: Any) -> bool:
+    return isinstance(value, list) and all(isinstance(item, str) and len(item) >= 1 for item in value)
+
+
+def _is_string_enum(value: Any, allowed: set[str]) -> bool:
+    return isinstance(value, str) and value in allowed
+
+
 def validate_contract(value: Any) -> ValidationResult:
     if not isinstance(value, Mapping):
         return ValidationResult((_error("INVALID_DOCUMENT", "$", "contract must be an object"),))
@@ -90,12 +103,12 @@ def validate_contract(value: Any) -> ValidationResult:
     if value.get("schema") != "health-skill-contract-v1":
         errors.append(_error("INVALID_SCHEMA", "schema", "unexpected contract schema"))
     source_id = value.get("source_capability_id")
-    if not isinstance(source_id, str) or not source_id.startswith("yuanli.health."):
+    if not isinstance(source_id, str) or re.fullmatch(r"yuanli\.health\.(kernel|experience|meta)\.[a-z0-9.-]+", source_id) is None:
         errors.append(_error("INVALID_SOURCE_CAPABILITY_ID", "source_capability_id", "invalid source capability ID"))
-    if value.get("class") not in {"kernel", "experience", "meta"}:
+    if not _is_string_enum(value.get("class"), {"kernel", "experience", "meta"}):
         errors.append(_error("INVALID_CLASS", "class", "class must be kernel, experience, or meta"))
     transition = value.get("transition_intent")
-    if not isinstance(transition, str) or not transition.strip():
+    if not isinstance(transition, str) or len(transition) < 1:
         errors.append(_error("TRANSITION_INTENT_SINGLE_STRING", "transition_intent", "transition intent must be one non-empty string"))
     if value.get("mutates_canon") is not False:
         errors.append(_error("CANON_WRITE_FORBIDDEN", "mutates_canon", "candidate capabilities cannot mutate Canon"))
@@ -105,8 +118,20 @@ def validate_contract(value: Any) -> ValidationResult:
         errors.append(_error("INVALID_AUTHORITY", "authority", "authority must be an object"))
     else:
         forbidden = {"ai", "device", "automation", "router"}
-        if authority.get("final_authority") in forbidden or any(authority.get(role) == "final" for role in forbidden):
+        final_authority = authority.get("final_authority")
+        if (isinstance(final_authority, str) and final_authority in forbidden) or any(
+            authority.get(role) == "final" for role in forbidden
+        ):
             errors.append(_error("FINAL_AUTHORITY_FORBIDDEN", "authority", "AI, device, automation, and Router cannot be final authority"))
+        allowed_authority = {
+            "final_authority": {"subject", "clinician", "system_contract"},
+            "ai": {"assistive", "non_final"},
+            "device": {"evidence_source", "non_final"},
+            "automation": {"non_final"},
+            "router": {"non_final"},
+        }
+        if any(not _is_string_enum(authority.get(field), allowed) for field, allowed in allowed_authority.items()):
+            errors.append(_error("INVALID_AUTHORITY", "authority", "authority values must match the frozen ABI"))
     privacy = value.get("privacy")
     errors.extend(_nested_shape(privacy, "privacy", ("repository_phi",)))
     if not isinstance(privacy, Mapping) or privacy.get("repository_phi") != "forbidden":
@@ -122,27 +147,45 @@ def validate_contract(value: Any) -> ValidationResult:
             errors.append(_error("RUNTIME_PERSISTENCE_FORBIDDEN", "runtime_requirements.persistence", "runtime persistence must be none"))
         if runtime.get("logs") != "none":
             errors.append(_error("RUNTIME_LOGGING_FORBIDDEN", "runtime_requirements.logs", "runtime logs must be none"))
-    if value.get("lifecycle") not in {"proposed", "qualified", "human_review_ready"}:
+    if not _is_string_enum(value.get("lifecycle"), {"proposed", "qualified", "human_review_ready"}):
         errors.append(_error("INVALID_LIFECYCLE", "lifecycle", "invalid candidate lifecycle"))
     qualification = value.get("qualification")
     errors.extend(_nested_shape(qualification, "qualification", ("basis", "status")))
     if not isinstance(qualification, Mapping) or qualification.get("basis") != "synthetic_only":
         errors.append(_error("SYNTHETIC_QUALIFICATION_REQUIRED", "qualification.basis", "qualification must use synthetic inputs only"))
+    if isinstance(qualification, Mapping) and not _is_string_enum(qualification.get("status"), {"pending", "passed"}):
+        errors.append(_error("INVALID_QUALIFICATION_STATUS", "qualification.status", "invalid qualification status"))
     objects = value.get("objects")
     profiles = value.get("profile_of")
     object_values = list(objects) if isinstance(objects, list) else []
     profile_values = list(profiles) if isinstance(profiles, list) else []
     if not isinstance(objects, list) or not isinstance(profiles, list):
         errors.append(_error("INVALID_DOMAIN_OBJECTS", "objects", "objects and profile_of must be arrays"))
-    elif any(item not in allowed_domain_objects() for item in object_values + profile_values):
-        errors.append(_error("UNKNOWN_DOMAIN_OBJECT", "objects", "domain object is absent from the frozen projection"))
+    else:
+        if not profiles:
+            errors.append(_error("INVALID_PROFILE_OF", "profile_of", "profile_of must contain at least one domain object"))
+        if not objects:
+            errors.append(_error("INVALID_DOMAIN_OBJECTS", "objects", "objects must contain at least one domain object"))
+        if _has_duplicates(profiles):
+            errors.append(_error("DUPLICATE_ARRAY_ITEMS", "profile_of", "profile_of items must be unique"))
+        if _has_duplicates(objects):
+            errors.append(_error("DUPLICATE_ARRAY_ITEMS", "objects", "object items must be unique"))
+        if any(item not in allowed_domain_objects() for item in object_values + profile_values):
+            errors.append(_error("UNKNOWN_DOMAIN_OBJECT", "objects", "domain object is absent from the frozen projection"))
     if value.get("health_clock") not in allowed_health_clocks():
         errors.append(_error("UNKNOWN_HEALTH_CLOCK", "health_clock", "health clock is absent from the frozen projection"))
     claims = value.get("claims")
     if not isinstance(claims, list):
         errors.append(_error("INVALID_CLAIMS", "claims", "claims must be an array"))
-    elif value.get("class") == "kernel" and _CLINICAL_OVERREACH.intersection(claims):
-        errors.append(_error("CLINICAL_OVERREACH", "claims", "kernel capability makes a forbidden clinical or Canon claim"))
+    else:
+        if _has_duplicates(claims):
+            errors.append(_error("DUPLICATE_ARRAY_ITEMS", "claims", "claim items must be unique"))
+        if any(not isinstance(claim, str) or claim not in {"non_clinical", "non_release"} for claim in claims):
+            errors.append(_error("INVALID_CLAIMS", "claims", "claims must use the frozen non-claim values"))
+        if value.get("class") == "kernel" and any(
+            isinstance(claim, str) and claim in _CLINICAL_OVERREACH for claim in claims
+        ):
+            errors.append(_error("CLINICAL_OVERREACH", "claims", "kernel capability makes a forbidden clinical or Canon claim"))
     order = {
         "CANON_WRITE_FORBIDDEN": 20,
         "REGISTRY_ID_BEFORE_ADMISSION": 30,
@@ -175,13 +218,16 @@ def validate_envelope(value: Any) -> ValidationResult:
     errors = _required_and_strict(value, _ENVELOPE_REQUIRED)
     if value.get("schema") != "typed-candidate-envelope-v1":
         errors.append(_error("INVALID_SCHEMA", "schema", "unexpected envelope schema"))
+    source_id = value.get("source_capability_id")
+    if not isinstance(source_id, str) or re.match(r"^yuanli\.health\.", source_id) is None:
+        errors.append(_error("INVALID_SOURCE_CAPABILITY_ID", "source_capability_id", "invalid source capability ID"))
     if value.get("canonical_write") is not False:
         errors.append(_error("CANON_WRITE_FORBIDDEN", "canonical_write", "candidate envelope cannot write Canon"))
     if value.get("persistence") != "none":
         errors.append(_error("RUNTIME_PERSISTENCE_FORBIDDEN", "persistence", "candidate envelope cannot persist"))
-    if value.get("candidate_state") not in {"proposed", "qualified", "human_review_ready"}:
+    if not _is_string_enum(value.get("candidate_state"), {"proposed", "qualified", "human_review_ready"}):
         errors.append(_error("INVALID_LIFECYCLE", "candidate_state", "invalid candidate state"))
-    if value.get("authority_gate") not in {"GREEN", "YELLOW", "RED"}:
+    if not _is_string_enum(value.get("authority_gate"), {"GREEN", "YELLOW", "RED"}):
         errors.append(_error("INVALID_AUTHORITY_GATE", "authority_gate", "invalid authority gate"))
     known = value.get("known")
     references = value.get("evidence_references")
@@ -189,7 +235,7 @@ def validate_envelope(value: Any) -> ValidationResult:
     if not isinstance(known, list) or not isinstance(references, list):
         errors.append(_error("INVALID_KNOWN", "known", "known and evidence references must be arrays"))
     else:
-        known_facts: set[str] = set()
+        known_facts: list[str] = []
         for entry in known:
             if not isinstance(entry, Mapping):
                 errors.append(_error("INVALID_KNOWN", "known", "known entries must be objects"))
@@ -197,16 +243,23 @@ def validate_envelope(value: Any) -> ValidationResult:
             errors.extend(_nested_shape(entry, "known", ("fact", "evidence_reference")))
             fact = entry.get("fact")
             reference = entry.get("evidence_reference")
-            if isinstance(fact, str):
-                known_facts.add(fact)
+            if isinstance(fact, str) and fact:
+                known_facts.append(fact)
+            else:
+                errors.append(_error("INVALID_KNOWN", "known", "known facts must be non-empty strings"))
             if not isinstance(reference, str) or not reference or reference not in references:
                 errors.append(_error("KNOWN_EVIDENCE_REQUIRED", "known", "every known entry requires a listed evidence reference"))
                 break
-        if isinstance(assumptions, list) and known_facts.intersection(assumptions):
+        if isinstance(assumptions, list) and any(fact == assumption for fact in known_facts for assumption in assumptions):
             errors.append(_error("ASSUMPTION_PROMOTED_TO_KNOWN", "known", "assumptions cannot be silently promoted to known"))
     for field in ("unknown", "assumption", "evidence_references", "escalation", "guardrail"):
-        if not isinstance(value.get(field), list):
+        field_value = value.get(field)
+        if not isinstance(field_value, list):
             errors.append(_error("INVALID_ARRAY", field, f"{field} must be an array"))
+        elif not _is_non_empty_string_array(field_value):
+            errors.append(_error("INVALID_ARRAY_ITEM", field, f"{field} items must be non-empty strings"))
+    if isinstance(references, list) and _has_duplicates(references):
+        errors.append(_error("DUPLICATE_ARRAY_ITEMS", "evidence_references", "evidence references must be unique"))
     errors.sort(key=lambda item: (item.path, item.code))
     return ValidationResult(tuple(errors))
 
@@ -227,12 +280,19 @@ def validate_receipt(value: Any) -> ValidationResult:
     errors = _required_and_strict(value, _RECEIPT_REQUIRED)
     if value.get("schema") != "qualification-receipt-v1":
         errors.append(_error("INVALID_SCHEMA", "schema", "unexpected receipt schema"))
+    source_id = value.get("source_capability_id")
+    if not isinstance(source_id, str) or re.match(r"^yuanli\.health\.", source_id) is None:
+        errors.append(_error("INVALID_SOURCE_CAPABILITY_ID", "source_capability_id", "invalid source capability ID"))
     if value.get("qualification_basis") != "synthetic_only":
         errors.append(_error("SYNTHETIC_QUALIFICATION_REQUIRED", "qualification_basis", "qualification must use synthetic inputs only"))
     claims = value.get("claims")
-    if not isinstance(claims, list) or any(claim not in {"non_clinical", "non_release"} for claim in claims):
+    if not isinstance(claims, list) or any(
+        not isinstance(claim, str) or claim not in {"non_clinical", "non_release"} for claim in claims
+    ):
         errors.append(_error("INVALID_QUALIFICATION_CLAIM", "claims", "receipt may make non-claims only"))
-    if value.get("candidate_state") not in {"proposed", "qualified", "human_review_ready"}:
+    elif _has_duplicates(claims):
+        errors.append(_error("DUPLICATE_ARRAY_ITEMS", "claims", "receipt claims must be unique"))
+    if not _is_string_enum(value.get("candidate_state"), {"proposed", "qualified", "human_review_ready"}):
         errors.append(_error("INVALID_LIFECYCLE", "candidate_state", "invalid candidate state"))
     if value.get("canonical_write") is not False:
         errors.append(_error("CANON_WRITE_FORBIDDEN", "canonical_write", "receipt cannot authorize Canon writes"))

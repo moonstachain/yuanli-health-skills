@@ -21,6 +21,31 @@ from yuanli_health_skills.validator import (  # noqa: E402
 )
 
 
+class DuplicateJsonKeyError(ValueError):
+    pass
+
+
+def _reject_non_finite(constant: str) -> None:
+    raise ValueError(f"non-standard JSON constant: {constant}")
+
+
+def _object_without_duplicates(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise DuplicateJsonKeyError(f"duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
+def _load_strict_json(raw: str) -> object:
+    return json.loads(
+        raw,
+        parse_constant=_reject_non_finite,
+        object_pairs_hook=_object_without_duplicates,
+    )
+
+
 def _paths(arguments: Iterable[str]) -> list[Path]:
     paths: list[Path] = []
     for argument in arguments:
@@ -48,11 +73,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("paths", nargs="*", help="JSON file or directory; defaults to the source registry")
     args = parser.parse_args(argv)
     paths = _paths(args.paths or [str(ROOT / "registry" / "source-capabilities.json")])
+    if not paths:
+        print("NO_DOCUMENTS:$:no JSON documents found", file=sys.stderr)
+        return 1
     failed = False
     for path in paths:
         try:
-            document = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
+            document = _load_strict_json(path.read_text(encoding="utf-8"))
+        except DuplicateJsonKeyError as exc:
+            print(f"{path}:DUPLICATE_JSON_KEY:$:{exc}", file=sys.stderr)
+            failed = True
+            continue
+        except (OSError, json.JSONDecodeError, ValueError) as exc:
             print(f"{path}:INVALID_JSON:$:{exc}", file=sys.stderr)
             failed = True
             continue
