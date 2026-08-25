@@ -28,6 +28,159 @@ def commit_all(repository: Path, message: str) -> None:
 
 
 class PublicContentScanTests(unittest.TestCase):
+    def test_structured_json_key_variants_and_measurements_fail_current_and_history_without_echo(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            git(repository, "init", "-q")
+            private_values = (
+                "SUBJECT" + "-1234",
+                "RECORD" + "-5678",
+                "private.person" + "@" + "example.com",
+                "+1 " + "415 555 0123",
+                "Alice" + " Example",
+                "123" + " Example Street",
+                "1980" + "-04-15",
+                "128" + "/82 mmHg",
+                "110" + " mg/dL",
+            )
+            document = {
+                "patient" + "Id": private_values[0],
+                "Subject" + "Identifier": private_values[0],
+                "person" + "-id": private_values[0],
+                "member" + " id": private_values[0],
+                "User" + "_Identifier": private_values[0],
+                "medical" + "RecordNumber": private_values[1],
+                "Email" + "Address": private_values[2],
+                "phone" + "-number": private_values[3],
+                "Full" + " Name": private_values[4],
+                "Home" + "Address": private_values[5],
+                "Date" + "OfBirth": private_values[6],
+                "heart" + "_rate": 88,
+                "Blood" + "Pressure": private_values[7],
+                "blood" + "-glucose": private_values[8],
+            }
+            (repository / "variants.json").write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
+            commit_all(repository, "structured variants")
+            commit = git(repository, "rev-parse", "HEAD").stdout.strip()
+
+            current = run_script(PUBLIC_SCAN, "--root", repository, "--check-current")
+            history = run_script(PUBLIC_SCAN, "--root", repository, "--check-history")
+            current_output = current.stdout + current.stderr
+            history_output = history.stdout + history.stderr
+            self.assertNotEqual(current.returncode, 0, current_output)
+            self.assertNotEqual(history.returncode, 0, history_output)
+            for finding_class in (
+                "patient_identifier",
+                "medical_record_identifier",
+                "email_address",
+                "phone_number",
+                "person_name",
+                "postal_address",
+                "date_of_birth",
+                "health_measurement",
+            ):
+                self.assertIn(f"PHI_CURRENT:{finding_class}:variants.json", current_output)
+                self.assertIn(f"PHI_HISTORY:{finding_class}:{commit}:variants.json", history_output)
+            for private_value in private_values:
+                self.assertNotIn(private_value, current_output)
+                self.assertNotIn(private_value, history_output)
+
+    def test_machine_labels_in_markdown_yaml_and_python_fail_current_and_history_without_echo(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            git(repository, "init", "-q")
+            labels_and_values = (
+                ("patient" + "_id", "SUBJECT" + "-1234"),
+                ("member" + "Identifier", "MEMBER" + "-5678"),
+                ("Medical" + "RecordNumber", "RECORD" + "-9012"),
+                ("phone" + "-number", "+1 " + "415 555 0123"),
+                ("Heart" + " Rate", "88" + " bpm"),
+            )
+            for suffix, separator in (("md", ": "), ("yaml", ": "), ("py", " = ")):
+                content = "\n".join(label + separator + repr(value) for label, value in labels_and_values) + "\n"
+                (repository / f"probe.{suffix}").write_text(content, encoding="utf-8")
+            commit_all(repository, "machine labels")
+            commit = git(repository, "rev-parse", "HEAD").stdout.strip()
+
+            current = run_script(PUBLIC_SCAN, "--root", repository, "--check-current")
+            history = run_script(PUBLIC_SCAN, "--root", repository, "--check-history")
+            current_output = current.stdout + current.stderr
+            history_output = history.stdout + history.stderr
+            self.assertNotEqual(current.returncode, 0, current_output)
+            self.assertNotEqual(history.returncode, 0, history_output)
+            for suffix in ("md", "yaml", "py"):
+                for finding_class in (
+                    "patient_identifier",
+                    "medical_record_identifier",
+                    "phone_number",
+                    "health_measurement",
+                ):
+                    self.assertIn(f"PHI_CURRENT:{finding_class}:probe.{suffix}", current_output)
+                    self.assertIn(f"PHI_HISTORY:{finding_class}:{commit}:probe.{suffix}", history_output)
+            for _, private_value in labels_and_values:
+                self.assertNotIn(private_value, current_output)
+                self.assertNotIn(private_value, history_output)
+
+    def test_source_machine_label_propagates_to_generated_reference_and_both_scan_modes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repository = copy_repository(Path(directory))
+            git(repository, "init", "-q")
+            private_identifier = "SUBJECT" + "-1234"
+            private_measurement = "128" + "/82 mmHg"
+            instruction = repository / "capabilities/yuanli.health.kernel.ctx/instructions.md"
+            probe = json.dumps(
+                {
+                    "patient" + "Id": private_identifier,
+                    "Blood" + "Pressure": private_measurement,
+                }
+            )
+            instruction.write_text(instruction.read_text(encoding="utf-8") + "\n" + probe + "\n", encoding="utf-8")
+            package = repository / "dist/codex/yuanli-health"
+            generate(package, root=repository, metadata=repository / "releases/v0.1.0/release-metadata.json")
+            reference = package / "references/yuanli.health.kernel.ctx.md"
+            self.assertIn(probe, reference.read_text(encoding="utf-8"))
+            commit_all(repository, "source and generated machine labels")
+
+            for mode in ("--check-current", "--check-history"):
+                result = run_script(PUBLIC_SCAN, "--root", repository, mode)
+                output = result.stdout + result.stderr
+                self.assertNotEqual(result.returncode, 0, output)
+                self.assertIn("patient_identifier", output)
+                self.assertIn("health_measurement", output)
+                self.assertIn("capabilities/yuanli.health.kernel.ctx/instructions.md", output)
+                self.assertIn("dist/codex/yuanli-health/references/yuanli.health.kernel.ctx.md", output)
+                self.assertNotIn(private_identifier, output)
+                self.assertNotIn(private_measurement, output)
+
+    def test_closed_taxonomy_positive_controls_pass_current_and_history(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory)
+            git(repository, "init", "-q")
+            controls = {
+                "suite_id": "YL-SUITE-HEALTH-20260823-0001",
+                "sha256": "a" * 64,
+                "version": "0.1.0",
+                "license": "Apache-2.0",
+                "synthetic_label": "abstract_candidate_alpha",
+                "case_count": 120,
+                "heart_rate_limit": 100,
+            }
+            (repository / "controls.json").write_text(json.dumps(controls, indent=2) + "\n", encoding="utf-8")
+            (repository / "controls.md").write_text(
+                "Suite YL-SUITE-HEALTH-20260823-0001 has 120 synthetic cases under Apache-2.0.\n",
+                encoding="utf-8",
+            )
+            classifier_key = "patient" + "_id"
+            classifier_value = "patient" + "_identifier"
+            (repository / "scanner-taxonomy.py").write_text(
+                f'    "{classifier_key}": "{classifier_value}",\n',
+                encoding="utf-8",
+            )
+            commit_all(repository, "positive controls")
+            for mode in ("--check-current", "--check-history"):
+                result = run_script(PUBLIC_SCAN, "--root", repository, mode)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_redacted_finding_class_names_are_not_private_values(self):
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory)
@@ -50,10 +203,11 @@ class PublicContentScanTests(unittest.TestCase):
             generate(package, root=repository, metadata=metadata)
             registry = package / "registry-map.json"
             registry_document = json_document(registry)
-            registry_document["patient" + "_id"] = "SUBJECT-1234"
+            registry_document["patient" + "Id"] = "SUBJECT-1234"
+            registry_document["heart" + "Rate"] = 88
             registry.write_text(json.dumps(registry_document, indent=2) + "\n", encoding="utf-8")
             release_document = json_document(metadata)
-            release_document["medical" + "_record_id"] = "RECORD-1234"
+            release_document["medical" + "RecordId"] = "RECORD-1234"
             metadata.write_text(json.dumps(release_document, indent=2) + "\n", encoding="utf-8")
             commit_all(repository, "candidate with private content")
 
@@ -63,6 +217,7 @@ class PublicContentScanTests(unittest.TestCase):
             self.assertIn("PHI_CURRENT:email_address:capabilities/yuanli.health.kernel.ctx/instructions.md", output)
             self.assertIn("PHI_CURRENT:email_address:dist/codex/yuanli-health/references/yuanli.health.kernel.ctx.md", output)
             self.assertIn("PHI_CURRENT:patient_identifier:dist/codex/yuanli-health/registry-map.json", output)
+            self.assertIn("PHI_CURRENT:health_measurement:dist/codex/yuanli-health/registry-map.json", output)
             self.assertIn("PHI_CURRENT:medical_record_identifier:releases/v0.1.0/release-metadata.json", output)
             self.assertNotIn(private_email, output)
             self.assertNotIn("SUBJECT-1234", output)

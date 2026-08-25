@@ -105,6 +105,18 @@ def _markdown_targets(content: str) -> tuple[str, ...]:
     return tuple(re.findall(r"(?<!!)\[[^]\n]*\]\(([^)\n]+)\)", content))
 
 
+def _unsupported_markdown_link_syntax(content: str) -> tuple[str, ...]:
+    """Return unsupported local-resource forms; the package permits inline non-image links only."""
+    findings: list[str] = []
+    if re.search(r"!\[[^]\n]*\]", content):
+        findings.append("images")
+    if re.search(r"(?m)^[ ]{0,3}\[[^]\n]+\]:[ \t]*\S", content):
+        findings.append("reference definitions")
+    if re.search(r"(?<!!)\[[^]\n]+\]\[[^]\n]*\]", content):
+        findings.append("reference-style or collapsed links")
+    return tuple(findings)
+
+
 def _local_link_path(markdown_path: str, raw_target: str) -> tuple[str | None, str | None]:
     target = raw_target.strip()
     if target.startswith("<") and target.endswith(">"):
@@ -137,7 +149,10 @@ def _validate_markdown_links(files: dict[str, bytes], expected: set[str], source
     issues: list[str] = []
     markdown_paths = ("SKILL.md", *(f"references/{source_id}.md" for source_id in source_ids))
     for markdown_path in markdown_paths:
-        for raw_target in _markdown_targets(files[markdown_path].decode("utf-8")):
+        content = files[markdown_path].decode("utf-8")
+        for syntax in _unsupported_markdown_link_syntax(content):
+            issues.append(f"unsupported Markdown link syntax: {markdown_path}: {syntax}")
+        for raw_target in _markdown_targets(content):
             target, error = _local_link_path(markdown_path, raw_target)
             if error is not None:
                 issues.append(f"markdown link invalid: {markdown_path}: {error}")

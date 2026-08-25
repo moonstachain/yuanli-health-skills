@@ -16,6 +16,64 @@ from tests._adapter_support import (
 
 
 class CodexAdapterValidationTests(unittest.TestCase):
+    def test_reference_style_collapsed_shortcut_and_images_are_explicitly_rejected_after_rehash(self):
+        attacks = (
+            ("missing definition target", "[missing][dead]\n\n[dead]: references/missing.md"),
+            ("absolute definition target", "[absolute][root]\n\n[root]: /etc/passwd"),
+            ("traversal definition target", "[outside][up]\n\n[up]: ../../outside.md"),
+            (
+                "wrong member definition target",
+                "[wrong contract][member]\n\n[member]: contracts/capabilities/yuanli.health.kernel.evd.json",
+            ),
+            (
+                "valid target is still unsupported reference syntax",
+                "[reference][ctx]\n\n[ctx]: references/yuanli.health.kernel.ctx.md",
+            ),
+            ("collapsed reference", "[ctx][]\n\n[ctx]: references/yuanli.health.kernel.ctx.md"),
+            ("shortcut reference", "[ctx]\n\n[ctx]: references/yuanli.health.kernel.ctx.md"),
+            ("inline image", "![diagram](references/yuanli.health.kernel.ctx.md)"),
+            ("reference image", "![diagram][ctx]\n\n[ctx]: references/yuanli.health.kernel.ctx.md"),
+            ("definition only", "[ctx]: references/yuanli.health.kernel.ctx.md"),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            for index, (label, attack) in enumerate(attacks):
+                with self.subTest(label=label):
+                    repository = copy_repository(temporary / f"repository-{index}")
+                    package = repository / "dist/codex/yuanli-health"
+                    metadata = repository / "releases/v0.1.0/release-metadata.json"
+                    generate(package, root=repository, metadata=metadata)
+                    skill = package / "SKILL.md"
+                    skill.write_text(skill.read_text(encoding="utf-8") + "\n" + attack + "\n", encoding="utf-8")
+                    rewrite_checksums(package)
+                    rewrite_metadata_hash(package, metadata)
+                    rejected = validate(package, root=repository, metadata=metadata, repository=True)
+                    output = rejected.stdout + rejected.stderr
+                    self.assertNotEqual(rejected.returncode, 0, output)
+                    self.assertIn("unsupported Markdown link syntax", output)
+
+    def test_reference_style_link_to_non_regular_member_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repository = copy_repository(Path(directory))
+            package = repository / "dist/codex/yuanli-health"
+            metadata = repository / "releases/v0.1.0/release-metadata.json"
+            generate(package, root=repository, metadata=metadata)
+            reference = package / "references/yuanli.health.kernel.ctx.md"
+            reference.unlink()
+            reference.symlink_to(repository / "capabilities/yuanli.health.kernel.ctx/instructions.md")
+            skill = package / "SKILL.md"
+            skill.write_text(
+                skill.read_text(encoding="utf-8")
+                + "\n[nonregular][ctx]\n\n[ctx]: references/yuanli.health.kernel.ctx.md\n",
+                encoding="utf-8",
+            )
+            rewrite_checksums(package)
+            rewrite_metadata_hash(package, metadata)
+            rejected = validate(package, root=repository, metadata=metadata, repository=True)
+            output = rejected.stdout + rejected.stderr
+            self.assertNotEqual(rejected.returncode, 0, output)
+            self.assertIn("symlink forbidden", output)
+
     def test_rehashed_reference_identity_contract_machine_and_safety_mutations_fail(self):
         source_id = "yuanli.health.kernel.ctx"
         other_id = "yuanli.health.kernel.evd"
@@ -71,7 +129,7 @@ class CodexAdapterValidationTests(unittest.TestCase):
             self.assertIn("validation exception", rejected.stderr)
 
     def test_markdown_link_walk_rejects_missing_absolute_and_outside_targets(self):
-        attacks = ("references/missing.md", "/etc/passwd", "../../outside.md")
+        attacks = ("references/missing.md", "/etc/passwd", "../../outside.md", "file:///etc/passwd", "ftp://invalid.example/file")
         with tempfile.TemporaryDirectory() as directory:
             temporary = Path(directory)
             for index, attack in enumerate(attacks):

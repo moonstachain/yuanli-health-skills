@@ -26,27 +26,33 @@ _PATTERNS = (
     ("health_measurement", re.compile(r"(?i)\b(?:bmi|spo2|oxygen[ _-]*saturation|temperature)\s*[:=]\s*\d{1,3}(?:\.\d+)?\s*(?:%|c|f|°c|°f)?\b")),
 )
 
-_JSON_KEYS = {
-    "patient_id": "patient_identifier",
-    "patient_identifier": "patient_identifier",
-    "member_id": "patient_identifier",
-    "member_identifier": "patient_identifier",
-    "patient_name": "person_name",
-    "full_name": "person_name",
-    "device_id": "patient_identifier",
-    "device_identifier": "patient_identifier",
-    "medical_record_id": "medical_record_identifier",
-    "medical_record_identifier": "medical_record_identifier",
-    "medical_record_number": "medical_record_identifier",
-    "mrn": "medical_record_identifier",
-    "email": "email_address",
-    "email_address": "email_address",
-    "phone": "phone_number",
-    "phone_number": "phone_number",
-    "date_of_birth": "date_of_birth",
-    "dob": "date_of_birth",
-    "home_address": "postal_address",
-}
+_MACHINE_LABEL = re.compile(
+    r'''(?mx)
+    (?:^|[{,])[ \t]*(?:[-*+][ \t]+)?["']?
+    (?P<key>[A-Za-z][A-Za-z0-9]*(?:[ _-]+[A-Za-z0-9]+)*)
+    ["']?[ \t]*[:=][ \t]*(?P<value>[^\r\n,}]*)
+    ''',
+)
+
+_IDENTIFIER_SUBJECTS = frozenset(("patient", "subject", "person", "member", "user", "device"))
+_IDENTIFIER_TERMS = frozenset(("id", "identifier"))
+_MEASUREMENT_KEYS = frozenset(
+    (
+        ("heart", "rate"),
+        ("pulse",),
+        ("blood", "pressure"),
+        ("bp",),
+        ("glucose",),
+        ("blood", "glucose"),
+        ("blood", "sugar"),
+        ("weight",),
+        ("body", "weight"),
+        ("bmi",),
+        ("spo2",),
+        ("oxygen", "saturation"),
+        ("temperature",),
+    )
+)
 
 
 def _git(root: Path, *arguments: str, binary: bool = False) -> bytes | str:
@@ -71,13 +77,80 @@ def _text(content: bytes) -> str | None:
         return None
 
 
+def _normalize_machine_key(key: str) -> tuple[str, ...]:
+    split = re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", key.strip())
+    split = re.sub(r"(?<=[A-Z])(?=[A-Z][a-z])", "_", split)
+    normalized = re.sub(r"[^A-Za-z0-9]+", "_", split).strip("_").lower()
+    words = tuple(part for part in normalized.split("_") if part)
+    return ("spo2",) if words == ("sp", "o2") else words
+
+
+def _machine_key_class(key: str) -> str | None:
+    words = _normalize_machine_key(key)
+    if len(words) == 2 and words[0] in _IDENTIFIER_SUBJECTS and words[1] in _IDENTIFIER_TERMS:
+        return "patient_identifier"
+    if words == ("mrn",) or words == ("medical", "record") or (
+        len(words) == 3 and words[:2] == ("medical", "record") and words[2] in _IDENTIFIER_TERMS | {"number"}
+    ):
+        return "medical_record_identifier"
+    if words in (("email",), ("email", "address")) or (
+        len(words) == 2 and words[0] in _IDENTIFIER_SUBJECTS | {"contact"} and words[1] == "email"
+    ):
+        return "email_address"
+    if words in (("phone",), ("phone", "number"), ("telephone",), ("telephone", "number"), ("mobile",), ("mobile", "number")) or (
+        len(words) == 2 and words[0] in _IDENTIFIER_SUBJECTS | {"contact"} and words[1] in {"phone", "telephone", "mobile"}
+    ):
+        return "phone_number"
+    if len(words) == 2 and words[0] in _IDENTIFIER_SUBJECTS | {"full", "first", "middle", "last", "given", "family"} and words[1] == "name":
+        return "person_name"
+    if words == ("address",) or (
+        len(words) == 2
+        and words[0] in _IDENTIFIER_SUBJECTS | {"home", "street", "postal", "mailing"}
+        and words[1] == "address"
+    ):
+        return "postal_address"
+    if words in (("date", "of", "birth"), ("birth", "date"), ("dob",)) or (
+        len(words) >= 2 and words[0] in _IDENTIFIER_SUBJECTS and words[1:] in (("date", "of", "birth"), ("birth", "date"), ("dob",))
+    ):
+        return "date_of_birth"
+    if words in _MEASUREMENT_KEYS:
+        return "health_measurement"
+    return None
+
+
+def _measurement_value(value: Any) -> bool:
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return True
+    if not isinstance(value, str):
+        return False
+    unquoted = value.strip().strip("\"'`")
+    return re.fullmatch(
+        r"(?i)\d{1,3}(?:\.\d+)?(?:/\d{1,3}(?:\.\d+)?)?(?:\s*(?:mmhg|bpm|mg/dl|mmol/l|kg|lb|lbs|%|c|f|°c|°f))?",
+        unquoted,
+    ) is not None
+
+
+def _machine_label_classes(text: str) -> set[str]:
+    findings: set[str] = set()
+    for match in _MACHINE_LABEL.finditer(text):
+        finding = _machine_key_class(match.group("key"))
+        if finding is None:
+            continue
+        value_token = match.group("value").strip().strip("\"'`")
+        if "_".join(_normalize_machine_key(value_token)) == finding:
+            continue
+        if finding != "health_measurement" or _measurement_value(match.group("value")):
+            findings.add(finding)
+    return findings
+
+
 def _json_key_classes(value: Any) -> set[str]:
     findings: set[str] = set()
     if isinstance(value, dict):
         for key, child in value.items():
-            normalized = re.sub(r"[ -]+", "_", key.strip().lower())
-            if normalized in _JSON_KEYS:
-                findings.add(_JSON_KEYS[normalized])
+            finding = _machine_key_class(key)
+            if finding is not None and (finding != "health_measurement" or _measurement_value(child)):
+                findings.add(finding)
             findings.update(_json_key_classes(child))
     elif isinstance(value, list):
         for child in value:
@@ -90,6 +163,7 @@ def finding_classes(path: str, content: bytes) -> tuple[str, ...]:
     if text is None:
         return ()
     findings = {label for label, pattern in _PATTERNS if pattern.search(text)}
+    findings.update(_machine_label_classes(text))
     if Path(path).suffix.lower() == ".json":
         try:
             findings.update(_json_key_classes(json.loads(text)))
