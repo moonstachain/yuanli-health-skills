@@ -1,0 +1,4963 @@
+{
+  "schema": "full-suite-synthetic-corpus-v1",
+  "cases": [
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-001",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.wpk",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_wpk",
+        "case_1"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "decision_candidate_id": "SYN-DECISION-CANDIDATE-ID-001"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-001"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-001"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "work_packet_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "emit_wpk",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "wpk_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-002",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.wpk",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_wpk",
+        "case_2"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "decision_candidate_id": "SYN-DECISION-CANDIDATE-ID-002"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-002"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-002"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "work_packet_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "emit_wpk",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "wpk_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-003",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.wpk",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_wpk",
+        "case_3"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "decision_candidate_id": "SYN-DECISION-CANDIDATE-ID-003"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-003"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-003"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "work_packet_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "emit_wpk",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "wpk_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-004",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.wpk",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_wpk",
+        "case_4"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "decision_candidate_id": "SYN-DECISION-CANDIDATE-ID-004"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-004"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-004"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "work_packet_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "emit_wpk",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "wpk_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-005",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.wpk",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_wpk",
+        "case_5"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "decision_candidate_id": "SYN-DECISION-CANDIDATE-ID-005"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-005"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-005"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "work_packet_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "emit_wpk",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "wpk_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-006",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.wpk",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_wpk",
+        "case_6"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {},
+      "declared_unknowns": [
+        "SYN-UNKNOWN-006"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-006"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.decision_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "emit_wpk",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-007",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.wpk",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_wpk",
+        "case_7"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "decision_candidate_id": "SYN-DECISION-CANDIDATE-ID-007"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-007"
+      ],
+      "assumptions": [
+        "SYN-DECISION-CANDIDATE-ID-007"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "ASSUMPTION_KNOWN_OVERLAP",
+        "error_path": "assumptions[0]",
+        "authority_gate": "YELLOW",
+        "transition_intent": "emit_wpk",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-008",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.wpk",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_wpk",
+        "case_8"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "decision_candidate_id": ""
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-008"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-008"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "INVALID_ARTIFACT",
+        "error_path": "artifacts.decision_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "emit_wpk",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-009",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.wpk",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_wpk",
+        "case_9"
+      ],
+      "request_type": "diagnosis",
+      "risk_flags": [],
+      "artifacts": {
+        "decision_candidate_id": "SYN-DECISION-CANDIDATE-ID-009"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-009"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-009"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "CLINICAL_ESCALATION_REQUIRED",
+        "error_path": "request_type",
+        "authority_gate": "RED",
+        "transition_intent": "emit_wpk",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-010",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.wpk",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_wpk",
+        "case_10"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-010"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-010"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-010"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.decision_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "emit_wpk",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-011",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.act",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_act",
+        "case_1"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "wpk_candidate_id": "SYN-WPK-CANDIDATE-ID-011"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-011"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-011"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "action_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "emit_act",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "act_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-012",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.act",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_act",
+        "case_2"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "wpk_candidate_id": "SYN-WPK-CANDIDATE-ID-012"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-012"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-012"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "action_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "emit_act",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "act_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-013",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.act",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_act",
+        "case_3"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "wpk_candidate_id": "SYN-WPK-CANDIDATE-ID-013"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-013"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-013"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "action_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "emit_act",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "act_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-014",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.act",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_act",
+        "case_4"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "wpk_candidate_id": "SYN-WPK-CANDIDATE-ID-014"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-014"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-014"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "action_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "emit_act",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "act_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-015",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.act",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_act",
+        "case_5"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "wpk_candidate_id": "SYN-WPK-CANDIDATE-ID-015"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-015"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-015"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "action_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "emit_act",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "act_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-016",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.act",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_act",
+        "case_6"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {},
+      "declared_unknowns": [
+        "SYN-UNKNOWN-016"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-016"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.wpk_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "emit_act",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-017",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.act",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_act",
+        "case_7"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "wpk_candidate_id": "SYN-WPK-CANDIDATE-ID-017"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-017"
+      ],
+      "assumptions": [
+        "SYN-WPK-CANDIDATE-ID-017"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "ASSUMPTION_KNOWN_OVERLAP",
+        "error_path": "assumptions[0]",
+        "authority_gate": "YELLOW",
+        "transition_intent": "emit_act",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-018",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.act",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_act",
+        "case_8"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "wpk_candidate_id": ""
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-018"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-018"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "INVALID_ARTIFACT",
+        "error_path": "artifacts.wpk_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "emit_act",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-019",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.act",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_act",
+        "case_9"
+      ],
+      "request_type": "diagnosis",
+      "risk_flags": [],
+      "artifacts": {
+        "wpk_candidate_id": "SYN-WPK-CANDIDATE-ID-019"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-019"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-019"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "CLINICAL_ESCALATION_REQUIRED",
+        "error_path": "request_type",
+        "authority_gate": "RED",
+        "transition_intent": "emit_act",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-020",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.act",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_act",
+        "case_10"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "out_candidate_id": "SYN-OUT-CANDIDATE-ID-020"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-020"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-020"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.wpk_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "emit_act",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-021",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.out",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_out",
+        "case_1"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-021",
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-021"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-021"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-021"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "outcome_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "adjudicate_out",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "out_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-022",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.out",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_out",
+        "case_2"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-022",
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-022"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-022"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-022"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "outcome_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "adjudicate_out",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "out_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-023",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.out",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_out",
+        "case_3"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-023",
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-023"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-023"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-023"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "outcome_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "adjudicate_out",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "out_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-024",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.out",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_out",
+        "case_4"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-024",
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-024"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-024"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-024"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "outcome_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "adjudicate_out",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "out_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-025",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.out",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_out",
+        "case_5"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-025",
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-025"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-025"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-025"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "outcome_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "adjudicate_out",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "out_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-026",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.out",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_out",
+        "case_6"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-026"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-026"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-026"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.observation_reference",
+        "authority_gate": "YELLOW",
+        "transition_intent": "adjudicate_out",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-027",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.out",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_out",
+        "case_7"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-027",
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-027"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-027"
+      ],
+      "assumptions": [
+        "SYN-ACT-CANDIDATE-ID-027"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "ASSUMPTION_KNOWN_OVERLAP",
+        "error_path": "assumptions[0]",
+        "authority_gate": "YELLOW",
+        "transition_intent": "adjudicate_out",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-028",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.out",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_out",
+        "case_8"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-028",
+        "observation_reference": ""
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-028"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-028"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "INVALID_ARTIFACT",
+        "error_path": "artifacts.observation_reference",
+        "authority_gate": "YELLOW",
+        "transition_intent": "adjudicate_out",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-029",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.out",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_out",
+        "case_9"
+      ],
+      "request_type": "diagnosis",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-029",
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-029"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-029"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-029"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "CLINICAL_ESCALATION_REQUIRED",
+        "error_path": "request_type",
+        "authority_gate": "RED",
+        "transition_intent": "adjudicate_out",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-030",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.out",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_out",
+        "case_10"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "out_candidate_id": "SYN-OUT-CANDIDATE-ID-030"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-030"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-030"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.act_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "adjudicate_out",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-031",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.lrn",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_lrn",
+        "case_1"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "out_candidate_id": "SYN-OUT-CANDIDATE-ID-031"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-031"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-031"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "learning_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "emit_lrn",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "lrn_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-032",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.lrn",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_lrn",
+        "case_2"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "out_candidate_id": "SYN-OUT-CANDIDATE-ID-032"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-032"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-032"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "learning_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "emit_lrn",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "lrn_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-033",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.lrn",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_lrn",
+        "case_3"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "out_candidate_id": "SYN-OUT-CANDIDATE-ID-033"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-033"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-033"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "learning_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "emit_lrn",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "lrn_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-034",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.lrn",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_lrn",
+        "case_4"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "out_candidate_id": "SYN-OUT-CANDIDATE-ID-034"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-034"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-034"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "learning_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "emit_lrn",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "lrn_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-035",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.lrn",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_lrn",
+        "case_5"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "out_candidate_id": "SYN-OUT-CANDIDATE-ID-035"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-035"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-035"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "learning_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "emit_lrn",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "lrn_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-036",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.lrn",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_lrn",
+        "case_6"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {},
+      "declared_unknowns": [
+        "SYN-UNKNOWN-036"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-036"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.out_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "emit_lrn",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-037",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.lrn",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_lrn",
+        "case_7"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "out_candidate_id": "SYN-OUT-CANDIDATE-ID-037"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-037"
+      ],
+      "assumptions": [
+        "SYN-OUT-CANDIDATE-ID-037"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "ASSUMPTION_KNOWN_OVERLAP",
+        "error_path": "assumptions[0]",
+        "authority_gate": "YELLOW",
+        "transition_intent": "emit_lrn",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-038",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.lrn",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_lrn",
+        "case_8"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "out_candidate_id": ""
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-038"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-038"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "INVALID_ARTIFACT",
+        "error_path": "artifacts.out_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "emit_lrn",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-039",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.lrn",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_lrn",
+        "case_9"
+      ],
+      "request_type": "diagnosis",
+      "risk_flags": [],
+      "artifacts": {
+        "out_candidate_id": "SYN-OUT-CANDIDATE-ID-039"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-039"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-039"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "CLINICAL_ESCALATION_REQUIRED",
+        "error_path": "request_type",
+        "authority_gate": "RED",
+        "transition_intent": "emit_lrn",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-040",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.kernel.lrn",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_lrn",
+        "case_10"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "lrn_candidate_id": "SYN-LRN-CANDIDATE-ID-040"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-040"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-040"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.out_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "emit_lrn",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-041",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.ninety-day-health-experiment",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_ninety_day_health_experiment",
+        "case_1"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "decision_candidate_id": "SYN-DECISION-CANDIDATE-ID-041"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-041"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-041"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "experiment_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_ninety_day_experiment",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "wpk_candidate_id",
+          "act_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-042",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.ninety-day-health-experiment",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_ninety_day_health_experiment",
+        "case_2"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "decision_candidate_id": "SYN-DECISION-CANDIDATE-ID-042"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-042"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-042"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "experiment_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_ninety_day_experiment",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "wpk_candidate_id",
+          "act_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-043",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.ninety-day-health-experiment",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_ninety_day_health_experiment",
+        "case_3"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "decision_candidate_id": "SYN-DECISION-CANDIDATE-ID-043"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-043"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-043"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "experiment_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_ninety_day_experiment",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "wpk_candidate_id",
+          "act_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-044",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.ninety-day-health-experiment",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_ninety_day_health_experiment",
+        "case_4"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "decision_candidate_id": "SYN-DECISION-CANDIDATE-ID-044"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-044"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-044"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "experiment_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_ninety_day_experiment",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "wpk_candidate_id",
+          "act_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-045",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.ninety-day-health-experiment",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_ninety_day_health_experiment",
+        "case_5"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "decision_candidate_id": "SYN-DECISION-CANDIDATE-ID-045"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-045"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-045"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "experiment_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_ninety_day_experiment",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "wpk_candidate_id",
+          "act_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-046",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.ninety-day-health-experiment",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_ninety_day_health_experiment",
+        "case_6"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {},
+      "declared_unknowns": [
+        "SYN-UNKNOWN-046"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-046"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.decision_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "orchestrate_ninety_day_experiment",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-047",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.ninety-day-health-experiment",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_ninety_day_health_experiment",
+        "case_7"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "decision_candidate_id": "SYN-DECISION-CANDIDATE-ID-047"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-047"
+      ],
+      "assumptions": [
+        "SYN-DECISION-CANDIDATE-ID-047"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "ASSUMPTION_KNOWN_OVERLAP",
+        "error_path": "assumptions[0]",
+        "authority_gate": "YELLOW",
+        "transition_intent": "orchestrate_ninety_day_experiment",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-048",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.ninety-day-health-experiment",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_ninety_day_health_experiment",
+        "case_8"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "decision_candidate_id": ""
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-048"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-048"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "INVALID_ARTIFACT",
+        "error_path": "artifacts.decision_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "orchestrate_ninety_day_experiment",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-049",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.ninety-day-health-experiment",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_ninety_day_health_experiment",
+        "case_9"
+      ],
+      "request_type": "diagnosis",
+      "risk_flags": [],
+      "artifacts": {
+        "decision_candidate_id": "SYN-DECISION-CANDIDATE-ID-049"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-049"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-049"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "CLINICAL_ESCALATION_REQUIRED",
+        "error_path": "request_type",
+        "authority_gate": "RED",
+        "transition_intent": "orchestrate_ninety_day_experiment",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-050",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.ninety-day-health-experiment",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_ninety_day_health_experiment",
+        "case_10"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-050"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-050"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-050"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.decision_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "orchestrate_ninety_day_experiment",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-051",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.weekly-health-checkpoint",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_weekly_health_checkpoint",
+        "case_1"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-051"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-051"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-051"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "checkpoint_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_weekly_checkpoint",
+        "transition_executed": true,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-052",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.weekly-health-checkpoint",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_weekly_health_checkpoint",
+        "case_2"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-052",
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-052"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-052"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-052"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "checkpoint_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_weekly_checkpoint",
+        "transition_executed": true,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-053",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.weekly-health-checkpoint",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_weekly_health_checkpoint",
+        "case_3"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-053"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-053"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-053"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "checkpoint_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_weekly_checkpoint",
+        "transition_executed": true,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-054",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.weekly-health-checkpoint",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_weekly_health_checkpoint",
+        "case_4"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-054",
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-054"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-054"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-054"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "checkpoint_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_weekly_checkpoint",
+        "transition_executed": true,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-055",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.weekly-health-checkpoint",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_weekly_health_checkpoint",
+        "case_5"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-055"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-055"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-055"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "checkpoint_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_weekly_checkpoint",
+        "transition_executed": true,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-056",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.weekly-health-checkpoint",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_weekly_health_checkpoint",
+        "case_6"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {},
+      "declared_unknowns": [
+        "SYN-UNKNOWN-056"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-056"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.act_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "orchestrate_weekly_checkpoint",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-057",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.weekly-health-checkpoint",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_weekly_health_checkpoint",
+        "case_7"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-057"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-057"
+      ],
+      "assumptions": [
+        "SYN-ACT-CANDIDATE-ID-057"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "ASSUMPTION_KNOWN_OVERLAP",
+        "error_path": "assumptions[0]",
+        "authority_gate": "YELLOW",
+        "transition_intent": "orchestrate_weekly_checkpoint",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-058",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.weekly-health-checkpoint",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_weekly_health_checkpoint",
+        "case_8"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": ""
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-058"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-058"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "INVALID_ARTIFACT",
+        "error_path": "artifacts.act_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "orchestrate_weekly_checkpoint",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-059",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.weekly-health-checkpoint",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_weekly_health_checkpoint",
+        "case_9"
+      ],
+      "request_type": "diagnosis",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-059"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-059"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-059"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "CLINICAL_ESCALATION_REQUIRED",
+        "error_path": "request_type",
+        "authority_gate": "RED",
+        "transition_intent": "orchestrate_weekly_checkpoint",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-060",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.weekly-health-checkpoint",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_weekly_health_checkpoint",
+        "case_10"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-060"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-060"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-060"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.act_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "orchestrate_weekly_checkpoint",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-061",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.doctor-visit-prep",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_doctor_visit_prep",
+        "case_1"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "visit_questions": [
+          "SYN-QUESTION-061-A",
+          "SYN-QUESTION-061-B"
+        ]
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-061"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-061"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "visit_prep_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "prepare_doctor_visit",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "visit_questions"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-062",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.doctor-visit-prep",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_doctor_visit_prep",
+        "case_2"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "visit_questions": [
+          "SYN-QUESTION-062-A",
+          "SYN-QUESTION-062-B"
+        ]
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-062"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-062"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "visit_prep_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "prepare_doctor_visit",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "visit_questions"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-063",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.doctor-visit-prep",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_doctor_visit_prep",
+        "case_3"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "visit_questions": [
+          "SYN-QUESTION-063-A",
+          "SYN-QUESTION-063-B"
+        ]
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-063"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-063"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "visit_prep_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "prepare_doctor_visit",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "visit_questions"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-064",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.doctor-visit-prep",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_doctor_visit_prep",
+        "case_4"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "visit_questions": [
+          "SYN-QUESTION-064-A",
+          "SYN-QUESTION-064-B"
+        ]
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-064"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-064"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "visit_prep_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "prepare_doctor_visit",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "visit_questions"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-065",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.doctor-visit-prep",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_doctor_visit_prep",
+        "case_5"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "visit_questions": [
+          "SYN-QUESTION-065-A",
+          "SYN-QUESTION-065-B"
+        ]
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-065"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-065"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "visit_prep_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "prepare_doctor_visit",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "visit_questions"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-066",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.doctor-visit-prep",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_doctor_visit_prep",
+        "case_6"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {},
+      "declared_unknowns": [
+        "SYN-UNKNOWN-066"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-066"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.visit_questions",
+        "authority_gate": "YELLOW",
+        "transition_intent": "prepare_doctor_visit",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-067",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.doctor-visit-prep",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_doctor_visit_prep",
+        "case_7"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "visit_questions": [
+          "SYN-QUESTION-067-A",
+          "SYN-QUESTION-067-B"
+        ]
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-067"
+      ],
+      "assumptions": [
+        "SYN-QUESTION-067-A"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "ASSUMPTION_KNOWN_OVERLAP",
+        "error_path": "assumptions[0]",
+        "authority_gate": "YELLOW",
+        "transition_intent": "prepare_doctor_visit",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-068",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.doctor-visit-prep",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_doctor_visit_prep",
+        "case_8"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "visit_questions": []
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-068"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-068"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "INVALID_VISIT_QUESTIONS",
+        "error_path": "artifacts.visit_questions",
+        "authority_gate": "YELLOW",
+        "transition_intent": "prepare_doctor_visit",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-069",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.doctor-visit-prep",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_doctor_visit_prep",
+        "case_9"
+      ],
+      "request_type": "diagnosis",
+      "risk_flags": [],
+      "artifacts": {
+        "visit_questions": [
+          "SYN-QUESTION-069-A",
+          "SYN-QUESTION-069-B"
+        ]
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-069"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-069"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "visit_prep_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "RED",
+        "transition_intent": "prepare_doctor_visit",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "visit_questions",
+          "guardrails"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-070",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.doctor-visit-prep",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_doctor_visit_prep",
+        "case_10"
+      ],
+      "request_type": "appointment_logistics",
+      "risk_flags": [],
+      "artifacts": {
+        "visit_questions": [
+          "SYN-QUESTION-070-A",
+          "SYN-QUESTION-070-B"
+        ]
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-070"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-070"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "visit_prep_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "YELLOW",
+        "transition_intent": "prepare_doctor_visit",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "visit_questions",
+          "delegation"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-071",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.outcome-review",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_outcome_review",
+        "case_1"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-071",
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-071"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-071"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-071"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "outcome_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_outcome_review",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "out_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-072",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.outcome-review",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_outcome_review",
+        "case_2"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-072",
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-072"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-072"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-072"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "outcome_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_outcome_review",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "out_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-073",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.outcome-review",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_outcome_review",
+        "case_3"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-073",
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-073"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-073"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-073"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "outcome_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_outcome_review",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "out_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-074",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.outcome-review",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_outcome_review",
+        "case_4"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-074",
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-074"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-074"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-074"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "outcome_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_outcome_review",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "out_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-075",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.outcome-review",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_outcome_review",
+        "case_5"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-075",
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-075"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-075"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-075"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "outcome_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_outcome_review",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "out_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-076",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.outcome-review",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_outcome_review",
+        "case_6"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-076"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-076"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-076"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.observation_reference",
+        "authority_gate": "YELLOW",
+        "transition_intent": "orchestrate_outcome_review",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-077",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.outcome-review",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_outcome_review",
+        "case_7"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-077",
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-077"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-077"
+      ],
+      "assumptions": [
+        "SYN-ACT-CANDIDATE-ID-077"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "ASSUMPTION_KNOWN_OVERLAP",
+        "error_path": "assumptions[0]",
+        "authority_gate": "YELLOW",
+        "transition_intent": "orchestrate_outcome_review",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-078",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.outcome-review",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_outcome_review",
+        "case_8"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-078",
+        "observation_reference": ""
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-078"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-078"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "INVALID_ARTIFACT",
+        "error_path": "artifacts.observation_reference",
+        "authority_gate": "YELLOW",
+        "transition_intent": "orchestrate_outcome_review",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-079",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.outcome-review",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_outcome_review",
+        "case_9"
+      ],
+      "request_type": "diagnosis",
+      "risk_flags": [],
+      "artifacts": {
+        "act_candidate_id": "SYN-ACT-CANDIDATE-ID-079",
+        "observation_reference": "SYN-OBSERVATION-REFERENCE-079"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-079"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-079"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "CLINICAL_ESCALATION_REQUIRED",
+        "error_path": "request_type",
+        "authority_gate": "RED",
+        "transition_intent": "orchestrate_outcome_review",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-080",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.outcome-review",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_outcome_review",
+        "case_10"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "out_candidate_id": "SYN-OUT-CANDIDATE-ID-080"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-080"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-080"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.act_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "orchestrate_outcome_review",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-081",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.learning-reuse",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_learning_reuse",
+        "case_1"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "lrn_candidate_id": "SYN-LRN-CANDIDATE-ID-081",
+        "task2_preload_receipt": "SYN-TASK2-PRELOAD-RECEIPT-081",
+        "task2_use_receipt": "SYN-TASK2-USE-RECEIPT-081"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-081"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-081"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "reuse_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_learning_reuse",
+        "transition_executed": true,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-082",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.learning-reuse",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_learning_reuse",
+        "case_2"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "lrn_candidate_id": "SYN-LRN-CANDIDATE-ID-082",
+        "task2_preload_receipt": "SYN-TASK2-PRELOAD-RECEIPT-082",
+        "task2_use_receipt": "SYN-TASK2-USE-RECEIPT-082"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-082"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-082"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "reuse_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_learning_reuse",
+        "transition_executed": true,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-083",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.learning-reuse",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_learning_reuse",
+        "case_3"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "lrn_candidate_id": "SYN-LRN-CANDIDATE-ID-083",
+        "task2_preload_receipt": "SYN-TASK2-PRELOAD-RECEIPT-083",
+        "task2_use_receipt": "SYN-TASK2-USE-RECEIPT-083"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-083"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-083"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "reuse_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_learning_reuse",
+        "transition_executed": true,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-084",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.learning-reuse",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_learning_reuse",
+        "case_4"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "lrn_candidate_id": "SYN-LRN-CANDIDATE-ID-084",
+        "task2_preload_receipt": "SYN-TASK2-PRELOAD-RECEIPT-084",
+        "task2_use_receipt": "SYN-TASK2-USE-RECEIPT-084"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-084"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-084"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "reuse_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_learning_reuse",
+        "transition_executed": true,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-085",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.learning-reuse",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_learning_reuse",
+        "case_5"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "lrn_candidate_id": "SYN-LRN-CANDIDATE-ID-085",
+        "task2_preload_receipt": "SYN-TASK2-PRELOAD-RECEIPT-085",
+        "task2_use_receipt": "SYN-TASK2-USE-RECEIPT-085"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-085"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-085"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "reuse_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "orchestrate_learning_reuse",
+        "transition_executed": true,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-086",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.learning-reuse",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_learning_reuse",
+        "case_6"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "lrn_candidate_id": "SYN-LRN-CANDIDATE-ID-086",
+        "task2_preload_receipt": "SYN-TASK2-PRELOAD-RECEIPT-086"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-086"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-086"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.task2_use_receipt",
+        "authority_gate": "YELLOW",
+        "transition_intent": "orchestrate_learning_reuse",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-087",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.learning-reuse",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_learning_reuse",
+        "case_7"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "lrn_candidate_id": "SYN-LRN-CANDIDATE-ID-087",
+        "task2_preload_receipt": "SYN-TASK2-PRELOAD-RECEIPT-087",
+        "task2_use_receipt": "SYN-TASK2-USE-RECEIPT-087"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-087"
+      ],
+      "assumptions": [
+        "SYN-LRN-CANDIDATE-ID-087"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "ASSUMPTION_KNOWN_OVERLAP",
+        "error_path": "assumptions[0]",
+        "authority_gate": "YELLOW",
+        "transition_intent": "orchestrate_learning_reuse",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-088",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.learning-reuse",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_learning_reuse",
+        "case_8"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "lrn_candidate_id": "SYN-LRN-CANDIDATE-ID-088",
+        "task2_preload_receipt": "SYN-TASK2-PRELOAD-RECEIPT-088",
+        "task2_use_receipt": "SYN-TASK2-PRELOAD-RECEIPT-088"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-088"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-088"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "INDEPENDENT_RECEIPTS_REQUIRED",
+        "error_path": "artifacts.task2_use_receipt",
+        "authority_gate": "YELLOW",
+        "transition_intent": "orchestrate_learning_reuse",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-089",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.learning-reuse",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_learning_reuse",
+        "case_9"
+      ],
+      "request_type": "diagnosis",
+      "risk_flags": [],
+      "artifacts": {
+        "lrn_candidate_id": "SYN-LRN-CANDIDATE-ID-089",
+        "task2_preload_receipt": "SYN-TASK2-PRELOAD-RECEIPT-089",
+        "task2_use_receipt": "SYN-TASK2-USE-RECEIPT-089"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-089"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-089"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "CLINICAL_ESCALATION_REQUIRED",
+        "error_path": "request_type",
+        "authority_gate": "RED",
+        "transition_intent": "orchestrate_learning_reuse",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-090",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.experience.learning-reuse",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_learning_reuse",
+        "case_10"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "task2_preload_receipt": "SYN-TASK2-PRELOAD-RECEIPT-090",
+        "task2_use_receipt": "SYN-TASK2-USE-RECEIPT-090"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-090"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-090"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.lrn_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "orchestrate_learning_reuse",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-091",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.build",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_build",
+        "case_1"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "draft_capability_id": "SYN-DRAFT-CAPABILITY-ID-091"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-091"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-091"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "build_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "build_capability_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "built_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-092",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.build",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_build",
+        "case_2"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "draft_capability_id": "SYN-DRAFT-CAPABILITY-ID-092"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-092"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-092"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "build_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "build_capability_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "built_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-093",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.build",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_build",
+        "case_3"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "draft_capability_id": "SYN-DRAFT-CAPABILITY-ID-093"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-093"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-093"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "build_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "build_capability_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "built_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-094",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.build",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_build",
+        "case_4"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "draft_capability_id": "SYN-DRAFT-CAPABILITY-ID-094"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-094"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-094"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "build_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "build_capability_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "built_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-095",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.build",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_build",
+        "case_5"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "draft_capability_id": "SYN-DRAFT-CAPABILITY-ID-095"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-095"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-095"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "build_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "build_capability_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "built_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-096",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.build",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_build",
+        "case_6"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {},
+      "declared_unknowns": [
+        "SYN-UNKNOWN-096"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-096"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.draft_capability_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "build_capability_candidate",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-097",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.build",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_build",
+        "case_7"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "draft_capability_id": "SYN-DRAFT-CAPABILITY-ID-097"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-097"
+      ],
+      "assumptions": [
+        "SYN-DRAFT-CAPABILITY-ID-097"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "ASSUMPTION_KNOWN_OVERLAP",
+        "error_path": "assumptions[0]",
+        "authority_gate": "YELLOW",
+        "transition_intent": "build_capability_candidate",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-098",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.build",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_build",
+        "case_8"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "draft_capability_id": ""
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-098"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-098"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "INVALID_ARTIFACT",
+        "error_path": "artifacts.draft_capability_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "build_capability_candidate",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-099",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.build",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_build",
+        "case_9"
+      ],
+      "request_type": "diagnosis",
+      "risk_flags": [],
+      "artifacts": {
+        "draft_capability_id": "SYN-DRAFT-CAPABILITY-ID-099"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-099"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-099"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "CLINICAL_ESCALATION_REQUIRED",
+        "error_path": "request_type",
+        "authority_gate": "RED",
+        "transition_intent": "build_capability_candidate",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-100",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.build",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_build",
+        "case_10"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "draft_capability_id": "SYN-DRAFT-CAPABILITY-ID-100"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-100"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-100"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "build_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "build_capability_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "built_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-101",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.review",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_review",
+        "case_1"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "built_candidate_id": "SYN-BUILT-CANDIDATE-ID-101"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-101"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-101"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "review_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "review_capability_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "review_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-102",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.review",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_review",
+        "case_2"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "built_candidate_id": "SYN-BUILT-CANDIDATE-ID-102"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-102"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-102"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "review_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "review_capability_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "review_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-103",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.review",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_review",
+        "case_3"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "built_candidate_id": "SYN-BUILT-CANDIDATE-ID-103"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-103"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-103"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "review_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "review_capability_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "review_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-104",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.review",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_review",
+        "case_4"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "built_candidate_id": "SYN-BUILT-CANDIDATE-ID-104"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-104"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-104"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "review_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "review_capability_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "review_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-105",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.review",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_review",
+        "case_5"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "built_candidate_id": "SYN-BUILT-CANDIDATE-ID-105"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-105"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-105"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "review_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "review_capability_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "review_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-106",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.review",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_review",
+        "case_6"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {},
+      "declared_unknowns": [
+        "SYN-UNKNOWN-106"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-106"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.built_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "review_capability_candidate",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-107",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.review",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_review",
+        "case_7"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "built_candidate_id": "SYN-BUILT-CANDIDATE-ID-107"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-107"
+      ],
+      "assumptions": [
+        "SYN-BUILT-CANDIDATE-ID-107"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "ASSUMPTION_KNOWN_OVERLAP",
+        "error_path": "assumptions[0]",
+        "authority_gate": "YELLOW",
+        "transition_intent": "review_capability_candidate",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-108",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.review",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_review",
+        "case_8"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "built_candidate_id": ""
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-108"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-108"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "INVALID_ARTIFACT",
+        "error_path": "artifacts.built_candidate_id",
+        "authority_gate": "YELLOW",
+        "transition_intent": "review_capability_candidate",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-109",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.review",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_review",
+        "case_9"
+      ],
+      "request_type": "diagnosis",
+      "risk_flags": [],
+      "artifacts": {
+        "built_candidate_id": "SYN-BUILT-CANDIDATE-ID-109"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-109"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-109"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "CLINICAL_ESCALATION_REQUIRED",
+        "error_path": "request_type",
+        "authority_gate": "RED",
+        "transition_intent": "review_capability_candidate",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-110",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.review",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_review",
+        "case_10"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "built_candidate_id": "SYN-BUILT-CANDIDATE-ID-110"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-110"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-110"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "review_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "review_capability_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [
+          "review_candidate_id"
+        ],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-111",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.qualify",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_qualify",
+        "case_1"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "review_candidate_id": "SYN-REVIEW-CANDIDATE-ID-111",
+        "synthetic_case_count": 10
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-111"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-111"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "qualified_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "qualify_synthetic_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-112",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.qualify",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_qualify",
+        "case_2"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "review_candidate_id": "SYN-REVIEW-CANDIDATE-ID-112",
+        "synthetic_case_count": 11
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-112"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-112"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "qualified_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "qualify_synthetic_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-113",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.qualify",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_qualify",
+        "case_3"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "review_candidate_id": "SYN-REVIEW-CANDIDATE-ID-113",
+        "synthetic_case_count": 12
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-113"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-113"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "qualified_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "qualify_synthetic_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-114",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.qualify",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_qualify",
+        "case_4"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "review_candidate_id": "SYN-REVIEW-CANDIDATE-ID-114",
+        "synthetic_case_count": 10
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-114"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-114"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "qualified_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "qualify_synthetic_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-115",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.qualify",
+      "category": "gold",
+      "coverage_tags": [
+        "task3_gold",
+        "capability_qualify",
+        "case_5"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "review_candidate_id": "SYN-REVIEW-CANDIDATE-ID-115",
+        "synthetic_case_count": 11
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-115"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-115"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "qualified_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "qualify_synthetic_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-116",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.qualify",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_qualify",
+        "case_6"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "review_candidate_id": "SYN-REVIEW-CANDIDATE-ID-116"
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-116"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-116"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "MISSING_REQUIRED_ARTIFACT",
+        "error_path": "artifacts.synthetic_case_count",
+        "authority_gate": "YELLOW",
+        "transition_intent": "qualify_synthetic_candidate",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-117",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.qualify",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_qualify",
+        "case_7"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "review_candidate_id": "SYN-REVIEW-CANDIDATE-ID-117",
+        "synthetic_case_count": 10
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-117"
+      ],
+      "assumptions": [
+        "SYN-REVIEW-CANDIDATE-ID-117"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "ASSUMPTION_KNOWN_OVERLAP",
+        "error_path": "assumptions[0]",
+        "authority_gate": "YELLOW",
+        "transition_intent": "qualify_synthetic_candidate",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-118",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.qualify",
+      "category": "boundary",
+      "coverage_tags": [
+        "task3_boundary",
+        "capability_qualify",
+        "case_8"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "review_candidate_id": "SYN-REVIEW-CANDIDATE-ID-118",
+        "synthetic_case_count": 9
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-118"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-118"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "PREREQUISITE_NOT_MET",
+        "error_path": "artifacts.synthetic_case_count",
+        "authority_gate": "YELLOW",
+        "transition_intent": "qualify_synthetic_candidate",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-119",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.qualify",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_qualify",
+        "case_9"
+      ],
+      "request_type": "diagnosis",
+      "risk_flags": [],
+      "artifacts": {
+        "review_candidate_id": "SYN-REVIEW-CANDIDATE-ID-119",
+        "synthetic_case_count": 12
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-119"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-119"
+      ],
+      "expected": {
+        "schema": "full-suite-error-v1",
+        "candidate_state": null,
+        "error_code": "CLINICAL_ESCALATION_REQUIRED",
+        "error_path": "request_type",
+        "authority_gate": "RED",
+        "transition_intent": "qualify_synthetic_candidate",
+        "transition_executed": false,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    },
+    {
+      "schema": "full-suite-synthetic-case-v1",
+      "case_id": "SYN-FS-120",
+      "synthetic": true,
+      "capability_source_id": "yuanli.health.meta.qualify",
+      "category": "adversarial",
+      "coverage_tags": [
+        "task3_adversarial",
+        "capability_qualify",
+        "case_10"
+      ],
+      "request_type": "non_clinical",
+      "risk_flags": [],
+      "artifacts": {
+        "review_candidate_id": "SYN-REVIEW-CANDIDATE-ID-120",
+        "synthetic_case_count": 999
+      },
+      "declared_unknowns": [
+        "SYN-UNKNOWN-120"
+      ],
+      "assumptions": [
+        "SYN-ASSUMPTION-120"
+      ],
+      "expected": {
+        "schema": "full-suite-candidate-v1",
+        "candidate_state": "qualified_candidate_ready",
+        "error_code": null,
+        "error_path": null,
+        "authority_gate": "GREEN",
+        "transition_intent": "qualify_synthetic_candidate",
+        "transition_executed": true,
+        "output_artifact_keys": [],
+        "canonical_write": false,
+        "persistence": "none",
+        "registry_admission": false,
+        "release_published": false,
+        "health_outcome_claimed": false,
+        "clinical_effectiveness_claimed": false,
+        "runtime_observed": false
+      }
+    }
+  ]
+}

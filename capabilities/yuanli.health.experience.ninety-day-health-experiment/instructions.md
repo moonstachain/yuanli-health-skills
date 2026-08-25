@@ -1,0 +1,34 @@
+# Ninety-Day Health Experiment Experience
+
+## Purpose
+
+Produce the bounded yuanli.health.experience.ninety-day-health-experiment discussion candidate defined by [`contract.json`](contract.json). The machine output conforms to `typed-candidate-envelope-v1` and remains non-canonical.
+
+## Input contract
+
+Require one supplied opaque `decision_candidate_id`. Request type is closed to `diagnosis|emergency|formal_plan|learning_claim|medication_change|non_clinical|outcome_adjudication|reuse_claim|appointment_logistics`; risk flags are closed to `clinical_escalation|emergency|guardrail_requested`.
+
+## Output contract
+
+Emit ordered opaque `wpk_candidate_id` then `act_candidate_id` in `experiment_candidate_ready` state; never emit OUT. Canonical write, persistence, Registry admission, release, health-outcome claims, clinical-effectiveness claims, and runtime-observed claims are always false.
+
+## Procedure
+
+1. Validate DEC and all boundaries.
+2. Construct WPK before ACT.
+3. Expose both candidate IDs in that order.
+4. Stop before outcome adjudication.
+
+## Authority and privacy boundaries
+
+Final authority is `subject` under the machine contract. AI is assistive; device evidence, automation, and Router are non-final. Repository PHI is forbidden. Runtime is ephemeral with no persistence and no logs.
+
+## Stop and escalation rules
+
+Stop without DEC or at any clinical/emergency gate. Emergency risk directs the learner to local emergency services; other clinical gates require clinician review.
+
+## Anti-patterns
+
+- Do not emit ACT before internal WPK.
+- Do not infer OUT, LRN, effectiveness, or a health outcome.
+- Do not fabricate known facts, hide unknowns or assumptions, write Canon, persist, log, admit, or release.

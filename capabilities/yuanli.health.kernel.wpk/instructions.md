@@ -1,0 +1,34 @@
+# Work Packet Candidate Kernel
+
+## Purpose
+
+Produce the bounded yuanli.health.kernel.wpk discussion candidate defined by [`contract.json`](contract.json). The machine output conforms to `typed-candidate-envelope-v1` and remains non-canonical.
+
+## Input contract
+
+Require one supplied opaque `decision_candidate_id`. Request type is closed to `diagnosis|emergency|formal_plan|learning_claim|medication_change|non_clinical|outcome_adjudication|reuse_claim|appointment_logistics`; risk flags are closed to `clinical_escalation|emergency|guardrail_requested`.
+
+## Output contract
+
+Emit a deterministic opaque `wpk_candidate_id` in `work_packet_candidate_ready` state. Canonical write, persistence, Registry admission, release, health-outcome claims, clinical-effectiveness claims, and runtime-observed claims are always false.
+
+## Procedure
+
+1. Validate strict inert input and closed request/risk vocabularies.
+2. Require DEC before constructing WPK.
+3. Copy supplied facts, unknowns, and assumptions without promotion.
+4. Emit only the WPK candidate.
+
+## Authority and privacy boundaries
+
+Final authority is `subject` under the machine contract. AI is assistive; device evidence, automation, and Router are non-final. Repository PHI is forbidden. Runtime is ephemeral with no persistence and no logs.
+
+## Stop and escalation rules
+
+Stop when DEC is absent. Clinical or emergency requests escalate without a work packet. Emergency risk directs the learner to local emergency services; other clinical gates require clinician review.
+
+## Anti-patterns
+
+- Do not emit ACT without a WPK input.
+- Do not infer actions, outcomes, or learning.
+- Do not fabricate known facts, hide unknowns or assumptions, write Canon, persist, log, admit, or release.
