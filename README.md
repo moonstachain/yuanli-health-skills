@@ -23,6 +23,7 @@ Verify that committed output is byte-exact and validate the complete candidate:
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python3 scripts/generate_codex_adapter.py --check
 PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_codex_adapter.py --check-repository
+PYTHONDONTWRITEBYTECODE=1 python3 scripts/scan_public_content.py --check-current --check-history
 ```
 
 Candidate installation is by the verified directory

@@ -45,7 +45,7 @@ Qualification receipt: `../contracts/qualification-receipts/yuanli.health.meta.q
 
 ## Purpose
 
-Produce the bounded yuanli.health.meta.qualify discussion candidate defined by [`contract.json`](contract.json). Successful results use the top-level `full-suite-candidate-v1` schema; the nested `envelope` conforms to `typed-candidate-envelope-v1`. The result remains non-canonical.
+Produce the bounded yuanli.health.meta.qualify discussion candidate defined by [`contract.json`](../contracts/capabilities/yuanli.health.meta.qualify.json). Successful results use the top-level `full-suite-candidate-v1` schema; the nested `envelope` conforms to `typed-candidate-envelope-v1`. The result remains non-canonical.
 
 ## Input contract
 

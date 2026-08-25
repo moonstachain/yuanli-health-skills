@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 GENERATOR = ROOT / "scripts" / "generate_codex_adapter.py"
 VALIDATOR = ROOT / "scripts" / "validate_codex_adapter.py"
+PUBLIC_SCAN = ROOT / "scripts" / "scan_public_content.py"
 QUICK_VALIDATE = Path("/Users/liming/.codex/skills/.system/skill-creator/scripts/quick_validate.py")
 
 SOURCE_IDS = (
@@ -89,6 +90,12 @@ def rewrite_checksums(package: Path) -> None:
             continue
         lines.append(f"{hashlib.sha256(content).hexdigest()}  {relative}\n")
     (package / "SHA256SUMS").write_text("".join(lines), encoding="utf-8", newline="\n")
+
+
+def rewrite_metadata_hash(package: Path, metadata: Path) -> None:
+    document = json_document(metadata)
+    document["package_content_sha256"] = hashlib.sha256((package / "SHA256SUMS").read_bytes()).hexdigest()
+    metadata.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 def copy_repository(destination: Path) -> Path:

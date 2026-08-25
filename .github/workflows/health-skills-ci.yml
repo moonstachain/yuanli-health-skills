@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -27,6 +29,7 @@ jobs:
       - name: Zero-PHI, secret, marker, and cache gates
         shell: bash
         run: |
+          PYTHONDONTWRITEBYTECODE=1 python3 scripts/scan_public_content.py --check-current --check-history
           PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.test_full_suite_cases.FullSuiteCaseTests.test_fixture_contains_no_phi_shaped_fields_or_realistic_values tests.test_gold_cases.GoldCaseCorpusTests.test_corpus_omits_phi_shaped_fields_and_realistic_measurements -v
           ! rg -n 'AKIA[0-9A-Z]{16}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|gh[pousr]_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}' .
           ! rg -n '^(<<<<<<<|=======|>>>>>>>)' .

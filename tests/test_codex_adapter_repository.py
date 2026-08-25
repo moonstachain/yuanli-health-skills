@@ -61,6 +61,24 @@ class CodexAdapterRepositoryTests(unittest.TestCase):
             self.assertNotEqual(tampered.returncode, 0)
             self.assertIn("workflow secret", tampered.stderr)
 
+            generate(copied_package, root=repository, metadata=copied_metadata)
+            workflow.write_bytes((ROOT / ".github/workflows/health-skills-ci.yml").read_bytes())
+            workflow.write_text(
+                workflow.read_text(encoding="utf-8").replace(
+                    "PYTHONDONTWRITEBYTECODE=1 python3 scripts/scan_public_content.py --check-current --check-history\n",
+                    "",
+                ),
+                encoding="utf-8",
+            )
+            missing_phi_gate = validate(
+                copied_package,
+                root=repository,
+                metadata=copied_metadata,
+                repository=True,
+            )
+            self.assertNotEqual(missing_phi_gate.returncode, 0)
+            self.assertIn("workflow gate missing", missing_phi_gate.stderr)
+
     def test_bundled_quick_validator_accepts_generated_root_skill(self):
         if not QUICK_VALIDATE.is_file():
             self.skipTest("bundled Codex quick validator is not installed on this host")

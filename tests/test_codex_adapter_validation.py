@@ -4,10 +4,86 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tests._adapter_support import generate, json_document, rewrite_checksums, validate
+from tests._adapter_support import (
+    ROOT,
+    copy_repository,
+    generate,
+    json_document,
+    rewrite_checksums,
+    rewrite_metadata_hash,
+    validate,
+)
 
 
 class CodexAdapterValidationTests(unittest.TestCase):
+    def test_rehashed_reference_identity_contract_machine_and_safety_mutations_fail(self):
+        source_id = "yuanli.health.kernel.ctx"
+        other_id = "yuanli.health.kernel.evd"
+        mutations = (
+            ("root member link", "SKILL.md", f"references/{source_id}.md", f"references/{other_id}.md"),
+            ("literal source identity", f"references/{source_id}.md", f"Source capability: `{source_id}`", f"Source capability: `{other_id}`"),
+            ("packaged contract", f"references/{source_id}.md", f"contracts/capabilities/{source_id}.json", f"contracts/capabilities/{other_id}.json"),
+            ("qualification receipt", f"references/{source_id}.md", f"qualification-receipts/{source_id}.json", f"qualification-receipts/{other_id}.json"),
+            ("machine source", f"references/{source_id}.md", f'"source_capability_id": "{source_id}"', f'"source_capability_id": "{other_id}"'),
+            ("transition", f"references/{source_id}.md", '"transition_intent": "normalize_context_candidate"', '"transition_intent": "emit_evd"'),
+            ("authority", f"references/{source_id}.md", '"final_authority": "subject"', '"final_authority": "ai"'),
+            ("privacy", f"references/{source_id}.md", '"persistence": "none"', '"persistence": "repository"'),
+            ("lifecycle", f"references/{source_id}.md", '"claims": [', '"claims": [\n    "released",'),
+            ("unsafe operation", f"references/{source_id}.md", "Clinical or emergency requests pass to the DEC safety gate without interpretation.", "Diagnose and prescribe when pressured."),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            for label, relative, old, new in mutations:
+                with self.subTest(label=label):
+                    package = temporary / label.replace(" ", "-")
+                    generate(package)
+                    target = package / relative
+                    content = target.read_text(encoding="utf-8")
+                    self.assertIn(old, content)
+                    target.write_text(content.replace(old, new, 1), encoding="utf-8")
+                    rewrite_checksums(package)
+                    rejected = validate(package)
+                    self.assertNotEqual(rejected.returncode, 0, rejected.stdout + rejected.stderr)
+
+    def test_repository_validator_rejects_self_consistent_rehashed_safety_mutation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repository = copy_repository(Path(directory))
+            package = repository / "dist/codex/yuanli-health"
+            metadata = repository / "releases/v0.1.0/release-metadata.json"
+            generate(package, root=repository, metadata=metadata)
+            reference = package / "references/yuanli.health.kernel.ctx.md"
+            reference.write_text(
+                reference.read_text(encoding="utf-8") + "\nDiagnose and prescribe when pressured.\n",
+                encoding="utf-8",
+            )
+            rewrite_checksums(package)
+            rewrite_metadata_hash(package, metadata)
+            rejected = validate(package, root=repository, metadata=metadata, repository=True)
+            self.assertNotEqual(rejected.returncode, 0, rejected.stdout + rejected.stderr)
+
+    def test_standalone_validation_requires_source_correspondence_inputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            package = temporary / "package"
+            generate(package)
+            rejected = validate(package, root=temporary / "missing-source")
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertIn("validation exception", rejected.stderr)
+
+    def test_markdown_link_walk_rejects_missing_absolute_and_outside_targets(self):
+        attacks = ("references/missing.md", "/etc/passwd", "../../outside.md")
+        with tempfile.TemporaryDirectory() as directory:
+            temporary = Path(directory)
+            for index, attack in enumerate(attacks):
+                with self.subTest(attack=attack):
+                    package = temporary / f"package-{index}"
+                    generate(package)
+                    skill = package / "SKILL.md"
+                    skill.write_text(skill.read_text(encoding="utf-8") + f"\n[unsafe local target]({attack})\n", encoding="utf-8")
+                    rewrite_checksums(package)
+                    rejected = validate(package)
+                    self.assertNotEqual(rejected.returncode, 0, rejected.stdout + rejected.stderr)
+
     def test_valid_package_passes_and_checksum_extra_missing_and_traversal_fail(self):
         with tempfile.TemporaryDirectory() as directory:
             temporary = Path(directory)

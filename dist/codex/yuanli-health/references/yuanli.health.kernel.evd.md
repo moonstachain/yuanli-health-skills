@@ -41,7 +41,7 @@ Qualification receipt: `../contracts/qualification-receipts/yuanli.health.kernel
 
 ## Purpose
 
-Organize supplied evidence for inspection without deciding health priority. The machine contract is [`contract.json`](contract.json); outputs conform to `typed-candidate-envelope-v1`.
+Organize supplied evidence for inspection without deciding health priority. The machine contract is [`contract.json`](../contracts/capabilities/yuanli.health.kernel.evd.json); outputs conform to `typed-candidate-envelope-v1`.
 
 ## Input contract
 

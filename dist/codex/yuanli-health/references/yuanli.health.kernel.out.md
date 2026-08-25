@@ -40,7 +40,7 @@ Qualification receipt: `../contracts/qualification-receipts/yuanli.health.kernel
 
 ## Purpose
 
-Produce the bounded yuanli.health.kernel.out discussion candidate defined by [`contract.json`](contract.json). Successful results use the top-level `full-suite-candidate-v1` schema; the nested `envelope` conforms to `typed-candidate-envelope-v1`. The result remains non-canonical.
+Produce the bounded yuanli.health.kernel.out discussion candidate defined by [`contract.json`](../contracts/capabilities/yuanli.health.kernel.out.json). Successful results use the top-level `full-suite-candidate-v1` schema; the nested `envelope` conforms to `typed-candidate-envelope-v1`. The result remains non-canonical.
 
 ## Input contract
 

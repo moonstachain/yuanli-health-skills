@@ -12,6 +12,8 @@ import tomllib
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from codex_adapter_reference import render_reference
+
 
 PACKAGE_RELATIVE = Path("dist/codex/yuanli-health")
 METADATA_RELATIVE = Path("releases/v0.1.0/release-metadata.json")
@@ -99,6 +101,63 @@ def _expected_paths(source_ids: tuple[str, ...]) -> set[str]:
     return paths
 
 
+def _markdown_targets(content: str) -> tuple[str, ...]:
+    return tuple(re.findall(r"(?<!!)\[[^]\n]*\]\(([^)\n]+)\)", content))
+
+
+def _local_link_path(markdown_path: str, raw_target: str) -> tuple[str | None, str | None]:
+    target = raw_target.strip()
+    if target.startswith("<") and target.endswith(">"):
+        target = target[1:-1]
+    else:
+        target = target.split(maxsplit=1)[0]
+    if re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", target):
+        scheme = target.split(":", 1)[0].lower()
+        return (None, None) if scheme in {"http", "https", "mailto"} else (None, "unsupported link scheme")
+    target = target.split("#", 1)[0].split("?", 1)[0]
+    if not target:
+        return None, None
+    path = PurePosixPath(target)
+    if path.is_absolute() or "\\" in target:
+        return None, "absolute link forbidden"
+    parts: list[str] = []
+    for part in (PurePosixPath(markdown_path).parent / path).parts:
+        if part in {"", "."}:
+            continue
+        if part == "..":
+            if not parts:
+                return None, "link escapes package"
+            parts.pop()
+        else:
+            parts.append(part)
+    return PurePosixPath(*parts).as_posix(), None
+
+
+def _validate_markdown_links(files: dict[str, bytes], expected: set[str], source_ids: tuple[str, ...]) -> list[str]:
+    issues: list[str] = []
+    markdown_paths = ("SKILL.md", *(f"references/{source_id}.md" for source_id in source_ids))
+    for markdown_path in markdown_paths:
+        for raw_target in _markdown_targets(files[markdown_path].decode("utf-8")):
+            target, error = _local_link_path(markdown_path, raw_target)
+            if error is not None:
+                issues.append(f"markdown link invalid: {markdown_path}: {error}")
+                continue
+            if target is None:
+                continue
+            if target not in expected or target not in files:
+                issues.append(f"markdown link target missing or forbidden: {markdown_path}")
+                continue
+            if markdown_path.startswith("references/"):
+                source_id = markdown_path.removeprefix("references/").removesuffix(".md")
+                contract_prefix = "contracts/capabilities/"
+                receipt_prefix = "contracts/qualification-receipts/"
+                if target.startswith(contract_prefix) and target != f"{contract_prefix}{source_id}.json":
+                    issues.append(f"member contract link mismatch: {source_id}")
+                if target.startswith(receipt_prefix) and target != f"{receipt_prefix}{source_id}.json":
+                    issues.append(f"member receipt link mismatch: {source_id}")
+    return issues
+
+
 def validate_package(root: Path, package: Path) -> tuple[list[str], str | None, int]:
     validate_contract, validate_receipt, validate_source_registry = _load_validators(root)
     issues: list[str] = []
@@ -134,6 +193,7 @@ def validate_package(root: Path, package: Path) -> tuple[list[str], str | None, 
     links = set(re.findall(r"\(references/([a-z0-9.-]+)\.md\)", files["SKILL.md"].decode("utf-8")))
     if links != set(source_ids):
         issues.append("root Skill member links mismatch")
+    issues.extend(_validate_markdown_links(files, expected, source_ids))
 
     manifest = _json(package / "contracts/suite-source-manifest.json")
     manifest_result = validate_source_registry(manifest)
@@ -145,9 +205,10 @@ def validate_package(root: Path, package: Path) -> tuple[list[str], str | None, 
         issues.append("registry map identity/order/null mismatch")
 
     for source_id in source_ids:
+        source_contract = _json(root / "capabilities" / source_id / "contract.json")
         contract = _json(package / "contracts/capabilities" / f"{source_id}.json")
         receipt = _json(package / "contracts/qualification-receipts" / f"{source_id}.json")
-        if not validate_contract(contract).ok or contract != _json(root / "capabilities" / source_id / "contract.json"):
+        if not validate_contract(contract).ok or contract != source_contract:
             issues.append(f"contract mismatch: {source_id}")
         expected_receipt = {
             "schema": "qualification-receipt-v1",
@@ -159,9 +220,13 @@ def validate_package(root: Path, package: Path) -> tuple[list[str], str | None, 
         }
         if not validate_receipt(receipt).ok or receipt != expected_receipt:
             issues.append(f"receipt mismatch: {source_id}")
-        reference = files[f"references/{source_id}.md"].decode("utf-8")
+        reference_bytes = files[f"references/{source_id}.md"]
+        reference = reference_bytes.decode("utf-8")
         if reference.count(f"Source capability: `{source_id}`") != 1:
             issues.append(f"reference identity mismatch: {source_id}")
+        source_instructions = (root / "capabilities" / source_id / "instructions.md").read_text(encoding="utf-8")
+        if reference_bytes != render_reference(source_id, source_contract, source_instructions):
+            issues.append(f"reference source correspondence mismatch: {source_id}")
 
     if files["LICENSE"] != (root / "LICENSE").read_bytes() or not files["LICENSE"].startswith(b"Apache License\nVersion 2.0"):
         issues.append("license mismatch")
@@ -217,6 +282,8 @@ def validate_repository(root: Path) -> list[str]:
         "scripts/validate_capabilities.py",
         "scripts/generate_codex_adapter.py --check",
         "scripts/validate_codex_adapter.py --check-repository",
+        "scripts/scan_public_content.py --check-current --check-history",
+        "fetch-depth: 0",
     ):
         if required not in workflow:
             issues.append(f"workflow gate missing: {required}")
@@ -242,7 +309,7 @@ def main(argv: list[str] | None = None) -> int:
             issues.extend(validate_metadata(metadata, content_hash or "", file_count))
         if args.check_repository:
             issues.extend(validate_repository(root))
-    except (OSError, ValueError, json.JSONDecodeError, DuplicateKeyError) as exc:
+    except (OSError, ValueError, json.JSONDecodeError, DuplicateKeyError, ImportError) as exc:
         issues = [f"validation exception: {exc}"]
         content_hash = None
         file_count = 0

@@ -39,7 +39,7 @@ Qualification receipt: `../contracts/qualification-receipts/yuanli.health.kernel
 
 ## Purpose
 
-Normalize only supplied goal, constraints, declared unknowns, and assumptions into a CTX candidate. The machine contract is [`contract.json`](contract.json); outputs conform to `typed-candidate-envelope-v1`.
+Normalize only supplied goal, constraints, declared unknowns, and assumptions into a CTX candidate. The machine contract is [`contract.json`](../contracts/capabilities/yuanli.health.kernel.ctx.json); outputs conform to `typed-candidate-envelope-v1`.
 
 ## Input contract
 

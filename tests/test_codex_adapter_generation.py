@@ -1,6 +1,7 @@
 import copy
 import hashlib
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -53,6 +54,20 @@ class CodexAdapterGenerationTests(unittest.TestCase):
                             "canonical_write": False,
                         },
                     )
+                    reference_path = package / "references" / f"{source_id}.md"
+                    links = re.findall(r"\[[^]]*\]\(([^) ]+)\)", reference_path.read_text(encoding="utf-8"))
+                    packaged_contract = f"../contracts/capabilities/{source_id}.json"
+                    self.assertEqual(links.count(packaged_contract), 1)
+                    self.assertNotIn("contract.json", links)
+
+            markdown_files = [package / "SKILL.md", *(package / "references").glob("*.md")]
+            for markdown in markdown_files:
+                for target in re.findall(r"\[[^]]*\]\(([^) ]+)\)", markdown.read_text(encoding="utf-8")):
+                    with self.subTest(markdown=markdown.name, target=target):
+                        resolved = (markdown.parent / target).resolve()
+                        resolved.relative_to(package.resolve())
+                        self.assertTrue(resolved.is_file())
+                        self.assertFalse(resolved.is_symlink())
 
             expected_lines = [
                 f"{hashlib.sha256(content).hexdigest()}  {relative}\n"

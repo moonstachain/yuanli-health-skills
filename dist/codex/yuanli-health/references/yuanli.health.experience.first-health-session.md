@@ -43,7 +43,7 @@ Qualification receipt: `../contracts/qualification-receipts/yuanli.health.experi
 
 ## Purpose
 
-Orchestrate the platform-neutral `CTX -> EVD -> DEC` Gold Slice into a `decision_candidate_ready` bundle. The machine contract is [`contract.json`](contract.json); every stage output conforms to `typed-candidate-envelope-v1`.
+Orchestrate the platform-neutral `CTX -> EVD -> DEC` Gold Slice into a `decision_candidate_ready` bundle. The machine contract is [`contract.json`](../contracts/capabilities/yuanli.health.experience.first-health-session.json); every stage output conforms to `typed-candidate-envelope-v1`.
 
 ## Input contract
 

@@ -41,7 +41,7 @@ Qualification receipt: `../contracts/qualification-receipts/yuanli.health.kernel
 
 ## Purpose
 
-Select at most one non-clinical primary bottleneck from supplied candidate-to-evidence links. The machine contract is [`contract.json`](contract.json); outputs conform to `typed-candidate-envelope-v1`.
+Select at most one non-clinical primary bottleneck from supplied candidate-to-evidence links. The machine contract is [`contract.json`](../contracts/capabilities/yuanli.health.kernel.dec.json); outputs conform to `typed-candidate-envelope-v1`.
 
 ## Input contract
 
