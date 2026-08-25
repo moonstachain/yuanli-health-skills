@@ -54,6 +54,28 @@ _MEASUREMENT_KEYS = frozenset(
     )
 )
 
+_MAX_CONTENT_BYTES = 2 * 1024 * 1024
+_MAX_JSON_DEPTH = 128
+_MAX_JSON_NODES = 100_000
+_MAX_RELATIONS_PER_LINE = 512
+_LABEL_WINDOW = 256
+
+
+class ScanError(ValueError):
+    """Base class for stable, redacted scanner failures."""
+
+
+class ScanBudgetError(ScanError):
+    """Input exceeded a deterministic scanner work budget."""
+
+
+class ScanDepthError(ScanError):
+    """Structured input exceeded the accepted nesting depth."""
+
+
+class ScanFormatError(ScanError):
+    """Structured input is malformed."""
+
 
 def _git(root: Path, *arguments: str, binary: bool = False) -> bytes | str:
     result = subprocess.run(
@@ -205,54 +227,12 @@ def _label_candidates(prefix: str):
             yield match.group(0), start
 
 
-def _containing_quote(line: str, separator: int) -> str | None:
+def _relation_points(line: str):
     quote: str | None = None
     escaped = False
-    for index, character in enumerate(line[:separator]):
-        if escaped:
-            escaped = False
-            continue
-        if character == "\\":
-            escaped = True
-            continue
-        if quote is not None:
-            if character == quote:
-                quote = None
-            continue
-        if character in "\"'":
-            if character == "'" and 0 < index < len(line) - 1 and line[index - 1].isalnum() and line[index + 1].isalnum():
-                continue
-            quote = character
-    return quote
-
-
-def _relation_value(line: str, start: int, containing_quote: str | None) -> str:
-    while start < len(line) and line[start] in " \t":
-        start += 1
-    if start >= len(line):
-        return ""
-    if containing_quote is not None:
-        index = start
-        escaped = False
-        while index < len(line):
-            character = line[index]
-            if not escaped and character == "\\" and index + 1 < len(line) and line[index + 1] == "n":
-                break
-            if escaped:
-                escaped = False
-            elif character == "\\":
-                escaped = True
-            elif character == containing_quote:
-                break
-            index += 1
-        return line[start:index].strip()
-    stack: list[str] = []
-    quote: str | None = None
-    escaped = False
-    pairs = {"{": "}", "[": "]", "(": ")"}
-    index = start
-    while index < len(line):
-        character = line[index]
+    for index, character in enumerate(line):
+        if character in ":=":
+            yield index, quote
         if escaped:
             escaped = False
         elif character == "\\":
@@ -261,15 +241,36 @@ def _relation_value(line: str, start: int, containing_quote: str | None) -> str:
             if character == quote:
                 quote = None
         elif character in "\"'":
-            quote = character
-        elif character in pairs:
-            stack.append(pairs[character])
-        elif stack and character == stack[-1]:
-            stack.pop()
-        elif not stack and character in ";,|":
-            break
-        index += 1
-    return line[start:index].strip()
+            if character != "'" or not (
+                0 < index < len(line) - 1
+                and line[index - 1].isalnum()
+                and line[index + 1].isalnum()
+            ):
+                quote = character
+
+
+def _same_line_value_state(line: str, start: int, containing_quote: str | None) -> str:
+    while start < len(line) and line[start] in " \t":
+        start += 1
+    if start == len(line):
+        return "empty"
+    if containing_quote is not None and line[start] == containing_quote:
+        return "empty"
+    placeholder = _INERT_PLACEHOLDER.match(line, start)
+    if placeholder is not None:
+        cursor = placeholder.end()
+        while cursor < len(line) and line[cursor] in " \t":
+            cursor += 1
+        if cursor == len(line) or (
+            containing_quote is not None
+            and (
+                line[cursor] == containing_quote
+                or line.startswith("\\n", cursor)
+                or line.startswith("\\r", cursor)
+            )
+        ):
+            return "placeholder"
+    return "observable"
 
 
 def _exact_taxonomy_declaration(line: str) -> bool:
@@ -285,13 +286,13 @@ def _machine_label_classes(text: str) -> set[str]:
     for line in text.splitlines():
         if _exact_taxonomy_declaration(line):
             continue
-        for separator, character in enumerate(line):
-            if character not in ":=":
-                continue
-            raw_value = _relation_value(line, separator + 1, _containing_quote(line, separator))
-            if not raw_value or _INERT_PLACEHOLDER.fullmatch(raw_value):
-                continue
-            prefix = line[:separator]
+        relations = 0
+        for separator, containing_quote in _relation_points(line):
+            relations += 1
+            if relations > _MAX_RELATIONS_PER_LINE:
+                raise ScanBudgetError("relation budget exceeded")
+            window_start = max(0, separator - _LABEL_WINDOW)
+            prefix = line[window_start:separator]
             for key, start in _label_candidates(prefix):
                 finding = _machine_key_class(key)
                 if finding is None:
@@ -300,37 +301,82 @@ def _machine_label_classes(text: str) -> set[str]:
                 normalized_key = "_".join(_normalize_machine_key(key))
                 if diagnostic_prefix.endswith(("PHI_CURRENT:", "PHI_HISTORY:")) and normalized_key == finding:
                     continue
-                findings.add(finding)
+                value_state = _same_line_value_state(line, separator + 1, containing_quote)
+                if value_state == "observable" or (value_state == "empty" and containing_quote is None):
+                    findings.add(finding)
     return findings
+
+
+def _preflight_json(text: str) -> None:
+    stack: list[str] = []
+    quote = False
+    escaped = False
+    pairs = {"{": "}", "[": "]"}
+    for character in text:
+        if quote:
+            if escaped:
+                escaped = False
+            elif character == "\\":
+                escaped = True
+            elif character == '"':
+                quote = False
+            continue
+        if character == '"':
+            quote = True
+        elif character in pairs:
+            stack.append(pairs[character])
+            if len(stack) > _MAX_JSON_DEPTH:
+                raise ScanDepthError("JSON depth exceeded")
+        elif character in "}]":
+            if not stack or stack.pop() != character:
+                raise ScanFormatError("JSON delimiter mismatch")
+    if quote or stack:
+        raise ScanFormatError("JSON delimiter incomplete")
 
 
 def _json_key_classes(value: Any) -> set[str]:
     findings: set[str] = set()
-    if isinstance(value, dict):
-        for key, child in value.items():
-            finding = _machine_key_class(key)
-            inert_placeholder = isinstance(child, str) and _INERT_PLACEHOLDER.fullmatch(child.strip()) is not None
-            empty_scalar = isinstance(child, str) and not child.strip()
-            if finding is not None and not inert_placeholder and not empty_scalar:
-                findings.add(finding)
-            findings.update(_json_key_classes(child))
-    elif isinstance(value, list):
-        for child in value:
-            findings.update(_json_key_classes(child))
+    stack = [value]
+    nodes = 0
+    while stack:
+        current = stack.pop()
+        nodes += 1
+        if nodes > _MAX_JSON_NODES:
+            raise ScanBudgetError("JSON node budget exceeded")
+        if isinstance(current, dict):
+            for key, child in current.items():
+                finding = _machine_key_class(key)
+                inert_placeholder = (
+                    isinstance(child, str)
+                    and _INERT_PLACEHOLDER.fullmatch(child.strip()) is not None
+                )
+                if finding is not None and not inert_placeholder:
+                    findings.add(finding)
+                stack.append(child)
+        elif isinstance(current, list):
+            stack.extend(current)
     return findings
 
 
 def finding_classes(path: str, content: bytes) -> tuple[str, ...]:
+    if len(content) > _MAX_CONTENT_BYTES:
+        raise ScanBudgetError("content byte budget exceeded")
     text = _text(content)
     if text is None:
         return ()
+    structured: Any | None = None
+    if Path(path).suffix.lower() == ".json":
+        _preflight_json(text)
+        try:
+            structured = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise ScanFormatError("malformed JSON") from exc
+        except RecursionError as exc:
+            raise ScanDepthError("JSON decoder depth exceeded") from exc
     findings = {label for label, pattern in _PATTERNS if pattern.search(text)}
     findings.update(_machine_label_classes(text))
-    if Path(path).suffix.lower() == ".json":
-        try:
-            findings.update(_json_key_classes(json.loads(text)))
-        except json.JSONDecodeError:
-            pass
+    if structured is not None:
+        findings.update(_json_key_classes(structured))
     return tuple(sorted(findings))
 
 

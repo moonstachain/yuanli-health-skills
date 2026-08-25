@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from codex_adapter_reference import render_reference, render_root
+from codex_adapter_reference import render_checksum_manifest, render_reference, render_root
 
 
 PACKAGE_RELATIVE = Path("dist/codex/yuanli-health")
@@ -76,11 +76,7 @@ def build_package(root: Path) -> tuple[dict[str, bytes], dict[str, Any]]:
                 "canonical_write": False,
             }
         )
-    checksum_lines = [
-        f"{hashlib.sha256(content).hexdigest()}  {relative}\n"
-        for relative, content in sorted(files.items())
-    ]
-    files["SHA256SUMS"] = "".join(checksum_lines).encode("utf-8")
+    files["SHA256SUMS"] = render_checksum_manifest(files)
     return files, registry
 
 

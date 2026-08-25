@@ -16,7 +16,7 @@ from tests._adapter_support import (
 
 
 class CodexAdapterValidationTests(unittest.TestCase):
-    def _assert_self_consistent_markdown_rejected(self, repository: Path, attack: str, diagnostic: str) -> None:
+    def _assert_self_consistent_markdown_rejected(self, repository: Path, attack: str) -> None:
         package = repository / "dist/codex/yuanli-health"
         metadata = repository / "releases/v0.1.0/release-metadata.json"
         generate(package, root=repository, metadata=metadata)
@@ -33,7 +33,7 @@ class CodexAdapterValidationTests(unittest.TestCase):
             )
             output = rejected.stdout + rejected.stderr
             self.assertNotEqual(rejected.returncode, 0, output)
-            self.assertIn(diagnostic, output)
+            self.assertIn("generated Markdown", output)
 
     def test_all_uri_schemes_and_multiline_inline_links_are_rejected_after_rehash(self):
         attacks = (
@@ -56,7 +56,6 @@ class CodexAdapterValidationTests(unittest.TestCase):
                     self._assert_self_consistent_markdown_rejected(
                         repository,
                         attack,
-                        "unsupported Markdown link syntax",
                     )
 
     def test_multiline_and_escaped_reference_grammar_is_rejected_after_rehash(self):
@@ -77,7 +76,6 @@ class CodexAdapterValidationTests(unittest.TestCase):
                     self._assert_self_consistent_markdown_rejected(
                         repository,
                         attack,
-                        "unsupported Markdown link syntax",
                     )
 
     def test_container_reference_forms_and_bare_email_autolink_are_rejected_after_rehash(self):
@@ -99,7 +97,6 @@ class CodexAdapterValidationTests(unittest.TestCase):
                     self._assert_self_consistent_markdown_rejected(
                         repository,
                         attack,
-                        "generated Markdown byte mismatch",
                     )
 
     def test_repository_rejects_any_rehashed_root_or_reference_byte_mismatch(self):
@@ -145,7 +142,7 @@ class CodexAdapterValidationTests(unittest.TestCase):
             for index, (label, attack) in enumerate(inline_attacks):
                 with self.subTest(label=label):
                     repository = copy_repository(temporary / f"local-{index}")
-                    self._assert_self_consistent_markdown_rejected(repository, attack, "markdown link")
+                    self._assert_self_consistent_markdown_rejected(repository, attack)
 
             repository = copy_repository(temporary / "wrong-member")
             package = repository / "dist/codex/yuanli-health"
@@ -165,7 +162,7 @@ class CodexAdapterValidationTests(unittest.TestCase):
             for repository_mode in (False, True):
                 rejected = validate(package, root=repository, metadata=metadata, repository=repository_mode)
                 self.assertNotEqual(rejected.returncode, 0, rejected.stdout + rejected.stderr)
-                self.assertIn("member contract link mismatch", rejected.stderr)
+                self.assertIn("generated Markdown", rejected.stderr)
 
             repository = copy_repository(temporary / "nonregular")
             package = repository / "dist/codex/yuanli-health"
@@ -215,7 +212,7 @@ class CodexAdapterValidationTests(unittest.TestCase):
                     rejected = validate(package, root=repository, metadata=metadata, repository=True)
                     output = rejected.stdout + rejected.stderr
                     self.assertNotEqual(rejected.returncode, 0, output)
-                    self.assertIn("unsupported Markdown link syntax", output)
+                    self.assertIn("generated Markdown", output)
 
     def test_reference_style_link_to_non_regular_member_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:

@@ -1,13 +1,13 @@
 """Pure deterministic rendering for generated Codex Markdown."""
 
+import hashlib
 import json
 import re
 from typing import Any
 
 
-_SOURCE_CONTRACT_LINK = re.compile(
-    r"(?<!!)\[(?P<label>[^]\r\n]+)\]\((?P<target>[^()\r\n]+)\)"
-)
+_CONTRACT_LABEL = "`contract.json`"
+_CONTAINER_PREFIX = re.compile(r"^[ \t]{0,3}(?:>|[-+*][ \t]+|[0-9]+[.)][ \t]+)")
 
 _EXPERIENCE_ROUTES = (
     ("first health session / 首次健康会话", "yuanli.health.experience.first-health-session"),
@@ -19,83 +19,97 @@ _EXPERIENCE_ROUTES = (
 )
 
 
-def _escaped(content: str, index: int) -> bool:
-    backslashes = 0
-    index -= 1
-    while index >= 0 and content[index] == "\\":
-        backslashes += 1
-        index -= 1
-    return backslashes % 2 == 1
+def _contract_token(target: str) -> str:
+    return f"[{_CONTRACT_LABEL}]({target})"
 
 
-def mask_markdown_code_literals(content: str) -> str:
-    """Mask closed code spans/fences while preserving offsets and newlines."""
-    masked = list(content)
+def _closed_instruction_projection(
+    source_id: str,
+    instructions: str,
+    *,
+    contract_target: str,
+    replacement_target: str | None = None,
+) -> str:
+    """Lex the deliberately closed instruction grammar in one forward pass."""
+    if "\r" in instructions or "\0" in instructions:
+        raise ValueError(f"source Markdown link policy: non-canonical text bytes: {source_id}")
+    if not instructions.endswith("\n") or instructions.endswith("\n\n"):
+        raise ValueError(f"source Markdown link policy: exact final LF required: {source_id}")
+
+    token = _contract_token(contract_target)
+    replacement = _contract_token(replacement_target or contract_target)
+    output: list[str] = []
+    links = 0
     index = 0
-    fence: tuple[str, int] | None = None
-    while index < len(content):
-        line_start = content.rfind("\n", 0, index) + 1
-        at_line_prefix = content[line_start:index].strip(" ") == ""
-        if at_line_prefix and index - line_start <= 3 and content[index] in {"`", "~"}:
-            marker = content[index]
-            run_end = index
-            while run_end < len(content) and content[run_end] == marker:
-                run_end += 1
-            run_length = run_end - index
-            if run_length >= 3:
-                if fence is None:
-                    fence = (marker, run_length)
-                elif fence[0] == marker and run_length >= fence[1]:
-                    fence = None
-                line_end = content.find("\n", run_end)
-                stop = len(content) if line_end < 0 else line_end
-                for position in range(index, stop):
-                    masked[position] = " "
-                index = stop
-                continue
-        if fence is not None:
-            if content[index] != "\n":
-                masked[index] = " "
-            index += 1
+    while index < len(instructions):
+        if instructions.startswith(token, index):
+            line_start = instructions.rfind("\n", 0, index) + 1
+            line_prefix = instructions[line_start:index]
+            if (
+                (index > 0 and instructions[index - 1] == "!")
+                or line_prefix.startswith(("    ", "\t"))
+                or _CONTAINER_PREFIX.match(line_prefix)
+            ):
+                raise ValueError(f"source Markdown link policy: contract link container forbidden: {source_id}")
+            links += 1
+            output.append(replacement)
+            index += len(token)
             continue
-        if content[index] == "`" and not _escaped(content, index):
-            run_end = index
-            while run_end < len(content) and content[run_end] == "`":
-                run_end += 1
-            marker = content[index:run_end]
-            close = content.find(marker, run_end)
-            if close < 0:
-                raise ValueError("source Markdown link policy: unterminated code span")
-            for position in range(index, close + len(marker)):
-                if content[position] != "\n":
-                    masked[position] = " "
-            index = close + len(marker)
+
+        character = instructions[index]
+        if character == "\\":
+            raise ValueError(f"source Markdown link policy: backslash escapes forbidden: {source_id}")
+        if character in "[]":
+            raise ValueError(f"source Markdown link policy: unsupported bracket syntax: {source_id}")
+        if character in "<>":
+            raise ValueError(f"source Markdown link policy: raw autolink syntax forbidden: {source_id}")
+        if character == "~" and instructions.startswith("~~~", index):
+            raise ValueError(f"source Markdown link policy: fenced code forbidden: {source_id}")
+        if character == "`":
+            if (index > 0 and instructions[index - 1] == "`") or instructions.startswith("``", index):
+                raise ValueError(f"source Markdown link policy: multi-backtick runs forbidden: {source_id}")
+            close = instructions.find("`", index + 1)
+            newline = instructions.find("\n", index + 1)
+            if close < 0 or (newline >= 0 and newline < close) or close == index + 1:
+                raise ValueError(f"source Markdown link policy: invalid inline code span: {source_id}")
+            if close + 1 < len(instructions) and instructions[close + 1] == "`":
+                raise ValueError(f"source Markdown link policy: multi-backtick runs forbidden: {source_id}")
+            output.append(instructions[index:close + 1])
+            index = close + 1
             continue
+        output.append(character)
         index += 1
-    if fence is not None:
-        raise ValueError("source Markdown link policy: unterminated code fence")
-    return "".join(masked)
+
+    if links != 1:
+        raise ValueError(f"source Markdown link policy: expected one exact contract link: {source_id}")
+    return "".join(output)
+
+
+def validate_instruction_projection(source_id: str, instructions: str, contract_target: str) -> str:
+    """Validate an emitted instruction projection and return its exact text."""
+    return _closed_instruction_projection(
+        source_id,
+        instructions,
+        contract_target=contract_target,
+    )
 
 
 def _rewrite_single_source_contract_link(source_id: str, instructions: str) -> str:
-    normalized = instructions.replace("\r\n", "\n").replace("\r", "\n")
-    links = tuple(_SOURCE_CONTRACT_LINK.finditer(normalized))
-    if len(links) != 1 or links[0].group("target") != "contract.json":
-        raise ValueError(f"source Markdown link policy: expected one contract.json link: {source_id}")
-    link = links[0]
-    masked_link = normalized[:link.start()] + " " * (link.end() - link.start()) + normalized[link.end():]
-    active = mask_markdown_code_literals(masked_link)
-    if re.search(r"(?<!\\)!?\[|(?<!\\)\]", active):
-        raise ValueError(f"source Markdown link policy: unsupported bracket syntax: {source_id}")
-    for autolink in re.finditer(r"(?<!\\)<([^>\r\n]+)>", active):
-        body = autolink.group(1)
-        if re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", body) or re.fullmatch(
-            r"[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9.-]+",
-            body,
-        ):
-            raise ValueError(f"source Markdown link policy: autolink forbidden: {source_id}")
-    packaged_contract = f"../contracts/capabilities/{source_id}.json"
-    return normalized[:link.start("target")] + packaged_contract + normalized[link.end("target"):]
+    return _closed_instruction_projection(
+        source_id,
+        instructions,
+        contract_target="contract.json",
+        replacement_target=f"../contracts/capabilities/{source_id}.json",
+    )
+
+
+def render_checksum_manifest(files: dict[str, bytes]) -> bytes:
+    """Render exact lowercase SHA-256 entries in lexical path order with one final LF."""
+    return "".join(
+        f"{hashlib.sha256(content).hexdigest()}  {relative}\n"
+        for relative, content in sorted(files.items())
+        if relative != "SHA256SUMS"
+    ).encode("utf-8")
 
 
 def render_root(source_ids: tuple[str, ...]) -> bytes:

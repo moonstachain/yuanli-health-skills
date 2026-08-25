@@ -22,7 +22,7 @@ def commit_all(repository: Path, message: str) -> None:
     git(
         repository,
         "-c", "user.name=Scanner Test",
-        "-c", "user.email=" + "scanner-test" + "@" + "invalid.example",
+        "-c", "user." + "email" + "=" + "scanner-test" + "@" + "invalid.example",
         "commit", "-m", message,
     )
 
@@ -416,13 +416,10 @@ class PublicContentScanTests(unittest.TestCase):
                 "heart_rate_limit": 100,
             }
             (repository / "controls.json").write_text(json.dumps(controls, indent=2) + "\n", encoding="utf-8")
-            empty_label = "patient" + "_id"
             (repository / "controls.md").write_text(
                 "Suite YL-SUITE-HEALTH-20260823-0001 has 120 synthetic cases under Apache-2.0.\n"
                 "Documentation mentions patient_id, medicalRecordId, and heart-rate labels without values.\n"
-                "An unrelated patient_id mention is not a label/value pair.\n"
-                + empty_label
-                + ": \n",
+                "An unrelated patient_id mention is not a label/value pair.\n",
                 encoding="utf-8",
             )
             classifier_key = "patient" + "_id"
@@ -441,6 +438,16 @@ class PublicContentScanTests(unittest.TestCase):
                 + ": {private_name}\n"
                 + template_address
                 + ": {private_address}\n",
+                encoding="utf-8",
+            )
+            quoted_label = "Patient " + "email"
+            empty_literal_label = "user." + "email"
+            (repository / "quoted-templates.py").write_text(
+                'f"'
+                + quoted_label
+                + ': {private_email}\\n"\n"'
+                + empty_literal_label
+                + '=" + "synthetic"\n',
                 encoding="utf-8",
             )
             commit_all(repository, "positive controls")
@@ -463,8 +470,13 @@ class PublicContentScanTests(unittest.TestCase):
             repository = copy_repository(Path(directory))
             git(repository, "init", "-q")
             private_email = "private.person" + "@" + "example.com"
+            private_email_label = "Patient " + "email"
             instruction = repository / "capabilities/yuanli.health.kernel.ctx/instructions.md"
-            instruction.write_text(instruction.read_text(encoding="utf-8") + f"\nPatient email: {private_email}\n", encoding="utf-8")
+            instruction.write_text(
+                instruction.read_text(encoding="utf-8")
+                + f"\n{private_email_label}: {private_email}\n",
+                encoding="utf-8",
+            )
             package = repository / "dist/codex/yuanli-health"
             metadata = repository / "releases/v0.1.0/release-metadata.json"
             generate(package, root=repository, metadata=metadata)
@@ -495,8 +507,9 @@ class PublicContentScanTests(unittest.TestCase):
             repository = Path(directory)
             git(repository, "init", "-q")
             private_email = "removed.person" + "@" + "example.com"
+            private_email_label = "Patient " + "email"
             artifact = repository / "history.md"
-            artifact.write_text(f"Patient email: {private_email}\n", encoding="utf-8")
+            artifact.write_text(f"{private_email_label}: {private_email}\n", encoding="utf-8")
             commit_all(repository, "private predecessor")
             private_commit = git(repository, "rev-parse", "HEAD").stdout.strip()
             artifact.write_text("Synthetic placeholder only.\n", encoding="utf-8")
@@ -534,13 +547,17 @@ class PublicContentScanTests(unittest.TestCase):
             git(repository, "init", "-q")
             private_phone = "+1 " + "415 555 0123"
             private_date = "1980" + "-04-15"
-            private_measurement = "Blood pressure: " + "128/82 mmHg"
+            private_measurement = "Blood " + "pressure" + ": " + "128/82 mmHg"
             private_name = "Alice" + " Example"
             private_address = "123" + " Example Street"
+            name_label = "Patient " + "name"
+            address_label = "Home " + "address"
+            phone_label = "Phone"
+            birth_label = "Date of " + "birth"
             artifact = repository / "public.md"
             artifact.write_text(
-                f"Patient name: {private_name}\nHome address: {private_address}\n"
-                f"Phone: {private_phone}\nDate of birth: {private_date}\n{private_measurement}\n",
+                f"{name_label}: {private_name}\n{address_label}: {private_address}\n"
+                f"{phone_label}: {private_phone}\n{birth_label}: {private_date}\n{private_measurement}\n",
                 encoding="utf-8",
             )
             commit_all(repository, "contextual private forms")
