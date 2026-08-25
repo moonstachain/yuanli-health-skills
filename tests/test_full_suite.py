@@ -102,6 +102,73 @@ class FullSuiteTests(unittest.TestCase):
             "full-suite-candidate-v1",
         )
 
+    def test_synthetic_case_count_large_integer_is_total_and_stable(self):
+        malformed = case_by_id("SYN-FS-111")
+        malformed["artifacts"]["synthetic_case_count"] = 10**5000
+        try:
+            first = self.full_suite.process_full_suite_case(malformed)
+            second = self.full_suite.process_full_suite_case(malformed)
+        except ValueError as exc:
+            self.fail(f"direct boundary leaked {type(exc).__name__}")
+        self.assertEqual(first, second)
+        self.assertEqual(first["schema"], "full-suite-error-v1")
+        self.assertEqual(first["candidate_state"], None)
+        self.assertEqual(first["output_artifacts"], {})
+        self.assertIs(first["transition_executed"], False)
+        self.assertEqual(
+            first["errors"],
+            [{"code": "INVALID_ARTIFACT", "path": "artifacts.synthetic_case_count"}],
+        )
+
+    def test_synthetic_case_count_has_a_finite_exact_boundary(self):
+        maximum = case_by_id("SYN-FS-111")
+        maximum["artifacts"]["synthetic_case_count"] = 1_000_000
+        accepted = self.full_suite.process_full_suite_case(maximum)
+        self.assertEqual(accepted["schema"], "full-suite-candidate-v1")
+        self.assertIn(
+            {"fact": "1000000", "evidence_reference": "artifact:synthetic_case_count"},
+            accepted["envelope"]["known"],
+        )
+
+        first_rejected = case_by_id("SYN-FS-111")
+        first_rejected["artifacts"]["synthetic_case_count"] = 1_000_001
+        result = self.full_suite.process_full_suite_case(first_rejected)
+        self.assertEqual(result["schema"], "full-suite-error-v1")
+        self.assertEqual(result["output_artifacts"], {})
+        self.assertIs(result["transition_executed"], False)
+        self.assertEqual(
+            result["errors"],
+            [{"code": "INVALID_ARTIFACT", "path": "artifacts.synthetic_case_count"}],
+        )
+
+    def test_synthetic_case_count_boundary_and_type_matrix_is_total(self):
+        probes = (
+            ("minimum", 10, "full-suite-candidate-v1", None),
+            ("near-maximum", 999_999, "full-suite-candidate-v1", None),
+            ("maximum", 1_000_000, "full-suite-candidate-v1", None),
+            ("first-over-maximum", 1_000_001, "full-suite-error-v1", "INVALID_ARTIFACT"),
+            ("large-magnitude", 10**100, "full-suite-error-v1", "INVALID_ARTIFACT"),
+            ("beyond-decimal-guard", 10**5000, "full-suite-error-v1", "INVALID_ARTIFACT"),
+            ("negative", -1, "full-suite-error-v1", "INVALID_ARTIFACT"),
+            ("boolean", True, "full-suite-error-v1", "INVALID_ARTIFACT"),
+            ("float", 10.0, "full-suite-error-v1", "INVALID_ARTIFACT"),
+            ("string", "10", "full-suite-error-v1", "INVALID_ARTIFACT"),
+        )
+        for label, count, schema, error_code in probes:
+            with self.subTest(label=label):
+                case = case_by_id("SYN-FS-111")
+                case["artifacts"]["synthetic_case_count"] = count
+                try:
+                    result = self.full_suite.process_full_suite_case(case)
+                except ValueError as exc:
+                    self.fail(f"{label} leaked {type(exc).__name__}")
+                self.assertEqual(result["schema"], schema)
+                if error_code is not None:
+                    self.assertEqual(
+                        result["errors"],
+                        [{"code": error_code, "path": "artifacts.synthetic_case_count"}],
+                    )
+
     def test_expected_fixture_is_not_an_implementation_input(self):
         case = case_by_id("SYN-FS-001")
         baseline = self.full_suite.process_full_suite_case(case)

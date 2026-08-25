@@ -43,6 +43,8 @@ _CLINICAL_RISKS = frozenset({"clinical_escalation", "emergency"})
 _TOKEN_PATTERN = re.compile(r"SYN-[A-Z0-9]+(?:-[A-Z0-9]+)*")
 _DOCTOR_VISIT = "yuanli.health.experience.doctor-visit-prep"
 _MAX_INERT_JSON_DEPTH = 128
+# Finite public range keeps exact known-fact decimal conversion safely bounded.
+_MAX_SYNTHETIC_CASE_COUNT = 1_000_000
 
 _CAPABILITIES: dict[str, dict[str, Any]] = {
     "yuanli.health.kernel.wpk": {
@@ -233,7 +235,7 @@ def _validate_artifact_value(key: str, value: Any) -> tuple[str, str] | None:
             return "INVALID_VISIT_QUESTIONS", path
         return None
     if key == "synthetic_case_count":
-        if type(value) is not int or value < 0:
+        if type(value) is not int or not 0 <= value <= _MAX_SYNTHETIC_CASE_COUNT:
             return "INVALID_ARTIFACT", path
         return None
     if type(value) is not str or _TOKEN_PATTERN.fullmatch(value) is None:

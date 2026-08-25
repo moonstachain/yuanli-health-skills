@@ -63,6 +63,18 @@ class SuiteRunnerTests(unittest.TestCase):
                 self.assertIs(result["transition_executed"], False)
                 self.assertEqual(context.snapshot(), {})
 
+    def test_runner_rejects_large_count_meta_without_direct_qualification(self):
+        context = self.ephemeral.EphemeralSessionContext()
+        context.set("preexisting", "SYN-PREEXISTING")
+        case = case_by_id("SYN-FS-111")
+        case["artifacts"]["synthetic_case_count"] = 10**5000
+        result = self.runner.run_full_suite(case, context=context)
+        self.assertEqual(result["schema"], "full-suite-error-v1")
+        self.assertEqual(result["errors"], [{"code": "NO_ROUTE", "path": "capability_source_id"}])
+        self.assertEqual(result["output_artifacts"], {})
+        self.assertIs(result["transition_executed"], False)
+        self.assertEqual(context.snapshot(), {})
+
     def test_runner_rejects_known_facts_redeclared_as_unknown(self):
         probes = (
             ("SYN-FS-041", "decision_candidate_id", None, "UNKNOWN_KNOWN_OVERLAP"),
