@@ -2,6 +2,7 @@ import json
 import unittest
 
 from tests._full_support import CAPABILITIES, ROOT
+from tests._full_support import load_cases
 
 
 class FullCapabilityTests(unittest.TestCase):
@@ -41,6 +42,28 @@ class FullCapabilityTests(unittest.TestCase):
                 self.assertIn("typed-candidate-envelope-v1", text)
                 self.assertIn("non-final", text.lower())
                 self.assertIn("no persistence", text.lower())
+
+    def test_instruction_result_contract_matches_both_runtime_schema_levels(self):
+        from yuanli_health_skills.full_suite import process_full_suite_case
+
+        declaration = (
+            "Successful results use the top-level `full-suite-candidate-v1` schema; "
+            "the nested `envelope` conforms to `typed-candidate-envelope-v1`."
+        )
+        cases = load_cases()
+        for source_id in CAPABILITIES:
+            with self.subTest(source_id=source_id):
+                text = (ROOT / "capabilities" / source_id / "instructions.md").read_text(encoding="utf-8")
+                self.assertIn(declaration, text)
+                case = next(
+                    item
+                    for item in cases
+                    if item["capability_source_id"] == source_id
+                    and item["expected"]["schema"] == "full-suite-candidate-v1"
+                )
+                result = process_full_suite_case(case)
+                self.assertEqual(result["schema"], "full-suite-candidate-v1")
+                self.assertEqual(result["envelope"]["schema"], "typed-candidate-envelope-v1")
 
 
 if __name__ == "__main__":

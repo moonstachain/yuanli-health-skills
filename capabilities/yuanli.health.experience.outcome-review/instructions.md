@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Produce the bounded yuanli.health.experience.outcome-review discussion candidate defined by [`contract.json`](contract.json). The machine output conforms to `typed-candidate-envelope-v1` and remains non-canonical.
+Produce the bounded yuanli.health.experience.outcome-review discussion candidate defined by [`contract.json`](contract.json). Successful results use the top-level `full-suite-candidate-v1` schema; the nested `envelope` conforms to `typed-candidate-envelope-v1`. The result remains non-canonical.
 
 ## Input contract
 

@@ -42,6 +42,7 @@ _CLINICAL_REQUESTS = frozenset({"diagnosis", "medication_change", "emergency"})
 _CLINICAL_RISKS = frozenset({"clinical_escalation", "emergency"})
 _TOKEN_PATTERN = re.compile(r"SYN-[A-Z0-9]+(?:-[A-Z0-9]+)*")
 _DOCTOR_VISIT = "yuanli.health.experience.doctor-visit-prep"
+_MAX_INERT_JSON_DEPTH = 128
 
 _CAPABILITIES: dict[str, dict[str, Any]] = {
     "yuanli.health.kernel.wpk": {
@@ -178,17 +179,32 @@ def _capability_error(spec: dict[str, Any], code: str, path: str) -> dict[str, A
     )
 
 
-def _is_inert_json(value: Any) -> bool:
-    value_type = type(value)
-    if value is None or value_type in {bool, int, str}:
-        return True
-    if value_type is float:
-        return math.isfinite(value)
-    if value_type is list:
-        return all(_is_inert_json(item) for item in value)
-    if value_type is dict:
-        return all(type(key) is str and _is_inert_json(item) for key, item in value.items())
-    return False
+def _inert_json_issue(value: Any) -> str | None:
+    """Iteratively validate inert JSON and bound nesting before recursive cloning."""
+
+    pending = [(value, 0)]
+    while pending:
+        item, depth = pending.pop()
+        if depth > _MAX_INERT_JSON_DEPTH:
+            return "INERT_JSON_DEPTH_EXCEEDED"
+        item_type = type(item)
+        if item is None or item_type in {bool, int, str}:
+            continue
+        if item_type is float:
+            if not math.isfinite(item):
+                return "INVALID_INERT_JSON"
+            continue
+        if item_type is list:
+            pending.extend((nested, depth + 1) for nested in item)
+            continue
+        if item_type is dict:
+            for key, nested in item.items():
+                if type(key) is not str:
+                    return "INVALID_INERT_JSON"
+                pending.append((nested, depth + 1))
+            continue
+        return "INVALID_INERT_JSON"
+    return None
 
 
 def _valid_string_array(value: Any) -> bool:
@@ -273,8 +289,9 @@ def process_full_suite_case(value: Any) -> dict[str, Any]:
 
     if type(value) is not dict:
         return _error("INVALID_CASE", "$")
-    if not _is_inert_json(value):
-        return _error("INVALID_INERT_JSON", "$")
+    inert_issue = _inert_json_issue(value)
+    if inert_issue is not None:
+        return _error(inert_issue, "$")
     for field in _CASE_FIELDS:
         if field not in value:
             return _error("MISSING_REQUIRED_FIELD", field)
@@ -329,6 +346,9 @@ def process_full_suite_case(value: Any) -> dict[str, Any]:
     if source_id == "yuanli.health.experience.learning-reuse" and artifacts["task2_preload_receipt"] == artifacts["task2_use_receipt"]:
         return _capability_error(spec, "INDEPENDENT_RECEIPTS_REQUIRED", "artifacts.task2_use_receipt")
     _, known_facts = _artifact_facts(artifacts)
+    for index, unknown in enumerate(value["declared_unknowns"]):
+        if unknown in known_facts:
+            return _capability_error(spec, "UNKNOWN_KNOWN_OVERLAP", f"declared_unknowns[{index}]")
     for index, assumption in enumerate(value["assumptions"]):
         if assumption in known_facts:
             return _capability_error(spec, "ASSUMPTION_KNOWN_OVERLAP", f"assumptions[{index}]")

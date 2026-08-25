@@ -1,5 +1,6 @@
 import copy
 import importlib
+import json
 import sys
 import unittest
 
@@ -53,6 +54,54 @@ class FullSuiteTests(unittest.TestCase):
                 self.assertEqual(envelope["assumption"], case["assumptions"])
                 self.assertTrue(all(entry["evidence_reference"].startswith("artifact:") for entry in envelope["known"]))
 
+    def test_declared_unknowns_cannot_overlap_scalar_question_or_count_facts(self):
+        probes = (
+            ("SYN-FS-001", "decision_candidate_id", None),
+            ("SYN-FS-061", "visit_questions", 1),
+            ("SYN-FS-111", "synthetic_case_count", None),
+        )
+        for case_id, artifact_key, item_index in probes:
+            with self.subTest(case_id=case_id, artifact_key=artifact_key):
+                malformed = case_by_id(case_id)
+                value = malformed["artifacts"][artifact_key]
+                fact = value[item_index] if item_index is not None else str(value)
+                malformed["declared_unknowns"] = ["SYN-DISJOINT-UNKNOWN", fact, fact]
+                result = self.full_suite.process_full_suite_case(malformed)
+                self.assertEqual(result["schema"], "full-suite-error-v1")
+                self.assertEqual(result["candidate_state"], None)
+                self.assertEqual(result["output_artifacts"], {})
+                self.assertIs(result["transition_executed"], False)
+                self.assertEqual(
+                    result["errors"],
+                    [{"code": "UNKNOWN_KNOWN_OVERLAP", "path": "declared_unknowns[1]"}],
+                )
+
+        for case_id in ("SYN-FS-001", "SYN-FS-061", "SYN-FS-111"):
+            with self.subTest(disjoint_positive=case_id):
+                result = self.full_suite.process_full_suite_case(case_by_id(case_id))
+                self.assertEqual(result["schema"], "full-suite-candidate-v1")
+
+    def test_direct_boundary_returns_stable_error_for_json_parser_accepted_deep_input(self):
+        deep_value = json.loads("[" * 512 + "null" + "]" * 512)
+        malformed = case_by_id("SYN-FS-001")
+        malformed["expected"] = deep_value
+        try:
+            first = self.full_suite.process_full_suite_case(malformed)
+            second = self.full_suite.process_full_suite_case(malformed)
+        except RecursionError as exc:
+            self.fail(f"direct boundary leaked RecursionError: {exc}")
+        self.assertEqual(first, second)
+        self.assertEqual(first["schema"], "full-suite-error-v1")
+        self.assertEqual(first["errors"], [{"code": "INERT_JSON_DEPTH_EXCEEDED", "path": "$"}])
+        self.assertIs(first["transition_executed"], False)
+
+        normal = case_by_id("SYN-FS-001")
+        normal["expected"] = json.loads("[" * 32 + "null" + "]" * 32)
+        self.assertEqual(
+            self.full_suite.process_full_suite_case(normal)["schema"],
+            "full-suite-candidate-v1",
+        )
+
     def test_expected_fixture_is_not_an_implementation_input(self):
         case = case_by_id("SYN-FS-001")
         baseline = self.full_suite.process_full_suite_case(case)
@@ -91,6 +140,37 @@ class FullSuiteTests(unittest.TestCase):
         self.assertEqual(delegated["authority_gate"], "YELLOW")
         self.assertEqual(delegated["output_artifacts"]["delegation"], "yuanli-medical-appointment-operator")
         self.assertTrue({"booking", "provider", "payment", "appointment_state"}.isdisjoint(delegated["output_artifacts"]))
+
+    def test_direct_clinical_request_and_risk_matrix_is_durable(self):
+        variants = (
+            ("diagnosis", []),
+            ("medication_change", []),
+            ("emergency", []),
+            ("non_clinical", ["clinical_escalation"]),
+            ("non_clinical", ["emergency"]),
+        )
+        forbidden = {"diagnosis", "prescription", "medication_change", "appointment_state", "booking", "provider", "payment"}
+        for case_id, doctor in (("SYN-FS-001", False), ("SYN-FS-061", True)):
+            for request_type, risk_flags in variants:
+                with self.subTest(case_id=case_id, request_type=request_type, risk_flags=risk_flags):
+                    case = case_by_id(case_id)
+                    case["request_type"] = request_type
+                    case["risk_flags"] = risk_flags
+                    result = self.full_suite.process_full_suite_case(case)
+                    self.assertEqual(result["authority_gate"], "RED")
+                    if doctor:
+                        self.assertEqual(result["schema"], "full-suite-candidate-v1")
+                        self.assertEqual(set(result["output_artifacts"]), {"visit_questions", "guardrails"})
+                    else:
+                        self.assertEqual(result["schema"], "full-suite-error-v1")
+                        self.assertEqual(result["output_artifacts"], {})
+                        self.assertIs(result["transition_executed"], False)
+                    self.assertTrue(forbidden.isdisjoint(result["output_artifacts"]))
+                    serialized_output = json.dumps(result["output_artifacts"], ensure_ascii=False).lower()
+                    self.assertTrue(
+                        all(term not in serialized_output for term in forbidden),
+                        serialized_output,
+                    )
 
     def test_meta_outputs_never_promote_admit_release_or_claim_human_acceptance(self):
         for case in load_cases()[90:120]:
