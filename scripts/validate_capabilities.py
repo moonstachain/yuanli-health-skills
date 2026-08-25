@@ -46,12 +46,19 @@ def _load_strict_json(raw: str) -> object:
     )
 
 
-def _paths(arguments: Iterable[str]) -> list[Path]:
+def _paths(arguments: Iterable[str]) -> tuple[list[Path], list[Path]]:
     paths: list[Path] = []
+    empty_directories: list[Path] = []
     for argument in arguments:
         path = Path(argument)
-        paths.extend(sorted(path.glob("*.json")) if path.is_dir() else [path])
-    return paths
+        if path.is_dir():
+            expanded = sorted(path.glob("*.json"))
+            if not expanded:
+                empty_directories.append(path)
+            paths.extend(expanded)
+        else:
+            paths.append(path)
+    return paths, empty_directories
 
 
 def _validate(document: object) -> ValidationResult:
@@ -72,11 +79,12 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("paths", nargs="*", help="JSON file or directory; defaults to the source registry")
     args = parser.parse_args(argv)
-    paths = _paths(args.paths or [str(ROOT / "registry" / "source-capabilities.json")])
+    paths, empty_directories = _paths(args.paths or [str(ROOT / "registry" / "source-capabilities.json")])
+    for directory in empty_directories:
+        print(f"{directory}:NO_DOCUMENTS:$:no JSON documents found", file=sys.stderr)
     if not paths:
-        print("NO_DOCUMENTS:$:no JSON documents found", file=sys.stderr)
         return 1
-    failed = False
+    failed = bool(empty_directories)
     for path in paths:
         try:
             document = _load_strict_json(path.read_text(encoding="utf-8"))

@@ -19,6 +19,21 @@ class StrictJsonCliTests(unittest.TestCase):
         self.assertIn("NO_DOCUMENTS", completed.stderr)
         self.assertNotIn("Traceback", completed.stderr)
 
+    def test_empty_directory_fails_even_when_another_input_is_valid(self):
+        registry = ROOT / "registry/source-capabilities.json"
+        with tempfile.TemporaryDirectory() as directory:
+            command = CLI + [directory, str(registry)]
+            first = subprocess.run(command, check=False, capture_output=True, text=True)
+            second = subprocess.run(command, check=False, capture_output=True, text=True)
+            expected_diagnostic = f"{directory}:NO_DOCUMENTS:$"
+        self.assertEqual(first.stdout, second.stdout)
+        self.assertEqual(first.stderr, second.stderr)
+        self.assertEqual(first.returncode, 1)
+        self.assertEqual(second.returncode, 1)
+        self.assertIn("source-capabilities.json:OK", first.stdout)
+        self.assertIn(expected_diagnostic, first.stderr)
+        self.assertNotIn("Traceback", first.stderr)
+
     def test_non_finite_json_constants_are_rejected_stably(self):
         template = (
             '{"schema":"typed-candidate-envelope-v1",'
