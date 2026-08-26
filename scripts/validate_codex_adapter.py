@@ -4,8 +4,6 @@
 import argparse
 import hashlib
 import json
-import os
-import stat
 import sys
 import tomllib
 from pathlib import Path
@@ -19,6 +17,7 @@ from codex_adapter_reference import (
     validate_instruction_operation,
 )
 from lexical_path_guard import (
+    LexicalPathIdentity,
     absolute_lexical_path,
     inspect_lexical_path,
     revalidate_lexical_path,
@@ -46,6 +45,10 @@ def _json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_object)
 
 
+def _json_bytes(content: bytes) -> Any:
+    return json.loads(content.decode("utf-8"), object_pairs_hook=_object)
+
+
 def _load_validators(root: Path):
     sys.path.insert(0, str(root / "src"))
     from yuanli_health_skills.validator import (  # pylint: disable=import-outside-toplevel
@@ -57,32 +60,8 @@ def _load_validators(root: Path):
     return validate_contract, validate_receipt, validate_source_registry
 
 
-def _inspect(package: Path) -> tuple[dict[str, bytes], list[str]]:
-    issues: list[str] = []
-    files: dict[str, bytes] = {}
-    try:
-        package_mode = package.lstat().st_mode
-    except FileNotFoundError:
-        return {}, ["package root must be a real directory"]
-    if stat.S_ISLNK(package_mode) or not stat.S_ISDIR(package_mode):
-        return {}, ["package root must be a real directory"]
-    for directory, names, filenames in os.walk(package, followlinks=False):
-        base = Path(directory)
-        for name in names + filenames:
-            path = base / name
-            relative = path.relative_to(package).as_posix()
-            mode = path.lstat().st_mode
-            if stat.S_ISLNK(mode):
-                issues.append(f"symlink forbidden: {relative}")
-            elif stat.S_ISREG(mode):
-                if path.stat().st_nlink != 1:
-                    issues.append(f"hardlink forbidden: {relative}")
-                if mode & 0o111:
-                    issues.append(f"executable forbidden: {relative}")
-                files[relative] = path.read_bytes()
-            elif not stat.S_ISDIR(mode):
-                issues.append(f"special file forbidden: {relative}")
-    return files, issues
+def _inspect(package: LexicalPathIdentity) -> tuple[dict[str, bytes], list[str]]:
+    return package.snapshot(reject_executable=True, missing_issue=True)
 
 
 def _frontmatter(content: str) -> dict[str, str] | None:
@@ -178,7 +157,10 @@ def _validate_emitted_markdown(
     return issues
 
 
-def validate_package(root: Path, package: Path) -> tuple[list[str], str | None, int]:
+def validate_package(
+    root: Path,
+    package: LexicalPathIdentity,
+) -> tuple[list[str], str | None, int]:
     validate_contract, validate_receipt, validate_source_registry = _load_validators(root)
     issues: list[str] = []
     files, inspection = _inspect(package)
@@ -197,7 +179,7 @@ def validate_package(root: Path, package: Path) -> tuple[list[str], str | None, 
     if issues:
         return issues, None, len(files)
 
-    manifest = _json(package / "contracts/suite-source-manifest.json")
+    manifest = _json_bytes(files["contracts/suite-source-manifest.json"])
     manifest_result = validate_source_registry(manifest)
     if not manifest_result.ok:
         issues.append("suite source manifest invalid")
@@ -210,7 +192,7 @@ def validate_package(root: Path, package: Path) -> tuple[list[str], str | None, 
         return issues, None, len(files)
 
     contracts = {
-        source_id: _json(package / "contracts/capabilities" / f"{source_id}.json")
+        source_id: _json_bytes(files[f"contracts/capabilities/{source_id}.json"])
         for source_id in source_ids
     }
     issues.extend(_validate_emitted_markdown(files, source_ids, contracts))
@@ -248,7 +230,7 @@ def validate_package(root: Path, package: Path) -> tuple[list[str], str | None, 
     elif frontmatter["name"] != "yuanli-health" or not frontmatter["description"].startswith("Use when"):
         issues.append("invalid Skill discovery metadata")
 
-    registry_map = _json(package / "registry-map.json")
+    registry_map = _json_bytes(files["registry-map.json"])
     expected_map = {
         "schema": "codex-health-registry-map-v1",
         "source_suite_id": manifest["source_suite_id"],
@@ -259,7 +241,7 @@ def validate_package(root: Path, package: Path) -> tuple[list[str], str | None, 
 
     for source_id in source_ids:
         contract = contracts[source_id]
-        receipt = _json(package / "contracts/qualification-receipts" / f"{source_id}.json")
+        receipt = _json_bytes(files[f"contracts/qualification-receipts/{source_id}.json"])
         if not validate_contract(contract).ok:
             issues.append(f"contract mismatch: {source_id}")
         source_contract = _json(root / "capabilities" / source_id / "contract.json")
@@ -356,13 +338,13 @@ def main(argv: list[str] | None = None) -> int:
     package = absolute_lexical_path(args.package) if args.package else root / PACKAGE_RELATIVE
     metadata = args.metadata.resolve() if args.metadata else (root / METADATA_RELATIVE if args.check_repository else None)
     try:
-        package_identity = inspect_lexical_path(package)
-        revalidate_lexical_path(package_identity)
-        issues, content_hash, file_count = validate_package(root, package)
-        if not issues and metadata is not None:
-            issues.extend(validate_metadata(metadata, content_hash or "", file_count))
-        if args.check_repository:
-            issues.extend(validate_repository(root))
+        with inspect_lexical_path(package) as package_identity:
+            revalidate_lexical_path(package_identity)
+            issues, content_hash, file_count = validate_package(root, package_identity)
+            if not issues and metadata is not None:
+                issues.extend(validate_metadata(metadata, content_hash or "", file_count))
+            if args.check_repository:
+                issues.extend(validate_repository(root))
     except (OSError, ValueError, json.JSONDecodeError, DuplicateKeyError, ImportError) as exc:
         issues = [f"validation exception: {exc}"]
         content_hash = None

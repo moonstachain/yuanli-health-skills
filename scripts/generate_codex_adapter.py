@@ -4,8 +4,6 @@
 import argparse
 import hashlib
 import json
-import os
-import stat
 import sys
 from pathlib import Path
 from typing import Any
@@ -121,61 +119,24 @@ def _metadata(files: dict[str, bytes], registry: dict[str, Any]) -> dict[str, An
     }
 
 
-def _existing_files(root: Path) -> tuple[dict[str, bytes], list[str]]:
-    try:
-        root_mode = root.lstat().st_mode
-    except FileNotFoundError:
-        return {}, []
-    if stat.S_ISLNK(root_mode) or not stat.S_ISDIR(root_mode):
-        return {}, ["package root must be a real directory"]
-    files: dict[str, bytes] = {}
-    issues: list[str] = []
-    for directory, names, filenames in os.walk(root, followlinks=False):
-        base = Path(directory)
-        for name in names + filenames:
-            path = base / name
-            mode = path.lstat().st_mode
-            relative = path.relative_to(root).as_posix()
-            if stat.S_ISLNK(mode):
-                issues.append(f"link forbidden: {relative}")
-            elif stat.S_ISREG(mode):
-                if path.stat().st_nlink != 1:
-                    issues.append(f"hardlink forbidden: {relative}")
-                else:
-                    files[relative] = path.read_bytes()
-            elif not stat.S_ISDIR(mode):
-                issues.append(f"special file forbidden: {relative}")
-    return files, issues
+def _existing_files(root: LexicalPathIdentity) -> tuple[dict[str, bytes], list[str]]:
+    return root.snapshot()
 
 
-def _clear_output(output: Path) -> None:
+def _clear_output(output: LexicalPathIdentity) -> None:
     _, issues = _existing_files(output)
     if issues:
         raise ValueError("unsafe generated output: " + "; ".join(issues))
-    try:
-        output.lstat()
-    except FileNotFoundError:
-        return
-    for path in sorted(output.rglob("*"), key=lambda item: len(item.parts), reverse=True):
-        if path.is_file():
-            path.unlink()
-        else:
-            path.rmdir()
+    output.clear_contents()
 
 
 def _write_package(
-    output: Path,
+    output: LexicalPathIdentity,
     files: dict[str, bytes],
-    identity: LexicalPathIdentity,
 ) -> None:
-    revalidate_lexical_path(identity)
+    revalidate_lexical_path(output)
     _clear_output(output)
-    revalidate_lexical_path(identity)
-    output.mkdir(parents=True, exist_ok=True)
-    for relative, content in sorted(files.items()):
-        path = output / relative
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(content)
+    output.write_files(files)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -189,23 +150,23 @@ def main(argv: list[str] | None = None) -> int:
     output = absolute_lexical_path(args.output) if args.output else root / PACKAGE_RELATIVE
     metadata_path = args.metadata.resolve() if args.metadata else (root / METADATA_RELATIVE if args.output is None else None)
     try:
-        output_identity = inspect_lexical_path(output)
-        files, registry = build_package(root)
-        metadata = _metadata(files, registry)
-        if args.check:
-            revalidate_lexical_path(output_identity)
-            existing, issues = _existing_files(output)
-            if issues or existing != files:
-                print("generated package is missing, extra, unsafe, or byte-different", file=sys.stderr)
-                return 1
-            if metadata_path is not None and (not metadata_path.is_file() or metadata_path.read_bytes() != _json_bytes(metadata)):
-                print("release metadata is missing or byte-different", file=sys.stderr)
-                return 1
-        else:
-            _write_package(output, files, output_identity)
-            if metadata_path is not None:
-                metadata_path.parent.mkdir(parents=True, exist_ok=True)
-                metadata_path.write_bytes(_json_bytes(metadata))
+        with inspect_lexical_path(output) as output_identity:
+            files, registry = build_package(root)
+            metadata = _metadata(files, registry)
+            if args.check:
+                revalidate_lexical_path(output_identity)
+                existing, issues = _existing_files(output_identity)
+                if issues or existing != files:
+                    print("generated package is missing, extra, unsafe, or byte-different", file=sys.stderr)
+                    return 1
+                if metadata_path is not None and (not metadata_path.is_file() or metadata_path.read_bytes() != _json_bytes(metadata)):
+                    print("release metadata is missing or byte-different", file=sys.stderr)
+                    return 1
+            else:
+                _write_package(output_identity, files)
+                if metadata_path is not None:
+                    metadata_path.parent.mkdir(parents=True, exist_ok=True)
+                    metadata_path.write_bytes(_json_bytes(metadata))
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"generation failed: {exc}", file=sys.stderr)
         return 1
