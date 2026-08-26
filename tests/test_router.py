@@ -67,6 +67,18 @@ class RouterTests(unittest.TestCase):
         )
         self.assertIs(result["health_priority_decided"], False)
 
+    def test_founder_ninety_day_launch_with_dec_never_falls_back_to_kickoff(self):
+        result = self.router.route_jtbd(
+            "90天起盘",
+            ["yuanli.health.experience.first-health-session"],
+            decision_candidate_id="DEC-SUPPLIED-BY-SUBJECT",
+        )
+
+        self.assertEqual(result["route_state"], "no_route")
+        self.assertIsNone(result["source_capability_id"])
+        self.assertEqual(result["reason_code"], "EXPERIENCE_UNAVAILABLE")
+        self.assertIs(result["health_priority_decided"], False)
+
     def test_kernel_or_meta_availability_never_becomes_a_fallback_route(self):
         result = self.router.route_jtbd(
             "first_health_session",

@@ -32,17 +32,18 @@ def route_jtbd(
         not isinstance(source_id, str) for source_id in available_source_ids
     ):
         reason_code = "INVALID_AVAILABLE_SOURCE_IDS"
-    elif (
-        jtbd == "90天起盘"
-        and isinstance(decision_candidate_id, str)
-        and decision_candidate_id
-        and _NINETY_DAY_EXPERIMENT_ROUTE in available_source_ids
-    ):
-        reason_code = "ROUTE_SELECTED"
-        selected = _NINETY_DAY_EXPERIMENT_ROUTE
-    elif jtbd == "90天起盘" and _FOUNDER_LAUNCH_ROUTE in available_source_ids:
-        reason_code = "ROUTE_SELECTED"
-        selected = _FOUNDER_LAUNCH_ROUTE
+    elif jtbd == "90天起盘":
+        if isinstance(decision_candidate_id, str) and decision_candidate_id:
+            if _NINETY_DAY_EXPERIMENT_ROUTE in available_source_ids:
+                reason_code = "ROUTE_SELECTED"
+                selected = _NINETY_DAY_EXPERIMENT_ROUTE
+            else:
+                reason_code = "EXPERIENCE_UNAVAILABLE"
+        elif _FOUNDER_LAUNCH_ROUTE in available_source_ids:
+            reason_code = "ROUTE_SELECTED"
+            selected = _FOUNDER_LAUNCH_ROUTE
+        else:
+            reason_code = "EXPERIENCE_UNAVAILABLE"
     elif jtbd in _EXPERIENCE_ROUTES and _EXPERIENCE_ROUTES[jtbd] in available_source_ids:
         reason_code = "ROUTE_SELECTED"
         selected = _EXPERIENCE_ROUTES[jtbd]
