@@ -12,8 +12,16 @@ _EXPERIENCE_ROUTES = {
     "learning_reuse": "yuanli.health.experience.learning-reuse",
 }
 
+_FOUNDER_LAUNCH_ROUTE = "yuanli.health.experience.first-health-session"
+_NINETY_DAY_EXPERIMENT_ROUTE = "yuanli.health.experience.ninety-day-health-experiment"
 
-def route_jtbd(jtbd: Any, available_source_ids: Any) -> dict[str, Any]:
+
+def route_jtbd(
+    jtbd: Any,
+    available_source_ids: Any,
+    *,
+    decision_candidate_id: Any = None,
+) -> dict[str, Any]:
     """Return a deterministic route without making a health-priority decision."""
 
     reason_code = "UNSUPPORTED_JTBD"
@@ -24,6 +32,17 @@ def route_jtbd(jtbd: Any, available_source_ids: Any) -> dict[str, Any]:
         not isinstance(source_id, str) for source_id in available_source_ids
     ):
         reason_code = "INVALID_AVAILABLE_SOURCE_IDS"
+    elif (
+        jtbd == "90天起盘"
+        and isinstance(decision_candidate_id, str)
+        and decision_candidate_id
+        and _NINETY_DAY_EXPERIMENT_ROUTE in available_source_ids
+    ):
+        reason_code = "ROUTE_SELECTED"
+        selected = _NINETY_DAY_EXPERIMENT_ROUTE
+    elif jtbd == "90天起盘" and _FOUNDER_LAUNCH_ROUTE in available_source_ids:
+        reason_code = "ROUTE_SELECTED"
+        selected = _FOUNDER_LAUNCH_ROUTE
     elif jtbd in _EXPERIENCE_ROUTES and _EXPERIENCE_ROUTES[jtbd] in available_source_ids:
         reason_code = "ROUTE_SELECTED"
         selected = _EXPERIENCE_ROUTES[jtbd]

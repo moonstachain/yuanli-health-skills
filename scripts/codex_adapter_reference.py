@@ -11,12 +11,12 @@ _CONTRACT_LABEL = "`contract.json`"
 _PLAIN_TITLE = re.compile(r"# [A-Za-z0-9]+(?:[ -][A-Za-z0-9]+)*")
 
 _EXPERIENCE_ROUTES = (
-    ("first health session / 首次健康会话", "yuanli.health.experience.first-health-session"),
-    ("90-day health experiment / 90 天健康实验", "yuanli.health.experience.ninety-day-health-experiment"),
-    ("weekly health checkpoint / 每周健康检查点", "yuanli.health.experience.weekly-health-checkpoint"),
-    ("doctor visit preparation / 问诊准备", "yuanli.health.experience.doctor-visit-prep"),
-    ("outcome review / 结果复盘", "yuanli.health.experience.outcome-review"),
-    ("learning reuse / 学习复用", "yuanli.health.experience.learning-reuse"),
+    ("创始人健康起盘 / First Health Session", "yuanli.health.experience.first-health-session"),
+    ("90天恢复力战役 / 90-Day Health Experiment", "yuanli.health.experience.ninety-day-health-experiment"),
+    ("五分钟每周校准 / Weekly Health Checkpoint", "yuanli.health.experience.weekly-health-checkpoint"),
+    ("专业就医准备 / Doctor Visit Preparation", "yuanli.health.experience.doctor-visit-prep"),
+    ("30/60/90证据复盘 / Outcome Review", "yuanli.health.experience.outcome-review"),
+    ("个人健康打法 / Learning Reuse", "yuanli.health.experience.learning-reuse"),
 )
 
 
@@ -174,12 +174,16 @@ def render_root(source_ids: tuple[str, ...]) -> bytes:
     )
     return f"""---
 name: yuanli-health
-description: Use when handling synthetic Yuanli Health candidate work, including First Health Session, health experiments or checkpoints, doctor-visit preparation, outcome review, learning reuse, and explicit internal Kernel or Meta requests.
+description: Use when handling synthetic Yuanli Health Skill Core candidate work, including founder recovery journeys, weekly calibration, professional-visit preparation, evidence review, and explicit internal Kernel or Meta requests.
 ---
 
-# Yuanli Health
+# 原力健康 Skill Core v0.1.0
+
+Yuanli Health Skill Core v0.1.0: 以90天为周期，持续改善创始人的恢复力，让健康成为长期创业的底盘。
 
 Use this adapter to select one bounded source capability and preserve its machine contract. Inputs stay synthetic and in memory. Never copy real or re-identifiable health material into repository files, receipts, logs, or generated references.
+
+This public Skill Core is not a managed Health OS: it has no cloud vault, health steward, real-person persistence, human-runtime evidence, or clinical-effectiveness claim. Founder context is limited to user-supplied critical-campaign timing, travel/time-zone pressure, workload rhythm, and recovery constraints; do not ingest meeting content or confidential business details.
 
 ## Decide before routing
 
@@ -188,6 +192,10 @@ Clinical diagnosis, prescription, medication change, chest-pain or urgent/emerge
 Route only these user JTBDs to Experiences:
 
 {route_lines}
+
+A founder request for `90天起盘` without a supplied opaque `decision_candidate_id` routes to 创始人健康起盘 / First Health Session. Present one qualitative, evidence-linked Recovery Compass direction, not an aggregate health/readiness/wellness/performance score; name one current bottleneck candidate and one non-clinical action candidate only when evidence and the Authority gate permit. Make evidence, unknowns, assumptions, and escalation explicit. Stop at `decision_candidate_ready`: do not fabricate WPK or ACT. Only after a supplied opaque DEC may `90天起盘` continue to 90天恢复力战役 / the 90-Day Health Experiment, which orders WPK before ACT and emits no OUT.
+
+The founder journey may explain three 30-day phases — 起盘与稳定, 实验与校准, 证据复盘与沉淀 — but they are not a formal plan before WPK/ACT prerequisites exist. Recovery Compass is a transparent discussion direction, never a diagnosis or score.
 
 If none matches, return no route. Never fall back to Kernel or Meta and never decide health priority. Kernel and Meta are direct/internal only; read their reference only when the request explicitly names that capability and supplies its prerequisites:
 

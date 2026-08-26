@@ -36,6 +36,37 @@ class RouterTests(unittest.TestCase):
             )
         )
 
+    def test_founder_ninety_day_launch_without_dec_routes_to_first_session(self):
+        available = [
+            "yuanli.health.experience.first-health-session",
+            "yuanli.health.experience.ninety-day-health-experiment",
+        ]
+
+        launch = self.router.route_jtbd("90天起盘", available)
+
+        self.assertEqual(
+            launch["source_capability_id"],
+            "yuanli.health.experience.first-health-session",
+        )
+        self.assertIs(launch["health_priority_decided"], False)
+        self.assertTrue({"wpk_candidate_id", "act_candidate_id"}.isdisjoint(launch))
+
+    def test_founder_ninety_day_launch_with_supplied_dec_routes_to_the_experiment(self):
+        result = self.router.route_jtbd(
+            "90天起盘",
+            [
+                "yuanli.health.experience.first-health-session",
+                "yuanli.health.experience.ninety-day-health-experiment",
+            ],
+            decision_candidate_id="DEC-SUPPLIED-BY-SUBJECT",
+        )
+
+        self.assertEqual(
+            result["source_capability_id"],
+            "yuanli.health.experience.ninety-day-health-experiment",
+        )
+        self.assertIs(result["health_priority_decided"], False)
+
     def test_kernel_or_meta_availability_never_becomes_a_fallback_route(self):
         result = self.router.route_jtbd(
             "first_health_session",

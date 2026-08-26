@@ -13,7 +13,7 @@
   "clinical_effectiveness": "not_claimed",
   "n5_pilot": "waived_by_human_owner",
   "package_path": "dist/codex/yuanli-health",
-  "package_content_sha256": "4a43ccf236b7a3f84e043a89e6a01a2f183555a8bdb5970559a67290cee2a669",
+  "package_content_sha256": "732eb59e3ccdec1dcb12c533e3d1aeb514030bc1fe2a170cbaf610aef9953db1",
   "package_file_count": 54,
   "package_file_count_convention": "all_regular_files_including_SHA256SUMS",
   "source_commit": null,

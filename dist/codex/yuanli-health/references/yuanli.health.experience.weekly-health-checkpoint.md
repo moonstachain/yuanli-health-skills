@@ -39,6 +39,10 @@ Qualification receipt: `../contracts/qualification-receipts/yuanli.health.experi
 
 Produce the bounded yuanli.health.experience.weekly-health-checkpoint discussion candidate defined by [`contract.json`](../contracts/capabilities/yuanli.health.experience.weekly-health-checkpoint.json). Successful results use the top-level `full-suite-candidate-v1` schema; the nested `envelope` conforms to `typed-candidate-envelope-v1`. The result remains non-canonical.
 
+## Founder-facing name
+
+Primary display name: 五分钟每周校准. Use it as a short, evidence-linked calibration of a supplied ACT candidate; keep one current uncertainty explicit and never convert the checkpoint into a score, outcome, or clinical conclusion.
+
 ## Input contract
 
 Require one supplied opaque `act_candidate_id`; an observation reference is optional. Request type is closed to `diagnosis|emergency|formal_plan|learning_claim|medication_change|non_clinical|outcome_adjudication|reuse_claim|appointment_logistics`; risk flags are closed to `clinical_escalation|emergency|guardrail_requested`.

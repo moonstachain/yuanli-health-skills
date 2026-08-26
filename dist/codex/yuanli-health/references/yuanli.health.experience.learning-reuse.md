@@ -40,6 +40,10 @@ Qualification receipt: `../contracts/qualification-receipts/yuanli.health.experi
 
 Produce the bounded yuanli.health.experience.learning-reuse discussion candidate defined by [`contract.json`](../contracts/capabilities/yuanli.health.experience.learning-reuse.json). Successful results use the top-level `full-suite-candidate-v1` schema; the nested `envelope` conforms to `typed-candidate-envelope-v1`. The result remains non-canonical.
 
+## Founder-facing name
+
+Primary display name: 个人健康打法. It preserves supplied learning and independent receipts as a non-clinical discussion candidate; it does not promote a personal pattern into a score, publication, Canon record, or health-outcome claim.
+
 ## Input contract
 
 Require `lrn_candidate_id` plus distinct non-empty `task2_preload_receipt` and `task2_use_receipt`. Request type is closed to `diagnosis|emergency|formal_plan|learning_claim|medication_change|non_clinical|outcome_adjudication|reuse_claim|appointment_logistics`; risk flags are closed to `clinical_escalation|emergency|guardrail_requested`.

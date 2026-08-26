@@ -4,6 +4,10 @@
 
 Produce the bounded yuanli.health.experience.doctor-visit-prep discussion candidate defined by [`contract.json`](contract.json). Successful results use the top-level `full-suite-candidate-v1` schema; the nested `envelope` conforms to `typed-candidate-envelope-v1`. The result remains non-canonical.
 
+## Founder-facing name
+
+Primary display name: 专业就医准备. It organizes only supplied abstract questions for a clinician; diagnosis, prescription, medication change, and urgent risk stay outside recovery experiments and at the concise bilingual RED escalation boundary.
+
 ## Input contract
 
 Require a non-empty list of supplied abstract `visit_questions`. Request type is closed to `diagnosis|emergency|formal_plan|learning_claim|medication_change|non_clinical|outcome_adjudication|reuse_claim|appointment_logistics`; risk flags are closed to `clinical_escalation|emergency|guardrail_requested`.

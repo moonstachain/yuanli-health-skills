@@ -42,6 +42,10 @@ Qualification receipt: `../contracts/qualification-receipts/yuanli.health.experi
 
 Produce the bounded yuanli.health.experience.ninety-day-health-experiment discussion candidate defined by [`contract.json`](../contracts/capabilities/yuanli.health.experience.ninety-day-health-experiment.json). Successful results use the top-level `full-suite-candidate-v1` schema; the nested `envelope` conforms to `typed-candidate-envelope-v1`. The result remains non-canonical.
 
+## Founder-facing name
+
+Primary display name: 90天恢复力战役. It begins only after the subject supplies an opaque DEC from 创始人健康起盘. The three 30-day journey phases may be explained as 起盘与稳定, 实验与校准, and 证据复盘与沉淀; they are not a formal plan before the required DEC then WPK/ACT candidates exist.
+
 ## Input contract
 
 Require one supplied opaque `decision_candidate_id`. Request type is closed to `diagnosis|emergency|formal_plan|learning_claim|medication_change|non_clinical|outcome_adjudication|reuse_claim|appointment_logistics`; risk flags are closed to `clinical_escalation|emergency|guardrail_requested`.
@@ -52,7 +56,7 @@ Emit ordered opaque `wpk_candidate_id` then `act_candidate_id` in `experiment_ca
 
 ## Procedure
 
-1. Validate DEC and all boundaries.
+1. Validate DEC and all boundaries; without it, return to 创始人健康起盘 rather than fabricating WPK or ACT.
 2. Construct WPK before ACT.
 3. Expose both candidate IDs in that order.
 4. Stop before outcome adjudication.

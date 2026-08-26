@@ -1,8 +1,12 @@
-# Yuanli Health Skills
+# 原力健康 Skill Core v0.1.0
+
+Yuanli Health Skill Core v0.1.0: 以90天为周期，持续改善创始人的恢复力，让健康成为长期创业的底盘。
 
 Platform-neutral source for 16 qualified synthetic-only Yuanli Health
 capabilities and a deterministic Codex adapter. Current state:
 `QUALIFIED_SOURCE_CANDIDATE`.
+
+The founder-facing journey is 创始人健康起盘 → 90天恢复力战役 → 五分钟每周校准 → 专业就医准备 → 30/60/90证据复盘 → 个人健康打法. A `90天起盘` request without a supplied opaque DEC begins at 创始人健康起盘 and stops at `decision_candidate_ready`; it may discuss a qualitative, evidence-linked Recovery Compass direction, one bottleneck candidate, one non-clinical action candidate, explicit evidence/unknowns, and escalation, but never fabricates WPK or ACT. The public Core remains synthetic-only, ephemeral, non-clinical, and score-free.
 
 This is a qualified source candidate, not released, published, deployed,
 Registry-admitted, clinically validated, or approved by the later Health Source

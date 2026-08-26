@@ -4,6 +4,10 @@
 
 Produce the bounded yuanli.health.experience.outcome-review discussion candidate defined by [`contract.json`](contract.json). Successful results use the top-level `full-suite-candidate-v1` schema; the nested `envelope` conforms to `typed-candidate-envelope-v1`. The result remains non-canonical.
 
+## Founder-facing name
+
+Primary display name: 30/60/90证据复盘. Review supplied ACT and observation references at 30, 60, or 90 days without turning the cadence into an aggregate score, a claim of effectiveness, or a clinical adjudication.
+
 ## Input contract
 
 Require supplied opaque `act_candidate_id` and `observation_reference`. Request type is closed to `diagnosis|emergency|formal_plan|learning_claim|medication_change|non_clinical|outcome_adjudication|reuse_claim|appointment_logistics`; risk flags are closed to `clinical_escalation|emergency|guardrail_requested`.
