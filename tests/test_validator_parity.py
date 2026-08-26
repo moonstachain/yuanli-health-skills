@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from yuanli_health_skills import validator
+from yuanli_health_skills import product_contracts
 
 try:
     from jsonschema import Draft202012Validator
@@ -209,6 +210,135 @@ class ValidatorSchemaParityTests(unittest.TestCase):
         self.assert_schema_invalid_is_publicly_rejected(
             "suite-source-manifest-v1.schema.json", validator.validate_source_registry, self.registry, cases
         )
+
+
+class ProductContractSchemaParityTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.cases = (
+            (
+                "health-evidence-view-v1",
+                "health-evidence-view.json",
+                product_contracts.validate_health_evidence_view,
+                product_contracts.build_health_evidence_view,
+            ),
+            (
+                "recovery-compass-snapshot-v1",
+                "recovery-compass-snapshot.json",
+                product_contracts.validate_recovery_compass_snapshot,
+                product_contracts.build_recovery_compass_snapshot,
+            ),
+            (
+                "quarter-health-campaign-v1",
+                "quarter-health-campaign.json",
+                product_contracts.validate_quarter_health_campaign,
+                product_contracts.build_quarter_health_campaign,
+            ),
+            (
+                "weekly-experiment-v1",
+                "weekly-experiment.json",
+                product_contracts.validate_weekly_experiment,
+                product_contracts.build_weekly_experiment,
+            ),
+            (
+                "professional-escalation-v1",
+                "professional-escalation.json",
+                product_contracts.validate_professional_escalation,
+                product_contracts.build_professional_escalation,
+            ),
+        )
+        cls.fixtures = {
+            filename: json.loads((ROOT / "fixtures/product-contracts/valid" / filename).read_text())
+            for _, filename, _, _ in cls.cases
+        }
+
+    def assert_schema_invalid_is_product_rejected(self, schema_name, validate, base, cases):
+        schema = json.loads((ROOT / "contracts" / f"{schema_name}.schema.json").read_text())
+        schema_validator = Draft202012Validator(schema) if Draft202012Validator else None
+        for name, dotted_path, value in cases:
+            with self.subTest(schema=schema_name, case=name):
+                document = changed(base, dotted_path, value)
+                if schema_validator:
+                    self.assertTrue(list(schema_validator.iter_errors(document)), "probe must be Schema-invalid")
+                self.assertFalse(validate(document).ok, f"runtime accepted Schema-invalid case: {name}")
+
+    def test_product_runtime_matches_schema_boolean_length_enum_and_cardinality_boundaries(self):
+        matrices = {
+            "health-evidence-view-v1": (
+                ("synthetic exact boolean", "synthetic", 1),
+                ("fact exact string", "fact", True),
+                ("fact max length", "fact", "x" * 281),
+                ("unknown item max length", "unknowns", ["x" * 281]),
+                ("source enum", "source_type", "record"),
+                ("unknowns array", "unknowns", "unknown"),
+                ("unknowns unique", "unknowns", ["same", "same"]),
+            ),
+            "recovery-compass-snapshot-v1": (
+                ("directions array", "directions", True),
+                ("trend enum", "directions.0.trend", "unknown"),
+                ("direction min cardinality", "directions", self.fixtures["recovery-compass-snapshot.json"]["directions"][:-1]),
+                ("direction max cardinality", "directions", self.fixtures["recovery-compass-snapshot.json"]["directions"] + [self.fixtures["recovery-compass-snapshot.json"]["directions"][0]]),
+                ("rationale max length", "season_focus.rationale", "x" * 281),
+                ("unknown item max length", "unknowns", ["x" * 281]),
+                ("focus object", "season_focus", True),
+                ("supported trend evidence", "directions.0.evidence_references", []),
+            ),
+            "quarter-health-campaign-v1": (
+                ("nested phase exact integer", "phases.0.phase", True),
+                ("phase label exact string", "phases.0.label", True),
+                ("active phase exact integer", "active_phase", True),
+                ("active phase enum", "active_phase", 4),
+                ("phase min cardinality", "phases", self.fixtures["quarter-health-campaign.json"]["phases"][:-1]),
+                ("phase max cardinality", "phases", self.fixtures["quarter-health-campaign.json"]["phases"] + [self.fixtures["quarter-health-campaign.json"]["phases"][0]]),
+                ("unknown item max length", "unknowns", ["x" * 281]),
+                ("claims const", "claims", ["non_clinical"]),
+            ),
+            "weekly-experiment-v1": (
+                ("action object", "action_candidate", True),
+                ("description max length", "action_candidate.description", "x" * 281),
+                ("unknown item max length", "unknowns", ["x" * 281]),
+                ("stop min cardinality", "stop_conditions", []),
+                ("stop enum", "stop_conditions", ["continue"]),
+                ("escalation min cardinality", "escalation_conditions", []),
+                ("expected evidence min cardinality", "expected_evidence_references", []),
+                ("authority enum", "authority_gate.level", "RED"),
+            ),
+            "professional-escalation-v1": (
+                ("guidance object", "guidance", True),
+                ("guidance exact string", "guidance.en", True),
+                ("guidance max length", "guidance.en", "x" * 161),
+                ("unknown item max length", "unknowns", ["x" * 281]),
+                ("level enum", "level", "review"),
+                ("evidence min cardinality", "evidence_references", []),
+                ("conditional authority", "final_authority", "subject"),
+            ),
+        }
+        for schema_name, filename, validate, _ in self.cases:
+            self.assert_schema_invalid_is_product_rejected(
+                schema_name,
+                validate,
+                self.fixtures[filename],
+                matrices[schema_name],
+            )
+
+    def test_every_successful_product_builder_result_validates_against_its_schema(self):
+        boundary_fields = {"schema", "synthetic", "canonical_write", "persistence"}
+        for schema_name, filename, _, build in self.cases:
+            schema = json.loads((ROOT / "contracts" / f"{schema_name}.schema.json").read_text())
+            schema_validator = Draft202012Validator(schema) if Draft202012Validator else None
+            for text_size in (0, 280):
+                with self.subTest(schema=schema_name, unknown_size=text_size):
+                    document = copy.deepcopy(self.fixtures[filename])
+                    document["unknowns"] = [] if text_size == 0 else ["x" * text_size]
+                    payload = {
+                        key: copy.deepcopy(value)
+                        for key, value in document.items()
+                        if key not in boundary_fields
+                    }
+                    result = build(payload)
+                    self.assertTrue(result.ok, result.errors)
+                    if schema_validator:
+                        self.assertEqual(list(schema_validator.iter_errors(result.value)), [])
 
 
 if __name__ == "__main__":

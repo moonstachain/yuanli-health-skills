@@ -70,6 +70,24 @@ _OUTCOME_FIELDS = frozenset({"out", "lrn", "effectiveness", "outcome", "outcome_
 _CLINICAL_FIELDS = frozenset({"diagnosis", "medication", "medication_change", "treatment", "treatment_recommendation"})
 _SERVICE_FIELDS = frozenset({"provider_selection", "provider", "booking", "payment"})
 _FATAL_JSON_CODES = frozenset({"NON_JSON_VALUE", "CYCLIC_JSON", "MAX_DEPTH_EXCEEDED"})
+_PROSE_PATH_SUFFIXES = (".fact", ".rationale", ".description", ".guidance.zh", ".guidance.en")
+_PATH_CONTENT = re.compile(
+    r"(?:^|[\s\"'(])(?:[A-Za-z]:[\\/]|/|\.\.?[\\/]|[A-Za-z0-9._-]+[\\/])"
+)
+_IDENTIFIER_CONTENT = re.compile(
+    r"(?i)\b(?:dob|date of birth|(?:health|medical) record(?: id| identifier)?|record id|(?:full )?name|phone)\s*[:#]"
+    r"|(?:出生日期|出生年月|健康记录|病历号|病例号|姓名|电话)\s*[：:#]"
+)
+_CLINICAL_PROSE = re.compile(
+    r"(?i)\b(?:diagnos(?:is|ed|tic)|prescrib(?:e|ed|ing)|prescription|effectiveness|effective|"
+    r"medicat(?:e|ed|ion)|treatment)\b|treatment recommendation|medication change|"
+    r"诊断|确诊|治疗|疗效|处方|用药|服用|药物|药品|开药"
+)
+_SERVICE_PROSE = re.compile(
+    r"(?i)\b(?:provider|book(?:ing|ed)?|appointment|payment|pay|billing|"
+    r"select(?:ing|ed)? (?:a )?doctor|choose (?:a )?doctor|doctor selection)\b|"
+    r"预约|挂号|支付|付款|缴费|(?:选择|推荐)[^，。；]{0,12}(?:医生|医师|医院|机构)|服务商"
+)
 
 
 def _shape_errors(value: dict[str, Any], fields: tuple[str, ...]) -> list[ValidationError]:
@@ -153,6 +171,8 @@ def _json_boundary_errors(value: Any, *, max_depth: int = 32) -> list[Validation
 
 
 def _content_boundary_errors(value: Any) -> list[ValidationError]:
+    """Recursively gate forbidden fields and prose without interpreting content."""
+
     errors: list[ValidationError] = []
     stack: list[tuple[Any, str]] = [(value, "$")]
     while stack:
@@ -176,19 +196,20 @@ def _content_boundary_errors(value: Any) -> list[ValidationError]:
             for index in range(len(current) - 1, -1, -1):
                 stack.append((current[index], f"{path}[{index}]"))
         elif isinstance(current, str) and (
-            re.search(r"(?:^|\s)(?:/[^\s]+|[A-Za-z]:[\\/][^\s]*)", current)
+            _PATH_CONTENT.search(current)
             or re.search(r"\b(?:19|20)\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])\b", current)
             or re.search(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", current)
             or re.search(r"(?<!\w)\+\d{1,3}(?:[ .-]?\d){7,14}(?!\d)", current)
+            or _IDENTIFIER_CONTENT.search(current)
         ):
             errors.append(_invalid("FORBIDDEN_SENSITIVE_CONTENT", path, "paths, contact data, and exact personal dates are forbidden"))
-        if isinstance(current, str) and path.endswith(
-            (".fact", ".rationale", ".description", ".guidance.zh", ".guidance.en")
-        ) and re.search(
-            r"(?i)\b(?:diagnos(?:is|ed|tic)|prescrib(?:e|ed|ing)|prescription|effectiveness|effective|medicat(?:e|ed|ion)|treatment)\b|treatment recommendation|medication change",
-            current,
-        ):
-            errors.append(_invalid("CLINICAL_OVERREACH", path, "free-form clinical conclusions are forbidden"))
+        is_prose = isinstance(current, str) and (
+            path.endswith(_PROSE_PATH_SUFFIXES) or re.search(r"\.unknowns\[\d+\]$", path) is not None
+        )
+        if is_prose and _CLINICAL_PROSE.search(current):
+            errors.append(_invalid("CLINICAL_OVERREACH", path, "clinical conclusions and treatment guidance are forbidden"))
+        if is_prose and _SERVICE_PROSE.search(current):
+            errors.append(_invalid("FORBIDDEN_SERVICE_OPERATION", path, "provider selection, booking, and payment guidance are forbidden"))
         if isinstance(current, str) and path.endswith(".action_candidate.description") and re.search(
             r"\b(?:OUT|LRN)\b",
             current,
@@ -198,12 +219,12 @@ def _content_boundary_errors(value: Any) -> list[ValidationError]:
 
 
 def _validate_string(value: Any, path: str, errors: list[ValidationError], *, limit: int = 280) -> None:
-    if not isinstance(value, str) or not value or len(value) > limit:
+    if type(value) is not str or not value or len(value) > limit:
         errors.append(_invalid("INVALID_STRING", path, f"{path} must be a bounded non-empty string"))
 
 
 def _validate_token(value: Any, path: str, errors: list[ValidationError]) -> None:
-    if not isinstance(value, str) or _OPAQUE_TOKEN.fullmatch(value) is None:
+    if type(value) is not str or _OPAQUE_TOKEN.fullmatch(value) is None:
         errors.append(_invalid("INVALID_OPAQUE_TOKEN", path, f"{path} must be an opaque synthetic token"))
 
 
@@ -214,11 +235,11 @@ def _validate_array(
     *,
     tokens: bool = False,
 ) -> None:
-    if not isinstance(value, list):
+    if type(value) is not list:
         errors.append(_invalid("INVALID_ARRAY", path, f"{path} must be an array"))
         return
-    if any(not isinstance(item, str) or not item for item in value):
-        errors.append(_invalid("INVALID_ARRAY_ITEM", path, f"{path} items must be non-empty strings"))
+    if any(type(item) is not str or not item or (not tokens and len(item) > 280) for item in value):
+        errors.append(_invalid("INVALID_ARRAY_ITEM", path, f"{path} items must be bounded non-empty strings"))
         return
     if tokens and any(_OPAQUE_TOKEN.fullmatch(item) is None for item in value):
         errors.append(_invalid("INVALID_OPAQUE_TOKEN", path, f"{path} items must be opaque synthetic tokens"))
@@ -248,7 +269,7 @@ def _validate_authority_gate(value: Any, path: str, errors: list[ValidationError
     errors.extend(_nested_shape_errors(value, path, ("level", "final_authority")))
     if not isinstance(value, dict):
         return
-    if value.get("level") not in {"GREEN", "YELLOW"}:
+    if type(value.get("level")) is not str or value.get("level") not in {"GREEN", "YELLOW"}:
         errors.append(_invalid("INVALID_AUTHORITY_GATE", f"{path}.level", "non-clinical authority gate must be GREEN or YELLOW"))
     if value.get("final_authority") != "subject":
         errors.append(_invalid("WRONG_AUTHORITY", f"{path}.final_authority", "subject is final authority for non-clinical decisions"))
@@ -266,7 +287,7 @@ def validate_health_evidence_view(value: Any) -> ValidationResult:
         ("status", {"supports", "contradicts", "unverified"}),
         ("freshness", {"current", "stale", "unknown"}),
     ):
-        if field in value and value.get(field) not in allowed:
+        if field in value and (type(value.get(field)) is not str or value.get(field) not in allowed):
             errors.append(_invalid("INVALID_ENUM", field, f"invalid {field}"))
     for field in ("evidence_id", "observed_window", "provenance_reference"):
         if field in value:
@@ -305,7 +326,7 @@ def validate_recovery_compass_snapshot(value: Any) -> ValidationResult:
             if not isinstance(direction, dict):
                 continue
             trend = direction.get("trend")
-            if trend not in {"improving", "stable", "declining", "insufficient_evidence"}:
+            if type(trend) is not str or trend not in {"improving", "stable", "declining", "insufficient_evidence"}:
                 errors.append(_invalid("INVALID_ENUM", f"{path}.trend", "invalid direction trend"))
             references = direction.get("evidence_references")
             _validate_array(references, f"{path}.evidence_references", errors, tokens=True)
@@ -326,7 +347,7 @@ def validate_recovery_compass_snapshot(value: Any) -> ValidationResult:
             )
         )
         if isinstance(focus, dict):
-            if focus.get("direction") not in set(expected_directions):
+            if type(focus.get("direction")) is not str or focus.get("direction") not in set(expected_directions):
                 errors.append(_invalid("INVALID_ENUM", "season_focus.direction", "invalid focus direction"))
             _validate_token(focus.get("bottleneck_candidate"), "season_focus.bottleneck_candidate", errors)
             _validate_string(focus.get("rationale"), "season_focus.rationale", errors)
@@ -356,12 +377,12 @@ def validate_quarter_health_campaign(value: Any) -> ValidationResult:
     if not isinstance(phases, list):
         errors.append(_invalid("INVALID_CAMPAIGN_PHASES", "phases", "campaign phases must be an ordered array"))
     else:
-        actual_phases = tuple(
-            (item.get("phase"), item.get("label"))
+        exact_phase_types = all(
+            type(item) is dict and type(item.get("phase")) is int and type(item.get("label")) is str
             for item in phases
-            if isinstance(item, dict)
         )
-        if len(phases) != 3 or actual_phases != expected_phases:
+        actual_phases = tuple((item.get("phase"), item.get("label")) for item in phases if type(item) is dict)
+        if len(phases) != 3 or not exact_phase_types or actual_phases != expected_phases:
             errors.append(_invalid("INVALID_CAMPAIGN_PHASES", "phases", "campaign requires the exact three ordered phases"))
         for index, phase in enumerate(phases):
             errors.extend(_nested_shape_errors(phase, f"phases[{index}]", ("phase", "label")))
@@ -452,18 +473,24 @@ def validate_professional_escalation(value: Any) -> ValidationResult:
     if "escalation_id" in value:
         _validate_token(value.get("escalation_id"), "escalation_id", errors)
     level = value.get("level")
-    if "level" in value and level not in {"clinician", "emergency"}:
+    if "level" in value and (type(level) is not str or level not in {"clinician", "emergency"}):
         errors.append(_invalid("INVALID_ENUM", "level", "invalid escalation level"))
-    if "trigger_category" in value and value.get("trigger_category") not in {
-        "clinical_request", "medication_change", "urgent_risk", "clinical_device_conflict"
-    }:
+    trigger = value.get("trigger_category")
+    if "trigger_category" in value and (
+        type(trigger) is not str
+        or trigger not in {"clinical_request", "medication_change", "urgent_risk", "clinical_device_conflict"}
+    ):
         errors.append(_invalid("INVALID_ENUM", "trigger_category", "invalid escalation trigger"))
     references = value.get("evidence_references")
     if "evidence_references" in value:
         _validate_array(references, "evidence_references", errors, tokens=True)
         if isinstance(references, list) and not references:
             errors.append(_invalid("EVIDENCE_REQUIRED", "evidence_references", "professional escalation requires supplied evidence"))
-    expected_authority = {"clinician": "clinician", "emergency": "emergency_services"}.get(level)
+    expected_authority = (
+        {"clinician": "clinician", "emergency": "emergency_services"}.get(level)
+        if type(level) is str
+        else None
+    )
     if expected_authority is not None and value.get("final_authority") != expected_authority:
         errors.append(_invalid("WRONG_AUTHORITY", "final_authority", "final authority must match escalation level"))
     guidance = value.get("guidance")

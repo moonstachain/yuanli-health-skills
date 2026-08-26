@@ -298,6 +298,37 @@ class ProductContractTests(unittest.TestCase):
                     self.assertEqual(signatures[0], signatures[1])
                     self.assertIn(expected_code, [code for code, _ in signatures[0]])
 
+    def test_json_arrays_and_objects_in_nested_enum_slots_return_errors_without_raising(self):
+        from yuanli_health_skills import product_contracts
+
+        cases = []
+        health = self.load_valid("health-evidence-view.json")
+        health["source_type"] = []
+        cases.append((product_contracts.validate_health_evidence_view, health))
+        compass_trend = self.load_valid("recovery-compass-snapshot.json")
+        compass_trend["directions"][0]["trend"] = {}
+        cases.append((product_contracts.validate_recovery_compass_snapshot, compass_trend))
+        compass_focus = self.load_valid("recovery-compass-snapshot.json")
+        compass_focus["season_focus"]["direction"] = []
+        cases.append((product_contracts.validate_recovery_compass_snapshot, compass_focus))
+        compass_authority = self.load_valid("recovery-compass-snapshot.json")
+        compass_authority["authority_gate"]["level"] = {}
+        cases.append((product_contracts.validate_recovery_compass_snapshot, compass_authority))
+        escalation_level = self.load_valid("professional-escalation.json")
+        escalation_level["level"] = []
+        cases.append((product_contracts.validate_professional_escalation, escalation_level))
+        escalation_trigger = self.load_valid("professional-escalation.json")
+        escalation_trigger["trigger_category"] = {}
+        cases.append((product_contracts.validate_professional_escalation, escalation_trigger))
+
+        for validate, document in cases:
+            with self.subTest(validator=validate.__name__):
+                try:
+                    result = validate(document)
+                except Exception as exc:
+                    self.fail(f"{validate.__name__} raised {type(exc).__name__}: {exc}")
+                self.assertFalse(result.ok)
+
     def test_non_json_object_hooks_are_not_executed_by_public_boundaries(self):
         from yuanli_health_skills import build_health_evidence_view, validate_health_evidence_view
 
@@ -364,6 +395,125 @@ class ProductContractTests(unittest.TestCase):
             with self.subTest(expected_code=expected_code):
                 self.assertIn(expected_code, [error.code for error in validate(malformed).errors])
 
+    def test_multilingual_clinical_and_service_prose_is_rejected_in_valid_fields(self):
+        from yuanli_health_skills import product_contracts
+
+        cases = []
+        chinese_diagnosis = self.load_valid("health-evidence-view.json")
+        chinese_diagnosis["fact"] = "合成观察已确诊糖尿病。"
+        cases.append((product_contracts.validate_health_evidence_view, chinese_diagnosis, "CLINICAL_OVERREACH"))
+        english_conclusion = self.load_valid("health-evidence-view.json")
+        english_conclusion["unknowns"] = ["Synthetic diagnosis was confirmed."]
+        cases.append((product_contracts.validate_health_evidence_view, english_conclusion, "CLINICAL_OVERREACH"))
+        chinese_treatment = self.load_valid("professional-escalation.json")
+        chinese_treatment["guidance"]["zh"] = "建议服用阿司匹林治疗。"
+        cases.append((product_contracts.validate_professional_escalation, chinese_treatment, "CLINICAL_OVERREACH"))
+        english_treatment = self.load_valid("professional-escalation.json")
+        english_treatment["guidance"]["en"] = "Take aspirin as treatment now."
+        cases.append((product_contracts.validate_professional_escalation, english_treatment, "CLINICAL_OVERREACH"))
+        english_service = self.load_valid("professional-escalation.json")
+        english_service["guidance"]["en"] = "Book Dr. Smith and pay the provider now."
+        cases.append((product_contracts.validate_professional_escalation, english_service, "FORBIDDEN_SERVICE_OPERATION"))
+        chinese_service = self.load_valid("professional-escalation.json")
+        chinese_service["guidance"]["zh"] = "请立即预约医生并支付挂号费用。"
+        cases.append((product_contracts.validate_professional_escalation, chinese_service, "FORBIDDEN_SERVICE_OPERATION"))
+        chinese_provider = self.load_valid("professional-escalation.json")
+        chinese_provider["guidance"]["zh"] = "建议选择张医生处理。"
+        cases.append((product_contracts.validate_professional_escalation, chinese_provider, "FORBIDDEN_SERVICE_OPERATION"))
+
+        for validate, document, expected_code in cases:
+            with self.subTest(validator=validate.__name__, expected_code=expected_code):
+                self.assertIn(expected_code, [error.code for error in validate(document).errors])
+
+    def test_relative_absolute_and_traversal_paths_are_rejected_from_prose(self):
+        from yuanli_health_skills import validate_health_evidence_view
+
+        paths = (
+            "synthetic/files/report.txt",
+            "/private/synthetic-health.txt",
+            "../synthetic/report.txt",
+            "./synthetic/report.txt",
+            "synthetic\\files\\report.txt",
+            "C:\\synthetic\\report.txt",
+        )
+        for path in paths:
+            with self.subTest(path=path):
+                document = copy.deepcopy(self.health_evidence)
+                document["fact"] = path
+                self.assertIn(
+                    "FORBIDDEN_SENSITIVE_CONTENT",
+                    [error.code for error in validate_health_evidence_view(document).errors],
+                )
+
+    def test_sensitive_content_is_rejected_from_every_prose_slot(self):
+        from yuanli_health_skills import product_contracts
+
+        cases = []
+        health_fact = self.load_valid("health-evidence-view.json")
+        health_fact["fact"] = "synthetic/files/report.txt"
+        cases.append((product_contracts.validate_health_evidence_view, health_fact, "fact"))
+        health_unknown = self.load_valid("health-evidence-view.json")
+        health_unknown["unknowns"] = ["synthetic/files/report.txt"]
+        cases.append((product_contracts.validate_health_evidence_view, health_unknown, "unknowns"))
+        compass_rationale = self.load_valid("recovery-compass-snapshot.json")
+        compass_rationale["season_focus"]["rationale"] = "synthetic/files/report.txt"
+        cases.append((product_contracts.validate_recovery_compass_snapshot, compass_rationale, "rationale"))
+        compass_unknown = self.load_valid("recovery-compass-snapshot.json")
+        compass_unknown["unknowns"] = ["synthetic/files/report.txt"]
+        cases.append((product_contracts.validate_recovery_compass_snapshot, compass_unknown, "unknowns"))
+        campaign_unknown = self.load_valid("quarter-health-campaign.json")
+        campaign_unknown["unknowns"] = ["synthetic/files/report.txt"]
+        cases.append((product_contracts.validate_quarter_health_campaign, campaign_unknown, "unknowns"))
+        weekly_description = self.load_valid("weekly-experiment.json")
+        weekly_description["action_candidate"]["description"] = "synthetic/files/report.txt"
+        cases.append((product_contracts.validate_weekly_experiment, weekly_description, "description"))
+        weekly_unknown = self.load_valid("weekly-experiment.json")
+        weekly_unknown["unknowns"] = ["synthetic/files/report.txt"]
+        cases.append((product_contracts.validate_weekly_experiment, weekly_unknown, "unknowns"))
+        guidance_zh = self.load_valid("professional-escalation.json")
+        guidance_zh["guidance"]["zh"] = "合成路径 synthetic/files/report.txt"
+        cases.append((product_contracts.validate_professional_escalation, guidance_zh, "guidance.zh"))
+        guidance_en = self.load_valid("professional-escalation.json")
+        guidance_en["guidance"]["en"] = "Synthetic path synthetic/files/report.txt"
+        cases.append((product_contracts.validate_professional_escalation, guidance_en, "guidance.en"))
+        escalation_unknown = self.load_valid("professional-escalation.json")
+        escalation_unknown["unknowns"] = ["synthetic/files/report.txt"]
+        cases.append((product_contracts.validate_professional_escalation, escalation_unknown, "unknowns"))
+
+        for validate, document, slot in cases:
+            with self.subTest(validator=validate.__name__, slot=slot):
+                self.assertIn(
+                    "FORBIDDEN_SENSITIVE_CONTENT",
+                    [error.code for error in validate(document).errors],
+                )
+
+    def test_labelled_birth_record_name_and_contact_content_is_rejected(self):
+        from yuanli_health_skills import validate_health_evidence_view
+
+        labelled_values = (
+            "D" + "OB: January 2, 1990",
+            "medical " + "record ID: ABC-123",
+            "Full " + "name: Synthetic Person",
+            "出生日期：1990年1月2日",
+            "病历号：ABC-123",
+            "电话：13800000000",
+        )
+        for value in labelled_values:
+            with self.subTest(value=value):
+                document = copy.deepcopy(self.health_evidence)
+                document["unknowns"] = [value]
+                self.assertIn(
+                    "FORBIDDEN_SENSITIVE_CONTENT",
+                    [error.code for error in validate_health_evidence_view(document).errors],
+                )
+
+    def test_required_bilingual_escalation_guidance_remains_allowed(self):
+        from yuanli_health_skills import validate_professional_escalation
+
+        document = self.load_valid("professional-escalation.json")
+
+        self.assertEqual(validate_professional_escalation(document).errors, ())
+
     def test_five_builders_and_validators_are_exported_by_the_public_package(self):
         import yuanli_health_skills
 
@@ -426,6 +576,51 @@ class ProductContractTests(unittest.TestCase):
         self.assertEqual(first_bytes, second_bytes)
         first.value["action_candidate"]["description"] = "mutated"
         self.assertEqual(second.value, expected)
+
+    def test_nested_campaign_phase_booleans_are_rejected_by_validator_and_builder(self):
+        from yuanli_health_skills import build_quarter_health_campaign, validate_quarter_health_campaign
+
+        document = self.load_valid("quarter-health-campaign.json")
+        document["phases"][0]["phase"] = True
+        payload = {
+            key: copy.deepcopy(value)
+            for key, value in document.items()
+            if key not in {"schema", "synthetic", "canonical_write", "persistence"}
+        }
+
+        self.assertIn(
+            "INVALID_CAMPAIGN_PHASES",
+            [error.code for error in validate_quarter_health_campaign(document).errors],
+        )
+        built = build_quarter_health_campaign(payload)
+        self.assertFalse(built.ok)
+        self.assertIsNone(built.value)
+
+    def test_text_array_limit_matches_schema_for_all_validators_and_builders(self):
+        from yuanli_health_skills import product_contracts
+
+        cases = (
+            ("health-evidence-view.json", product_contracts.validate_health_evidence_view, product_contracts.build_health_evidence_view),
+            ("recovery-compass-snapshot.json", product_contracts.validate_recovery_compass_snapshot, product_contracts.build_recovery_compass_snapshot),
+            ("quarter-health-campaign.json", product_contracts.validate_quarter_health_campaign, product_contracts.build_quarter_health_campaign),
+            ("weekly-experiment.json", product_contracts.validate_weekly_experiment, product_contracts.build_weekly_experiment),
+            ("professional-escalation.json", product_contracts.validate_professional_escalation, product_contracts.build_professional_escalation),
+        )
+        boundary_fields = {"schema", "synthetic", "canonical_write", "persistence"}
+        for filename, validate, build in cases:
+            for size, expected_ok in ((280, True), (281, False)):
+                with self.subTest(filename=filename, size=size):
+                    document = self.load_valid(filename)
+                    document["unknowns"] = ["x" * size]
+                    self.assertEqual(validate(document).ok, expected_ok)
+                    payload = {
+                        key: copy.deepcopy(value)
+                        for key, value in document.items()
+                        if key not in boundary_fields
+                    }
+                    result = build(payload)
+                    self.assertEqual(result.ok, expected_ok)
+                    self.assertEqual(result.value is not None, expected_ok)
 
     def test_five_source_json_schemas_are_closed_at_every_object_boundary(self):
         schema_names = (
