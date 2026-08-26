@@ -18,6 +18,11 @@ from codex_adapter_reference import (
     render_root,
     validate_instruction_operation,
 )
+from lexical_path_guard import (
+    absolute_lexical_path,
+    inspect_lexical_path,
+    revalidate_lexical_path,
+)
 
 
 PACKAGE_RELATIVE = Path("dist/codex/yuanli-health")
@@ -340,35 +345,6 @@ def validate_repository(root: Path) -> list[str]:
     return issues
 
 
-def _absolute_without_resolve(path: Path) -> Path:
-    return Path(os.path.abspath(os.fspath(path)))
-
-
-def _reject_unsafe_package_path(package: Path, root: Path) -> None:
-    """Reject the package root and in-repository ancestors without following links."""
-    try:
-        relative = package.relative_to(root)
-    except ValueError:
-        relative = None
-    paths = (
-        (package.parent, package)
-        if relative is None
-        else tuple(
-            root.joinpath(*relative.parts[:index])
-            for index in range(1, len(relative.parts) + 1)
-        )
-    )
-    if not paths:
-        paths = (package,)
-    for path in paths:
-        try:
-            mode = path.lstat().st_mode
-        except FileNotFoundError:
-            continue
-        if stat.S_ISLNK(mode):
-            raise ValueError("package root must be a real directory")
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
@@ -377,10 +353,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--check-repository", action="store_true")
     args = parser.parse_args(argv)
     root = args.root.resolve()
-    package = _absolute_without_resolve(args.package) if args.package else root / PACKAGE_RELATIVE
+    package = absolute_lexical_path(args.package) if args.package else root / PACKAGE_RELATIVE
     metadata = args.metadata.resolve() if args.metadata else (root / METADATA_RELATIVE if args.check_repository else None)
     try:
-        _reject_unsafe_package_path(package, root)
+        package_identity = inspect_lexical_path(package)
+        revalidate_lexical_path(package_identity)
         issues, content_hash, file_count = validate_package(root, package)
         if not issues and metadata is not None:
             issues.extend(validate_metadata(metadata, content_hash or "", file_count))

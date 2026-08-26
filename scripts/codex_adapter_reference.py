@@ -106,6 +106,7 @@ def _source_document_projection(
         and purpose_line == purpose_line.lstrip(" \t")
         and re.match(r"(?:>|[-+*][ \t]+|[0-9]+[.)][ \t]+|```|~~~)", purpose_line) is None
         and token_offset >= 0
+        and (token_offset == 0 or purpose_line[token_offset - 1] != "!")
         and purpose_line[:token_offset].count("`") % 2 == 0
     )
     if (

@@ -16,6 +16,12 @@ from codex_adapter_reference import (
     render_reference,
     render_root,
 )
+from lexical_path_guard import (
+    LexicalPathIdentity,
+    absolute_lexical_path,
+    inspect_lexical_path,
+    revalidate_lexical_path,
+)
 
 
 PACKAGE_RELATIVE = Path("dist/codex/yuanli-health")
@@ -157,42 +163,19 @@ def _clear_output(output: Path) -> None:
             path.rmdir()
 
 
-def _write_package(output: Path, files: dict[str, bytes]) -> None:
+def _write_package(
+    output: Path,
+    files: dict[str, bytes],
+    identity: LexicalPathIdentity,
+) -> None:
+    revalidate_lexical_path(identity)
     _clear_output(output)
+    revalidate_lexical_path(identity)
     output.mkdir(parents=True, exist_ok=True)
     for relative, content in sorted(files.items()):
         path = output / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
-
-
-def _absolute_without_resolve(path: Path) -> Path:
-    return Path(os.path.abspath(os.fspath(path)))
-
-
-def _reject_unsafe_output_path(output: Path, root: Path) -> None:
-    """Reject the output root and in-repository ancestors without following links."""
-    try:
-        relative = output.relative_to(root)
-    except ValueError:
-        relative = None
-    paths = (
-        (output.parent, output)
-        if relative is None
-        else tuple(
-            root.joinpath(*relative.parts[:index])
-            for index in range(1, len(relative.parts) + 1)
-        )
-    )
-    if not paths:
-        paths = (output,)
-    for path in paths:
-        try:
-            mode = path.lstat().st_mode
-        except FileNotFoundError:
-            continue
-        if stat.S_ISLNK(mode):
-            raise ValueError("package root must be a real directory")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -203,13 +186,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args(argv)
     root = args.root.resolve()
-    output = _absolute_without_resolve(args.output) if args.output else root / PACKAGE_RELATIVE
+    output = absolute_lexical_path(args.output) if args.output else root / PACKAGE_RELATIVE
     metadata_path = args.metadata.resolve() if args.metadata else (root / METADATA_RELATIVE if args.output is None else None)
     try:
-        _reject_unsafe_output_path(output, root)
+        output_identity = inspect_lexical_path(output)
         files, registry = build_package(root)
         metadata = _metadata(files, registry)
         if args.check:
+            revalidate_lexical_path(output_identity)
             existing, issues = _existing_files(output)
             if issues or existing != files:
                 print("generated package is missing, extra, unsafe, or byte-different", file=sys.stderr)
@@ -218,7 +202,7 @@ def main(argv: list[str] | None = None) -> int:
                 print("release metadata is missing or byte-different", file=sys.stderr)
                 return 1
         else:
-            _write_package(output, files)
+            _write_package(output, files, output_identity)
             if metadata_path is not None:
                 metadata_path.parent.mkdir(parents=True, exist_ok=True)
                 metadata_path.write_bytes(_json_bytes(metadata))

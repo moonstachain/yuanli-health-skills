@@ -210,23 +210,57 @@ def _quoted_candidate_is_concatenated(prefix: str, start: int, tail: str) -> boo
     return before.endswith("+")
 
 
-def _python_string_prefix_before(line: str, quote_index: int) -> bool:
-    for prefix in ("br", "rb", "fr", "rf", "b", "f", "r", "u"):
-        start = quote_index - len(prefix)
-        if start < 0 or line[start:quote_index].lower() != prefix:
-            continue
-        if start == 0 or not (line[start - 1].isalnum() or line[start - 1] == "_"):
-            return True
-    return False
+def _last_unescaped_quotes(line: str) -> dict[str, int]:
+    escaped = False
+    positions: dict[str, int] = {}
+    for index, character in enumerate(line):
+        if escaped:
+            escaped = False
+        elif character == "\\":
+            escaped = True
+        elif character in "\"'":
+            positions[character] = index
+    return positions
+
+
+def _identifier_prefixed_quote_opener(
+    line: str,
+    quote_index: int,
+    sensitive_relation_starts: frozenset[int],
+    last_unescaped_quotes: dict[str, int],
+) -> bool:
+    """Recognize any ASCII identifier prefix without enumerating languages."""
+    start = quote_index
+    while start > 0 and (
+        line[start - 1].isascii()
+        and (line[start - 1].isalnum() or line[start - 1] == "_")
+    ):
+        start -= 1
+    prefix = line[start:quote_index]
+    if (
+        not prefix
+        or not prefix[0].isascii()
+        or not (prefix[0].isalpha() or prefix[0] == "_")
+        or any(not (character.isascii() and (character.isalnum() or character == "_")) for character in prefix)
+    ):
+        return False
+    if quote_index < last_unescaped_quotes.get(line[quote_index], -1):
+        return True
+    label_start = quote_index + 1
+    while label_start < len(line) and line[label_start] in " \t":
+        label_start += 1
+    return label_start in sensitive_relation_starts
 
 
 def _relation_quote_states(
     line: str,
     initial_quote: str | None,
+    sensitive_relation_starts: frozenset[int],
 ) -> tuple[dict[int, str | None], str | None]:
     quote = initial_quote
     escaped = False
     points: dict[int, str | None] = {}
+    last_unescaped_quotes = _last_unescaped_quotes(line)
     for index, character in enumerate(line):
         if character in ":=":
             points[index] = quote
@@ -242,7 +276,12 @@ def _relation_quote_states(
                 0 < index < len(line) - 1
                 and line[index - 1].isalnum()
                 and line[index + 1].isalnum()
-                and not _python_string_prefix_before(line, index)
+                and not _identifier_prefixed_quote_opener(
+                    line,
+                    index,
+                    sensitive_relation_starts,
+                    last_unescaped_quotes,
+                )
             ):
                 quote = character
     return points, quote
@@ -306,17 +345,53 @@ def _exact_taxonomy_declaration(line: str) -> bool:
     return finding is not None and match.group("value") == finding
 
 
+def _initial_quoted_fragment(line: str, quote: str) -> tuple[str, bool]:
+    """Return text before the first unescaped closing quote on this line."""
+    escaped = False
+    for index, character in enumerate(line):
+        if escaped:
+            escaped = False
+        elif character == "\\":
+            escaped = True
+        elif character == quote:
+            return line[:index], True
+    return line, False
+
+
+def _quoted_fragment_is_inert(fragment: str) -> bool:
+    stripped = fragment.strip()
+    return not stripped or _INERT_PLACEHOLDER.fullmatch(stripped) is not None
+
+
 def _machine_label_classes(text: str) -> set[str]:
     findings: set[str] = set()
     quote: str | None = None
+    pending_quote_classes: set[str] = set()
     for line in text.splitlines():
-        relation_quotes, next_quote = _relation_quote_states(line, quote)
+        if quote is not None and pending_quote_classes:
+            fragment, quote_closes = _initial_quoted_fragment(line, quote)
+            if not _quoted_fragment_is_inert(fragment):
+                findings.update(pending_quote_classes)
+                pending_quote_classes.clear()
+            elif quote_closes:
+                pending_quote_classes.clear()
+        candidates = _label_relation_candidates(line)
+        sensitive_relation_starts = frozenset(
+            start
+            for relations in candidates.values()
+            for key, start in relations
+            if _machine_key_class(key) is not None
+        )
+        relation_quotes, next_quote = _relation_quote_states(
+            line,
+            quote,
+            sensitive_relation_starts,
+        )
         if _exact_taxonomy_declaration(line):
             quote = next_quote
             continue
         if len(relation_quotes) > _MAX_RELATIONS_PER_LINE:
             raise ScanBudgetError("relation budget exceeded")
-        candidates = _label_relation_candidates(line)
         for separator, containing_quote in relation_quotes.items():
             for key, start in candidates.get(separator, ()):
                 finding = _machine_key_class(key)
@@ -327,20 +402,18 @@ def _machine_label_classes(text: str) -> set[str]:
                 if diagnostic_prefix.endswith(("PHI_CURRENT:", "PHI_HISTORY:")) and normalized_key == finding:
                     continue
                 value_state = _same_line_value_state(line, separator + 1, containing_quote)
-                if (
-                    value_state == "observable"
-                    or (
-                        value_state == "empty"
-                        and (containing_quote is None or next_quote == containing_quote)
-                    )
-                    or (
-                        value_state == "placeholder"
-                        and containing_quote is not None
-                        and next_quote == containing_quote
-                    )
+                if value_state == "observable" or (
+                    value_state == "empty" and containing_quote is None
                 ):
                     findings.add(finding)
+                elif (
+                    value_state in {"empty", "placeholder"}
+                    and containing_quote is not None
+                    and next_quote == containing_quote
+                ):
+                    pending_quote_classes.add(finding)
         quote = next_quote
+    findings.update(pending_quote_classes)
     return findings
 
 
