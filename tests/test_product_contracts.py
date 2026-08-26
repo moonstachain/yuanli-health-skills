@@ -762,28 +762,177 @@ class ProductContractTests(unittest.TestCase):
                 self.assertEqual(files[relative], (ROOT / "contracts" / f"{schema_name}.schema.json").read_bytes())
                 self.assertIn(f"  {relative}\n", files["SHA256SUMS"].decode("utf-8"))
 
-    def test_generator_rejects_product_schema_prose_policy_drift(self):
+    def test_product_schema_prose_policy_guard_rejects_structural_drift(self):
+        from yuanli_health_skills.product_prose_policy import product_schema_prose_policy_errors
+
+        schema_names = (
+            "health-evidence-view-v1",
+            "recovery-compass-snapshot-v1",
+            "quarter-health-campaign-v1",
+            "weekly-experiment-v1",
+            "professional-escalation-v1",
+        )
+        mutations = [
+            (
+                "health-evidence-view-v1",
+                ("properties", "fact"),
+                {"type": "string"},
+                "properties.fact.$ref",
+            ),
+            (
+                "recovery-compass-snapshot-v1",
+                ("$defs", "focus", "properties", "rationale"),
+                {"type": "string"},
+                "$defs.focus.properties.rationale.$ref",
+            ),
+            (
+                "recovery-compass-snapshot-v1",
+                ("properties", "season_focus", "oneOf"),
+                [{"type": "null"}, {"type": "object"}],
+                "properties.season_focus.oneOf",
+            ),
+            (
+                "weekly-experiment-v1",
+                ("properties", "action_candidate"),
+                {"type": "object"},
+                "properties.action_candidate.$ref",
+            ),
+            (
+                "weekly-experiment-v1",
+                ("$defs", "action_candidate", "properties", "description"),
+                {"$ref": "#/$defs/text"},
+                "$defs.action_candidate.properties.description.$ref",
+            ),
+            (
+                "weekly-experiment-v1",
+                ("$defs", "action_text", "maxLength"),
+                10000,
+                "$defs.action_text.maxLength",
+            ),
+            (
+                "professional-escalation-v1",
+                ("properties", "guidance"),
+                {"type": "object"},
+                "properties.guidance.$ref",
+            ),
+            (
+                "professional-escalation-v1",
+                ("$defs", "guidance", "additionalProperties"),
+                True,
+                "$defs.guidance.additionalProperties",
+            ),
+            (
+                "professional-escalation-v1",
+                ("$defs", "guidance", "required"),
+                ["en"],
+                "$defs.guidance.required",
+            ),
+            (
+                "professional-escalation-v1",
+                ("$defs", "guidance", "properties", "zh", "const"),
+                "Synthetic guidance.",
+                "$defs.guidance.properties.zh.const",
+            ),
+        ]
+        for schema_name in schema_names:
+            mutations.extend(
+                (
+                    (
+                        schema_name,
+                        ("properties", "unknowns"),
+                        {"type": "array"},
+                        "properties.unknowns.$ref",
+                    ),
+                    (
+                        schema_name,
+                        ("$defs", "text", "maxLength"),
+                        10000,
+                        "$defs.text.maxLength",
+                    ),
+                    (
+                        schema_name,
+                        ("$defs", "text_array", "items"),
+                        {"type": "string"},
+                        "$defs.text_array.items.$ref",
+                    ),
+                )
+            )
+
+        for schema_name, path, replacement, expected_path in mutations:
+            with self.subTest(schema=schema_name, path=expected_path):
+                schema = json.loads(
+                    (ROOT / "contracts" / f"{schema_name}.schema.json").read_text(encoding="utf-8")
+                )
+                target = schema
+                for segment in path[:-1]:
+                    target = target[segment]
+                target[path[-1]] = replacement
+
+                self.assertEqual(
+                    product_schema_prose_policy_errors(schema_name, schema),
+                    (f"{schema_name}: {expected_path}",),
+                )
+
+        schema_name = "health-evidence-view-v1"
+        schema = json.loads(
+            (ROOT / "contracts" / f"{schema_name}.schema.json").read_text(encoding="utf-8")
+        )
+        schema["properties"]["fact"] = {"type": "string"}
+        schema["properties"]["unknowns"] = {"type": "array"}
+        schema["$defs"]["text"]["maxLength"] = 10000
+        self.assertEqual(
+            product_schema_prose_policy_errors(schema_name, schema),
+            (
+                f"{schema_name}: properties.fact.$ref",
+                f"{schema_name}: properties.unknowns.$ref",
+                f"{schema_name}: $defs.text.maxLength",
+            ),
+        )
+
+    def test_generator_rejects_complete_product_schema_prose_policy_drift(self):
         from tests._adapter_support import GENERATOR, copy_repository, run_script
 
-        with tempfile.TemporaryDirectory() as directory:
-            repository = copy_repository(Path(directory))
-            schema_path = repository / "contracts/health-evidence-view-v1.schema.json"
-            schema = json.loads(schema_path.read_text(encoding="utf-8"))
-            schema["$defs"]["text"]["pattern"] = "^Synthetic .+$"
-            schema_path.write_text(
-                json.dumps(schema, ensure_ascii=False, indent=2) + "\n",
-                encoding="utf-8",
-            )
-            result = run_script(
-                GENERATOR,
-                "--root",
-                repository,
-                "--output",
-                Path(directory) / "generated",
-            )
+        mutations = (
+            ("health-evidence-view-v1", ("properties", "fact"), {"type": "string"}),
+            (
+                "weekly-experiment-v1",
+                ("$defs", "action_candidate", "properties", "description"),
+                {"type": "string"},
+            ),
+            ("quarter-health-campaign-v1", ("$defs", "text_array", "items"), {"type": "string"}),
+            (
+                "recovery-compass-snapshot-v1",
+                ("$defs", "focus", "properties", "rationale"),
+                {"type": "string"},
+            ),
+            ("professional-escalation-v1", ("properties", "guidance"), {"type": "object"}),
+            ("health-evidence-view-v1", ("$defs", "text", "maxLength"), 10000),
+            ("health-evidence-view-v1", ("$defs", "text", "pattern"), "^Synthetic .+$"),
+        )
+        for schema_name, path, replacement in mutations:
+            with self.subTest(schema=schema_name, path=".".join(path)):
+                with tempfile.TemporaryDirectory() as directory:
+                    repository = copy_repository(Path(directory))
+                    schema_path = repository / "contracts" / f"{schema_name}.schema.json"
+                    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+                    target = schema
+                    for segment in path[:-1]:
+                        target = target[segment]
+                    target[path[-1]] = replacement
+                    schema_path.write_text(
+                        json.dumps(schema, ensure_ascii=False, indent=2) + "\n",
+                        encoding="utf-8",
+                    )
+                    result = run_script(
+                        GENERATOR,
+                        "--root",
+                        repository,
+                        "--output",
+                        Path(directory) / "generated",
+                    )
 
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("product schema prose policy mismatch", result.stderr)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("product schema prose policy mismatch", result.stderr)
 
     def test_stale_conflict_is_explicit_and_self_or_missing_conflict_references_are_rejected(self):
         from yuanli_health_skills.product_contracts import validate_health_evidence_view
