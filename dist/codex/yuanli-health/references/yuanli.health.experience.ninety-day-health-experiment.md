@@ -38,8 +38,6 @@ Qualification receipt: `../contracts/qualification-receipts/yuanli.health.experi
 
 ## Platform-neutral operation
 
-# Ninety-Day Health Experiment Experience
-
 ## Purpose
 
 Produce the bounded yuanli.health.experience.ninety-day-health-experiment discussion candidate defined by [`contract.json`](../contracts/capabilities/yuanli.health.experience.ninety-day-health-experiment.json). Successful results use the top-level `full-suite-candidate-v1` schema; the nested `envelope` conforms to `typed-candidate-envelope-v1`. The result remains non-canonical.

@@ -58,7 +58,6 @@ _MAX_CONTENT_BYTES = 2 * 1024 * 1024
 _MAX_JSON_DEPTH = 128
 _MAX_JSON_NODES = 100_000
 _MAX_RELATIONS_PER_LINE = 512
-_LABEL_WINDOW = 256
 
 
 class ScanError(ValueError):
@@ -211,28 +210,26 @@ def _quoted_candidate_is_concatenated(prefix: str, start: int, tail: str) -> boo
     return before.endswith("+")
 
 
-def _label_candidates(prefix: str):
-    for start, character in enumerate(prefix):
-        if not character.isascii() or not character.isalpha() or not _safe_label_start(prefix, start):
+def _python_string_prefix_before(line: str, quote_index: int) -> bool:
+    for prefix in ("br", "rb", "fr", "rf", "b", "f", "r", "u"):
+        start = quote_index - len(prefix)
+        if start < 0 or line[start:quote_index].lower() != prefix:
             continue
-        match = _ASCII_LABEL_AT.match(prefix, start)
-        tail = prefix[match.end():] if match is not None else ""
-        closers = _label_closer_tokens(tail)
-        if (
-            match is not None
-            and closers is not None
-            and _balanced_label_wrappers(prefix, start, closers)
-            and not _quoted_candidate_is_concatenated(prefix, start, tail)
-        ):
-            yield match.group(0), start
+        if start == 0 or not (line[start - 1].isalnum() or line[start - 1] == "_"):
+            return True
+    return False
 
 
-def _relation_points(line: str):
-    quote: str | None = None
+def _relation_quote_states(
+    line: str,
+    initial_quote: str | None,
+) -> tuple[dict[int, str | None], str | None]:
+    quote = initial_quote
     escaped = False
+    points: dict[int, str | None] = {}
     for index, character in enumerate(line):
         if character in ":=":
-            yield index, quote
+            points[index] = quote
         if escaped:
             escaped = False
         elif character == "\\":
@@ -245,8 +242,36 @@ def _relation_points(line: str):
                 0 < index < len(line) - 1
                 and line[index - 1].isalnum()
                 and line[index + 1].isalnum()
+                and not _python_string_prefix_before(line, index)
             ):
                 quote = character
+    return points, quote
+
+
+def _label_relation_candidates(line: str) -> dict[int, list[tuple[str, int]]]:
+    """Find supported label/relation pairs in one bounded forward pass."""
+    candidates: dict[int, list[tuple[str, int]]] = {}
+    allowed_tail = " \t\\\"']`*_"
+    for start, character in enumerate(line):
+        if not character.isascii() or not character.isalpha() or not _safe_label_start(line, start):
+            continue
+        match = _ASCII_LABEL_AT.match(line, start)
+        if match is None:
+            continue
+        cursor = match.end()
+        while cursor < len(line) and line[cursor] in allowed_tail:
+            cursor += 1
+        if cursor >= len(line) or line[cursor] not in ":=":
+            continue
+        tail = line[match.end():cursor]
+        closers = _label_closer_tokens(tail)
+        if (
+            closers is not None
+            and _balanced_label_wrappers(line, start, closers)
+            and not _quoted_candidate_is_concatenated(line, start, tail)
+        ):
+            candidates.setdefault(cursor, []).append((match.group(0), start))
+    return candidates
 
 
 def _same_line_value_state(line: str, start: int, containing_quote: str | None) -> str:
@@ -283,27 +308,39 @@ def _exact_taxonomy_declaration(line: str) -> bool:
 
 def _machine_label_classes(text: str) -> set[str]:
     findings: set[str] = set()
+    quote: str | None = None
     for line in text.splitlines():
+        relation_quotes, next_quote = _relation_quote_states(line, quote)
         if _exact_taxonomy_declaration(line):
+            quote = next_quote
             continue
-        relations = 0
-        for separator, containing_quote in _relation_points(line):
-            relations += 1
-            if relations > _MAX_RELATIONS_PER_LINE:
-                raise ScanBudgetError("relation budget exceeded")
-            window_start = max(0, separator - _LABEL_WINDOW)
-            prefix = line[window_start:separator]
-            for key, start in _label_candidates(prefix):
+        if len(relation_quotes) > _MAX_RELATIONS_PER_LINE:
+            raise ScanBudgetError("relation budget exceeded")
+        candidates = _label_relation_candidates(line)
+        for separator, containing_quote in relation_quotes.items():
+            for key, start in candidates.get(separator, ()):
                 finding = _machine_key_class(key)
                 if finding is None:
                     continue
-                diagnostic_prefix = prefix[max(0, start - 16):start]
+                diagnostic_prefix = line[max(0, start - 16):start]
                 normalized_key = "_".join(_normalize_machine_key(key))
                 if diagnostic_prefix.endswith(("PHI_CURRENT:", "PHI_HISTORY:")) and normalized_key == finding:
                     continue
                 value_state = _same_line_value_state(line, separator + 1, containing_quote)
-                if value_state == "observable" or (value_state == "empty" and containing_quote is None):
+                if (
+                    value_state == "observable"
+                    or (
+                        value_state == "empty"
+                        and (containing_quote is None or next_quote == containing_quote)
+                    )
+                    or (
+                        value_state == "placeholder"
+                        and containing_quote is not None
+                        and next_quote == containing_quote
+                    )
+                ):
                     findings.add(finding)
+        quote = next_quote
     return findings
 
 
@@ -361,11 +398,20 @@ def _json_key_classes(value: Any) -> set[str]:
 def finding_classes(path: str, content: bytes) -> tuple[str, ...]:
     if len(content) > _MAX_CONTENT_BYTES:
         raise ScanBudgetError("content byte budget exceeded")
-    text = _text(content)
-    if text is None:
-        return ()
+    structured_path = Path(path).suffix.lower() == ".json"
+    if structured_path:
+        if b"\0" in content:
+            raise ScanFormatError("malformed JSON bytes")
+        try:
+            text = content.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise ScanFormatError("malformed JSON bytes") from exc
+    else:
+        text = _text(content)
+        if text is None:
+            return ()
     structured: Any | None = None
-    if Path(path).suffix.lower() == ".json":
+    if structured_path:
         _preflight_json(text)
         try:
             structured = json.loads(text)

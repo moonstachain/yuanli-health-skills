@@ -3,11 +3,12 @@
 import hashlib
 import json
 import re
+from pathlib import Path
 from typing import Any
 
 
 _CONTRACT_LABEL = "`contract.json`"
-_CONTAINER_PREFIX = re.compile(r"^[ \t]{0,3}(?:>|[-+*][ \t]+|[0-9]+[.)][ \t]+)")
+_PLAIN_TITLE = re.compile(r"# [A-Za-z0-9]+(?:[ -][A-Za-z0-9]+)*")
 
 _EXPERIENCE_ROUTES = (
     ("first health session / 首次健康会话", "yuanli.health.experience.first-health-session"),
@@ -43,14 +44,6 @@ def _closed_instruction_projection(
     index = 0
     while index < len(instructions):
         if instructions.startswith(token, index):
-            line_start = instructions.rfind("\n", 0, index) + 1
-            line_prefix = instructions[line_start:index]
-            if (
-                (index > 0 and instructions[index - 1] == "!")
-                or line_prefix.startswith(("    ", "\t"))
-                or _CONTAINER_PREFIX.match(line_prefix)
-            ):
-                raise ValueError(f"source Markdown link policy: contract link container forbidden: {source_id}")
             links += 1
             output.append(replacement)
             index += len(token)
@@ -85,22 +78,76 @@ def _closed_instruction_projection(
     return "".join(output)
 
 
-def validate_instruction_projection(source_id: str, instructions: str, contract_target: str) -> str:
-    """Validate an emitted instruction projection and return its exact text."""
-    return _closed_instruction_projection(
+def read_instruction_source(path: Path, source_id: str) -> str:
+    """Read exact instruction bytes and decode strict UTF-8 without newline translation."""
+    raw = path.read_bytes()
+    if b"\0" in raw:
+        raise ValueError(f"source Markdown link policy: non-canonical text bytes: {source_id}")
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise ValueError(f"source Markdown link policy: invalid UTF-8: {source_id}") from exc
+
+
+def _source_document_projection(
+    source_id: str,
+    instructions: str,
+    *,
+    contract_target: str,
+    replacement_target: str | None = None,
+) -> tuple[str, str]:
+    """Validate the one fixed source shape and return its title and operation."""
+    token = _contract_token(contract_target)
+    lines = instructions.splitlines()
+    purpose_line = lines[4] if len(lines) > 4 else ""
+    token_offset = purpose_line.find(token)
+    purpose_is_plain = (
+        bool(purpose_line)
+        and purpose_line == purpose_line.lstrip(" \t")
+        and re.match(r"(?:>|[-+*][ \t]+|[0-9]+[.)][ \t]+|```|~~~)", purpose_line) is None
+        and token_offset >= 0
+        and purpose_line[:token_offset].count("`") % 2 == 0
+    )
+    if (
+        len(lines) < 6
+        or _PLAIN_TITLE.fullmatch(lines[0]) is None
+        or lines[1] != ""
+        or lines[2] != "## Purpose"
+        or lines[3] != ""
+        or not purpose_is_plain
+        or lines[5] != ""
+        or instructions.count(token) != 1
+        or token not in lines[4]
+    ):
+        raise ValueError(f"source Markdown link policy: fixed document shape required: {source_id}")
+    rewritten = _closed_instruction_projection(
         source_id,
         instructions,
         contract_target=contract_target,
+        replacement_target=replacement_target,
     )
+    title = lines[0][2:]
+    source_prefix = f"# {title}\n\n"
+    if not rewritten.startswith(source_prefix):
+        raise ValueError(f"source Markdown link policy: fixed title boundary required: {source_id}")
+    return title, rewritten[len(source_prefix):]
 
 
-def _rewrite_single_source_contract_link(source_id: str, instructions: str) -> str:
-    return _closed_instruction_projection(
+def validate_instruction_operation(
+    source_id: str,
+    title: str,
+    operation: str,
+    contract_target: str,
+) -> str:
+    """Validate one emitted operation under the same fixed document shape."""
+    validated_title, validated_operation = _source_document_projection(
         source_id,
-        instructions,
-        contract_target="contract.json",
-        replacement_target=f"../contracts/capabilities/{source_id}.json",
+        f"# {title}\n\n{operation}",
+        contract_target=contract_target,
     )
+    if validated_title != title or validated_operation != operation:
+        raise ValueError(f"source Markdown link policy: emitted operation mismatch: {source_id}")
+    return operation
 
 
 def render_checksum_manifest(files: dict[str, bytes]) -> bytes:
@@ -161,9 +208,13 @@ If strict input cannot satisfy the selected member contract, stop at that contra
 
 def render_reference(source_id: str, contract: dict[str, Any], instructions: str) -> bytes:
     """Render one exact reference from its frozen source identity and content."""
-    rewritten = _rewrite_single_source_contract_link(source_id, instructions)
     packaged_contract = f"../contracts/capabilities/{source_id}.json"
-    title = rewritten.splitlines()[0].removeprefix("# ")
+    title, rewritten_operation = _source_document_projection(
+        source_id,
+        instructions,
+        contract_target="contract.json",
+        replacement_target=packaged_contract,
+    )
     details = {
         "source_capability_id": source_id,
         "class": contract["class"],
@@ -189,7 +240,6 @@ def render_reference(source_id: str, contract: dict[str, Any], instructions: str
         + json.dumps(details, ensure_ascii=False, indent=2)
         + "\n```\n\n"
         "## Platform-neutral operation\n\n"
-        + rewritten.strip()
-        + "\n"
+        + rewritten_operation
     )
     return body.encode("utf-8")

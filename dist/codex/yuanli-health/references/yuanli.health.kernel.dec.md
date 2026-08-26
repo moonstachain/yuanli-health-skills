@@ -37,8 +37,6 @@ Qualification receipt: `../contracts/qualification-receipts/yuanli.health.kernel
 
 ## Platform-neutral operation
 
-# Decision Candidate Kernel
-
 ## Purpose
 
 Select at most one non-clinical primary bottleneck from supplied candidate-to-evidence links. The machine contract is [`contract.json`](../contracts/capabilities/yuanli.health.kernel.dec.json); outputs conform to `typed-candidate-envelope-v1`.

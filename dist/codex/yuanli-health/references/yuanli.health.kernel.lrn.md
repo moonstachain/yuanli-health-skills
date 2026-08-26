@@ -36,8 +36,6 @@ Qualification receipt: `../contracts/qualification-receipts/yuanli.health.kernel
 
 ## Platform-neutral operation
 
-# Learning Candidate Kernel
-
 ## Purpose
 
 Produce the bounded yuanli.health.kernel.lrn discussion candidate defined by [`contract.json`](../contracts/capabilities/yuanli.health.kernel.lrn.json). Successful results use the top-level `full-suite-candidate-v1` schema; the nested `envelope` conforms to `typed-candidate-envelope-v1`. The result remains non-canonical.

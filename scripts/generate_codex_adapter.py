@@ -10,7 +10,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from codex_adapter_reference import render_checksum_manifest, render_reference, render_root
+from codex_adapter_reference import (
+    read_instruction_source,
+    render_checksum_manifest,
+    render_reference,
+    render_root,
+)
 
 
 PACKAGE_RELATIVE = Path("dist/codex/yuanli-health")
@@ -63,7 +68,10 @@ def build_package(root: Path) -> tuple[dict[str, bytes], dict[str, Any]]:
             raise ValueError(f"invalid source contract {source_id}: " + ", ".join(f"{e.code}:{e.path}" for e in result.errors))
         if contract["source_capability_id"] != source_id:
             raise ValueError(f"source identity mismatch: {source_id}")
-        instructions = (source_directory / "instructions.md").read_text(encoding="utf-8").replace("\r\n", "\n")
+        instructions = read_instruction_source(
+            source_directory / "instructions.md",
+            source_id,
+        )
         files[f"references/{source_id}.md"] = render_reference(source_id, contract, instructions)
         files[f"contracts/capabilities/{source_id}.json"] = _json_bytes(contract)
         files[f"contracts/qualification-receipts/{source_id}.json"] = _json_bytes(
@@ -108,9 +116,11 @@ def _metadata(files: dict[str, bytes], registry: dict[str, Any]) -> dict[str, An
 
 
 def _existing_files(root: Path) -> tuple[dict[str, bytes], list[str]]:
-    if not root.exists():
+    try:
+        root_mode = root.lstat().st_mode
+    except FileNotFoundError:
         return {}, []
-    if root.is_symlink() or not root.is_dir():
+    if stat.S_ISLNK(root_mode) or not stat.S_ISDIR(root_mode):
         return {}, ["package root must be a real directory"]
     files: dict[str, bytes] = {}
     issues: list[str] = []
@@ -136,7 +146,9 @@ def _clear_output(output: Path) -> None:
     _, issues = _existing_files(output)
     if issues:
         raise ValueError("unsafe generated output: " + "; ".join(issues))
-    if not output.exists():
+    try:
+        output.lstat()
+    except FileNotFoundError:
         return
     for path in sorted(output.rglob("*"), key=lambda item: len(item.parts), reverse=True):
         if path.is_file():
@@ -154,6 +166,35 @@ def _write_package(output: Path, files: dict[str, bytes]) -> None:
         path.write_bytes(content)
 
 
+def _absolute_without_resolve(path: Path) -> Path:
+    return Path(os.path.abspath(os.fspath(path)))
+
+
+def _reject_unsafe_output_path(output: Path, root: Path) -> None:
+    """Reject the output root and in-repository ancestors without following links."""
+    try:
+        relative = output.relative_to(root)
+    except ValueError:
+        relative = None
+    paths = (
+        (output.parent, output)
+        if relative is None
+        else tuple(
+            root.joinpath(*relative.parts[:index])
+            for index in range(1, len(relative.parts) + 1)
+        )
+    )
+    if not paths:
+        paths = (output,)
+    for path in paths:
+        try:
+            mode = path.lstat().st_mode
+        except FileNotFoundError:
+            continue
+        if stat.S_ISLNK(mode):
+            raise ValueError("package root must be a real directory")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
@@ -162,9 +203,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args(argv)
     root = args.root.resolve()
-    output = args.output.resolve() if args.output else root / PACKAGE_RELATIVE
+    output = _absolute_without_resolve(args.output) if args.output else root / PACKAGE_RELATIVE
     metadata_path = args.metadata.resolve() if args.metadata else (root / METADATA_RELATIVE if args.output is None else None)
     try:
+        _reject_unsafe_output_path(output, root)
         files, registry = build_package(root)
         metadata = _metadata(files, registry)
         if args.check:

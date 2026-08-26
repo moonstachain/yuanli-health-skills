@@ -36,8 +36,6 @@ Qualification receipt: `../contracts/qualification-receipts/yuanli.health.kernel
 
 ## Platform-neutral operation
 
-# Work Packet Candidate Kernel
-
 ## Purpose
 
 Produce the bounded yuanli.health.kernel.wpk discussion candidate defined by [`contract.json`](../contracts/capabilities/yuanli.health.kernel.wpk.json). Successful results use the top-level `full-suite-candidate-v1` schema; the nested `envelope` conforms to `typed-candidate-envelope-v1`. The result remains non-canonical.
