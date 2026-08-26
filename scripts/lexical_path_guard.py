@@ -193,16 +193,34 @@ class LexicalPathIdentity:
         except OSError as exc:
             raise ValueError(self.error_message) from exc
 
-    def _create_root(self) -> None:
+    def _descriptor_for_lexical_path(self, path: Path) -> int | None:
+        """Return a held descriptor only when it represents this exact lexical prefix."""
+        for index, descriptor in enumerate(self._descriptors):
+            if self.path.parts[: index + 1] == path.parts:
+                return descriptor
+        return None
+
+    def _create_root(self, shared_identity: "LexicalPathIdentity | None" = None) -> None:
         if not self._missing:
             return
         for name in self._missing:
             parent_index = len(self._descriptors) - 1
             parent_descriptor = self.descriptor
             child_descriptor: int | None = None
+            source_descriptor: int | None = None
+            created_path = Path(*self.path.parts[: len(self._descriptors) + 1])
             try:
-                os.mkdir(name, mode=0o755, dir_fd=parent_descriptor)
-                child_descriptor = os.open(name, _DIRECTORY_FLAGS, dir_fd=parent_descriptor)
+                try:
+                    os.mkdir(name, mode=0o755, dir_fd=parent_descriptor)
+                except FileExistsError as exc:
+                    source_descriptor = (
+                        shared_identity._descriptor_for_lexical_path(created_path) if shared_identity is not None else None
+                    )
+                    if source_descriptor is None:
+                        raise ValueError(self.error_message) from exc
+                    child_descriptor = os.dup(source_descriptor)
+                else:
+                    child_descriptor = os.open(name, _DIRECTORY_FLAGS, dir_fd=parent_descriptor)
                 metadata = os.fstat(child_descriptor)
                 if not stat.S_ISDIR(metadata.st_mode):
                     raise ValueError(self.error_message)
@@ -216,6 +234,10 @@ class LexicalPathIdentity:
             self._descriptors.append(child_descriptor)
             self._bindings.append((parent_index, name, _identity(metadata)))
         self._missing = ()
+
+    def create_missing_root_from(self, shared_identity: "LexicalPathIdentity") -> None:
+        """Create missing components while accepting only a package-held shared prefix."""
+        self._create_root(shared_identity)
 
     def read_regular_file(self, relative: str) -> bytes:
         """Read one anchored metadata file without reopening its lexical parent."""

@@ -240,36 +240,6 @@ def _ambiguous_identifier_quote(line: str, quote_index: int) -> bool:
     return len(prefix) == 1 or any(character == "_" or character.isupper() or character.isdigit() for character in prefix)
 
 
-def _last_unescaped_quotes(line: str) -> dict[str, int]:
-    escaped = False
-    positions: dict[str, int] = {}
-    for index, character in enumerate(line):
-        if escaped:
-            escaped = False
-        elif character == "\\":
-            escaped = True
-        elif character in "\"'":
-            positions[character] = index
-    return positions
-
-
-def _identifier_prefixed_quote_opener(
-    line: str,
-    quote_index: int,
-    sensitive_relation_starts: frozenset[int],
-    last_unescaped_quotes: dict[str, int],
-) -> bool:
-    """Recognize definite identifier-prefixed quoted extents."""
-    if not _ascii_identifier_before_quote(line, quote_index):
-        return False
-    if quote_index < last_unescaped_quotes.get(line[quote_index], -1):
-        return True
-    label_start = quote_index + 1
-    while label_start < len(line) and line[label_start] in " \t":
-        label_start += 1
-    return label_start in sensitive_relation_starts
-
-
 def _relation_quote_states(
     line: str,
     initial_quote: tuple[str, bool] | None,

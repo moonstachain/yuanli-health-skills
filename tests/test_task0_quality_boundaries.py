@@ -39,6 +39,37 @@ def _descriptor_count() -> int:
 
 
 class Task0MetadataAnchoringTests(unittest.TestCase):
+    def test_generator_creates_missing_metadata_parent_below_original_anchored_ancestor(self):
+        with _real_temporary_directory() as temporary:
+            repository = copy_repository(temporary / "source")
+            safe_anchor = temporary / "safe-anchor"
+            safe_package = safe_anchor / "package"
+            metadata = safe_anchor / "metadata-parent" / "release-metadata.json"
+            parked_anchor = temporary / "parked-safe-anchor"
+            substitute_metadata = safe_anchor / "metadata-parent" / metadata.name
+            substitute_marker = safe_anchor / "metadata-parent" / "must-not-mutate.txt"
+
+            with _script_namespace(GENERATOR, "task0_deferred_metadata_generator") as namespace:
+                main = namespace["main"]
+                original_write = main.__globals__["_write_package"]
+
+                def write_then_substitute(output, files):
+                    original_write(output, files)
+                    safe_anchor.rename(parked_anchor)
+                    (safe_anchor / "metadata-parent").mkdir(parents=True)
+                    substitute_marker.write_bytes(b"substitute path must not be modified\n")
+
+                main.__globals__["_write_package"] = write_then_substitute
+                result = _call_main(
+                    main,
+                    ["--root", str(repository), "--output", str(safe_package), "--metadata", str(metadata)],
+                )
+
+            self.assertEqual(result, 0)
+            self.assertFalse(substitute_metadata.exists())
+            self.assertEqual(substitute_marker.read_bytes(), b"substitute path must not be modified\n")
+            self.assertTrue((parked_anchor / "metadata-parent" / metadata.name).is_file())
+
     def test_generator_keeps_metadata_write_in_original_anchored_parent(self):
         with _real_temporary_directory() as temporary:
             repository = copy_repository(temporary / "source")

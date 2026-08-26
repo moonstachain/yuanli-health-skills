@@ -171,8 +171,7 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 _write_package(output_identity, files)
                 if deferred_metadata_parent:
-                    metadata_identity.close()
-                    metadata_identity = stack.enter_context(inspect_lexical_path(metadata_path.parent))
+                    metadata_identity.create_missing_root_from(output_identity)
                 if metadata_identity is not None:
                     metadata_identity.write_regular_file(metadata_path.name, _json_bytes(metadata))
     except (OSError, ValueError, json.JSONDecodeError) as exc:
