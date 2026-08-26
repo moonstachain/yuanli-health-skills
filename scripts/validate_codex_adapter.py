@@ -2,6 +2,7 @@
 """Validate a generated Codex health Skill candidate using the standard library."""
 
 import argparse
+import contextlib
 import hashlib
 import json
 import sys
@@ -266,11 +267,15 @@ def validate_package(
         issues.append("license mismatch")
     if files["NOTICE"] != (root / "NOTICE").read_bytes():
         issues.append("notice mismatch")
+    if not issues:
+        final_files, final_inspection = _inspect(package)
+        if final_inspection or final_files != files:
+            issues.append("package changed after validation")
     return issues, hashlib.sha256(files["SHA256SUMS"]).hexdigest(), len(files)
 
 
-def validate_metadata(path: Path, content_hash: str, file_count: int) -> list[str]:
-    document = _json(path)
+def validate_metadata(content: bytes, content_hash: str, file_count: int) -> list[str]:
+    document = _json_bytes(content)
     expected = {
         "schema": "yuanli-health-release-candidate-v1",
         "version": "0.1.0",
@@ -336,13 +341,21 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     root = args.root.resolve()
     package = absolute_lexical_path(args.package) if args.package else root / PACKAGE_RELATIVE
-    metadata = args.metadata.resolve() if args.metadata else (root / METADATA_RELATIVE if args.check_repository else None)
+    metadata = absolute_lexical_path(args.metadata) if args.metadata else (root / METADATA_RELATIVE if args.check_repository else None)
     try:
-        with inspect_lexical_path(package) as package_identity:
+        with contextlib.ExitStack() as stack:
+            package_identity = stack.enter_context(inspect_lexical_path(package))
+            metadata_identity = stack.enter_context(inspect_lexical_path(metadata.parent)) if metadata is not None else None
             revalidate_lexical_path(package_identity)
             issues, content_hash, file_count = validate_package(root, package_identity)
-            if not issues and metadata is not None:
-                issues.extend(validate_metadata(metadata, content_hash or "", file_count))
+            if not issues and metadata_identity is not None:
+                issues.extend(
+                    validate_metadata(
+                        metadata_identity.read_regular_file(metadata.name),
+                        content_hash or "",
+                        file_count,
+                    )
+                )
             if args.check_repository:
                 issues.extend(validate_repository(root))
     except (OSError, ValueError, json.JSONDecodeError, DuplicateKeyError, ImportError) as exc:

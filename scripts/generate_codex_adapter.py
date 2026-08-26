@@ -2,6 +2,7 @@
 """Deterministically generate or check the local Codex health Skill candidate."""
 
 import argparse
+import contextlib
 import hashlib
 import json
 import sys
@@ -148,9 +149,14 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     root = args.root.resolve()
     output = absolute_lexical_path(args.output) if args.output else root / PACKAGE_RELATIVE
-    metadata_path = args.metadata.resolve() if args.metadata else (root / METADATA_RELATIVE if args.output is None else None)
+    metadata_path = absolute_lexical_path(args.metadata) if args.metadata else (root / METADATA_RELATIVE if args.output is None else None)
     try:
-        with inspect_lexical_path(output) as output_identity:
+        with contextlib.ExitStack() as stack:
+            output_identity = stack.enter_context(inspect_lexical_path(output))
+            metadata_identity = (
+                stack.enter_context(inspect_lexical_path(metadata_path.parent)) if metadata_path is not None else None
+            )
+            deferred_metadata_parent = metadata_identity is not None and not metadata_identity.exists
             files, registry = build_package(root)
             metadata = _metadata(files, registry)
             if args.check:
@@ -159,14 +165,16 @@ def main(argv: list[str] | None = None) -> int:
                 if issues or existing != files:
                     print("generated package is missing, extra, unsafe, or byte-different", file=sys.stderr)
                     return 1
-                if metadata_path is not None and (not metadata_path.is_file() or metadata_path.read_bytes() != _json_bytes(metadata)):
+                if metadata_identity is not None and metadata_identity.read_regular_file(metadata_path.name) != _json_bytes(metadata):
                     print("release metadata is missing or byte-different", file=sys.stderr)
                     return 1
             else:
                 _write_package(output_identity, files)
-                if metadata_path is not None:
-                    metadata_path.parent.mkdir(parents=True, exist_ok=True)
-                    metadata_path.write_bytes(_json_bytes(metadata))
+                if deferred_metadata_parent:
+                    metadata_identity.close()
+                    metadata_identity = stack.enter_context(inspect_lexical_path(metadata_path.parent))
+                if metadata_identity is not None:
+                    metadata_identity.write_regular_file(metadata_path.name, _json_bytes(metadata))
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"generation failed: {exc}", file=sys.stderr)
         return 1

@@ -260,7 +260,7 @@ class Task4SecondSuccessorR1AnchoredIoTests(unittest.TestCase):
                         after_descriptors = _descriptor_count()
 
                     self.assertTrue(substituted)
-                    self.assertEqual(result, 0)
+                    self.assertNotEqual(result, 0)
                     self.assertEqual(regular_files(attacker_package), attacker_before)
                     self.assertEqual(sentinel.read_bytes(), attacker_before["sentinel.txt"])
                     if before_descriptors is not None:

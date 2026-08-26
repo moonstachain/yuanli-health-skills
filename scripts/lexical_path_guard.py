@@ -1,4 +1,4 @@
-"""Descriptor-anchored no-follow operations for caller-selected package roots."""
+"""POSIX descriptor-anchored no-follow operations for caller-selected package roots."""
 
 from __future__ import annotations
 
@@ -11,13 +11,22 @@ from pathlib import Path, PurePosixPath
 _MAX_TREE_DEPTH = 64
 _MAX_TREE_ENTRIES = 4096
 _MAX_TREE_BYTES = 64 * 1024 * 1024
-_DIRECTORY_FLAGS = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
-_READ_FLAGS = os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC
-_WRITE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC
+_POSIX_CAPABILITY_ERROR = "POSIX descriptor capabilities required for package integrity"
+_DIRECTORY_FLAGS = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0)
+_READ_FLAGS = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0)
+_WRITE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0)
+
+
+def require_posix_capabilities() -> None:
+    """Fail closed instead of emulating no-follow descriptor semantics elsewhere."""
+    required = ("O_DIRECTORY", "O_NOFOLLOW", "O_CLOEXEC")
+    if os.name != "posix" or any(not hasattr(os, name) for name in required):
+        raise ValueError(_POSIX_CAPABILITY_ERROR)
 
 
 def absolute_lexical_path(path: Path) -> Path:
     """Make a path absolute without resolving any symbolic link."""
+    require_posix_capabilities()
     return Path(os.path.abspath(os.fspath(path)))
 
 
@@ -25,11 +34,89 @@ def _identity(metadata: os.stat_result) -> tuple[int, int, int]:
     return metadata.st_dev, metadata.st_ino, stat.S_IFMT(metadata.st_mode)
 
 
+def _stability(metadata: os.stat_result) -> tuple[int, int, int, int, int, int, int]:
+    """Fields that must not change while a package member is being read."""
+    return (
+        *_identity(metadata),
+        metadata.st_nlink,
+        metadata.st_size,
+        metadata.st_mtime_ns,
+        metadata.st_ctime_ns,
+    )
+
+
 def _safe_relative_parts(relative: str) -> tuple[str, ...]:
     pure = PurePosixPath(relative)
     if pure.is_absolute() or not pure.parts or any(part in {"", ".", ".."} for part in pure.parts):
         raise ValueError("unsafe generated package path")
     return pure.parts
+
+
+class _EntryBudget:
+    def __init__(self) -> None:
+        self.count = 0
+
+    def consume(self) -> None:
+        self.count += 1
+        if self.count > _MAX_TREE_ENTRIES:
+            raise ValueError("package inventory exceeds safety budget")
+
+
+def _bounded_names(directory_descriptor: int, budget: _EntryBudget, context: str) -> list[str]:
+    """Materialize only a count-capped directory listing before lexical sorting."""
+    names: list[str] = []
+    try:
+        with os.scandir(directory_descriptor) as entries:
+            for entry in entries:
+                budget.consume()
+                names.append(entry.name)
+    except ValueError:
+        raise
+    except OSError as exc:
+        raise ValueError(context) from exc
+    return sorted(names)
+
+
+def _read_regular_file(
+    directory_descriptor: int,
+    name: str,
+    metadata: os.stat_result,
+    *,
+    byte_budget: list[int] | None = None,
+) -> bytes:
+    """Read one no-follow regular file and reject any name or inode instability."""
+    initial = _stability(metadata)
+    if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
+        raise ValueError("package tree changed during anchored inspection")
+    try:
+        descriptor = os.open(name, _READ_FLAGS, dir_fd=directory_descriptor)
+    except OSError as exc:
+        raise ValueError("package tree changed during anchored inspection") from exc
+    try:
+        if _stability(os.fstat(descriptor)) != initial:
+            raise ValueError("package tree changed during anchored inspection")
+        chunks: list[bytes] = []
+        size = 0
+        while True:
+            chunk = os.read(descriptor, 64 * 1024)
+            if not chunk:
+                break
+            chunks.append(chunk)
+            size += len(chunk)
+            if byte_budget is not None:
+                byte_budget[0] += len(chunk)
+                if byte_budget[0] > _MAX_TREE_BYTES:
+                    raise ValueError("package inventory exceeds safety budget")
+        final = os.fstat(descriptor)
+        try:
+            rebound = os.stat(name, dir_fd=directory_descriptor, follow_symlinks=False)
+        except OSError as exc:
+            raise ValueError("package tree changed during anchored inspection") from exc
+        if _stability(final) != initial or _stability(rebound) != initial or size != metadata.st_size:
+            raise ValueError("package tree changed during anchored inspection")
+        return b"".join(chunks)
+    finally:
+        os.close(descriptor)
 
 
 class LexicalPathIdentity:
@@ -112,6 +199,7 @@ class LexicalPathIdentity:
         for name in self._missing:
             parent_index = len(self._descriptors) - 1
             parent_descriptor = self.descriptor
+            child_descriptor: int | None = None
             try:
                 os.mkdir(name, mode=0o755, dir_fd=parent_descriptor)
                 child_descriptor = os.open(name, _DIRECTORY_FLAGS, dir_fd=parent_descriptor)
@@ -119,12 +207,78 @@ class LexicalPathIdentity:
                 if not stat.S_ISDIR(metadata.st_mode):
                     raise ValueError(self.error_message)
             except (OSError, ValueError) as exc:
+                if child_descriptor is not None:
+                    os.close(child_descriptor)
                 if isinstance(exc, OSError) and exc.errno == errno.EEXIST:
                     raise ValueError(self.error_message) from exc
                 raise ValueError(self.error_message) from exc
+            assert child_descriptor is not None
             self._descriptors.append(child_descriptor)
             self._bindings.append((parent_index, name, _identity(metadata)))
         self._missing = ()
+
+    def read_regular_file(self, relative: str) -> bytes:
+        """Read one anchored metadata file without reopening its lexical parent."""
+        parts = _safe_relative_parts(relative)
+        if len(parts) != 1 or not self.exists:
+            raise ValueError(self.error_message)
+        try:
+            metadata = os.stat(parts[0], dir_fd=self.descriptor, follow_symlinks=False)
+        except OSError as exc:
+            raise ValueError(self.error_message) from exc
+        try:
+            return _read_regular_file(self.descriptor, parts[0], metadata)
+        except ValueError as exc:
+            raise ValueError(self.error_message) from exc
+
+    def write_regular_file(self, relative: str, content: bytes) -> None:
+        """Write one metadata file below the anchored parent without following links."""
+        parts = _safe_relative_parts(relative)
+        if len(parts) != 1:
+            raise ValueError(self.error_message)
+        self._create_root()
+        name = parts[0]
+        descriptor: int | None = None
+        try:
+            try:
+                metadata = os.stat(name, dir_fd=self.descriptor, follow_symlinks=False)
+            except FileNotFoundError:
+                descriptor = os.open(name, _WRITE_FLAGS, 0o644, dir_fd=self.descriptor)
+            else:
+                initial = _stability(metadata)
+                if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
+                    raise ValueError(self.error_message)
+                descriptor = os.open(
+                    name,
+                    os.O_WRONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0),
+                    dir_fd=self.descriptor,
+                )
+                if _stability(os.fstat(descriptor)) != initial:
+                    raise ValueError(self.error_message)
+                os.ftruncate(descriptor, 0)
+            view = memoryview(content)
+            while view:
+                written = os.write(descriptor, view)
+                if written <= 0:
+                    raise ValueError(self.error_message)
+                view = view[written:]
+            final = os.fstat(descriptor)
+            rebound = os.stat(name, dir_fd=self.descriptor, follow_symlinks=False)
+            if (
+                not stat.S_ISREG(final.st_mode)
+                or final.st_nlink != 1
+                or final.st_size != len(content)
+                or _identity(final) != _identity(rebound)
+                or rebound.st_nlink != 1
+            ):
+                raise ValueError(self.error_message)
+        except ValueError:
+            raise
+        except OSError as exc:
+            raise ValueError(self.error_message) from exc
+        finally:
+            if descriptor is not None:
+                os.close(descriptor)
 
     def snapshot(
         self,
@@ -137,21 +291,15 @@ class LexicalPathIdentity:
             return ({}, [self.error_message] if missing_issue else [])
         files: dict[str, bytes] = {}
         issues: list[str] = []
-        entries = 0
-        total_bytes = 0
+        entry_budget = _EntryBudget()
+        total_bytes = [0]
 
         def visit(directory_descriptor: int, prefix: str, depth: int) -> None:
-            nonlocal entries, total_bytes
             if depth > _MAX_TREE_DEPTH:
                 raise ValueError("package inventory exceeds safety budget")
-            try:
-                names = sorted(os.listdir(directory_descriptor))
-            except OSError as exc:
-                raise ValueError("package tree changed during anchored inspection") from exc
+            before_directory = _stability(os.fstat(directory_descriptor))
+            names = _bounded_names(directory_descriptor, entry_budget, "package tree changed during anchored inspection")
             for name in names:
-                entries += 1
-                if entries > _MAX_TREE_ENTRIES:
-                    raise ValueError("package inventory exceeds safety budget")
                 relative = f"{prefix}/{name}" if prefix else name
                 try:
                     metadata = os.stat(
@@ -188,40 +336,17 @@ class LexicalPathIdentity:
                     issues.append(f"hardlink forbidden: {relative}")
                 if reject_executable and mode & 0o111:
                     issues.append(f"executable forbidden: {relative}")
-                try:
-                    file_descriptor = os.open(
-                        name,
-                        _READ_FLAGS,
-                        dir_fd=directory_descriptor,
-                    )
-                except OSError as exc:
-                    raise ValueError("package tree changed during anchored inspection") from exc
-                try:
-                    opened_metadata = os.fstat(file_descriptor)
-                    if (
-                        _identity(opened_metadata) != _identity(metadata)
-                        or not stat.S_ISREG(opened_metadata.st_mode)
-                        or opened_metadata.st_nlink != metadata.st_nlink
-                    ):
-                        raise ValueError("package tree changed during anchored inspection")
-                    chunks: list[bytes] = []
-                    file_bytes = 0
-                    while True:
-                        chunk = os.read(file_descriptor, 64 * 1024)
-                        if not chunk:
-                            break
-                        chunks.append(chunk)
-                        file_bytes += len(chunk)
-                        total_bytes += len(chunk)
-                        if total_bytes > _MAX_TREE_BYTES:
-                            raise ValueError("package inventory exceeds safety budget")
-                    if os.fstat(file_descriptor).st_size != file_bytes:
-                        raise ValueError("package tree changed during anchored inspection")
-                    files[relative] = b"".join(chunks)
-                finally:
-                    os.close(file_descriptor)
+                files[relative] = _read_regular_file(
+                    directory_descriptor,
+                    name,
+                    metadata,
+                    byte_budget=total_bytes,
+                )
+            if _stability(os.fstat(directory_descriptor)) != before_directory:
+                raise ValueError("package tree changed during anchored inspection")
 
         visit(self.descriptor, "", 0)
+        self.revalidate_binding()
         return files, issues
 
     def clear_contents(self) -> None:
@@ -229,13 +354,12 @@ class LexicalPathIdentity:
         if not self.exists:
             return
 
+        entry_budget = _EntryBudget()
+
         def clear(directory_descriptor: int, depth: int) -> None:
             if depth > _MAX_TREE_DEPTH:
                 raise ValueError("package inventory exceeds safety budget")
-            try:
-                names = sorted(os.listdir(directory_descriptor))
-            except OSError as exc:
-                raise ValueError("package tree changed during anchored clear") from exc
+            names = _bounded_names(directory_descriptor, entry_budget, "package tree changed during anchored clear")
             for name in names:
                 try:
                     metadata = os.stat(
@@ -322,6 +446,7 @@ def inspect_lexical_path(
     error_message: str = "package root must be a real directory",
 ) -> LexicalPathIdentity:
     """Open every existing lexical component with no-follow semantics."""
+    require_posix_capabilities()
     absolute = absolute_lexical_path(path)
     descriptors: list[int] = []
     bindings: list[tuple[int, str, tuple[int, int, int]]] = []
@@ -347,10 +472,13 @@ def inspect_lexical_path(
                 )
             except OSError as exc:
                 raise ValueError(error_message) from exc
-            metadata = os.fstat(child_descriptor)
-            if not stat.S_ISDIR(metadata.st_mode):
+            try:
+                metadata = os.fstat(child_descriptor)
+                if not stat.S_ISDIR(metadata.st_mode):
+                    raise ValueError(error_message)
+            except Exception:
                 os.close(child_descriptor)
-                raise ValueError(error_message)
+                raise
             descriptors.append(child_descriptor)
             bindings.append((parent_index, name, _identity(metadata)))
         return LexicalPathIdentity(absolute, descriptors, bindings, (), error_message)

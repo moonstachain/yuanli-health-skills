@@ -229,6 +229,17 @@ def _ascii_identifier_before_quote(
     )
 
 
+def _ambiguous_identifier_quote(line: str, quote_index: int) -> bool:
+    """Keep programming-style apostrophe prefixes without carrying ordinary contractions."""
+    if not _ascii_identifier_before_quote(line, quote_index):
+        return False
+    start = quote_index
+    while start > 0 and (line[start - 1].isalnum() or line[start - 1] == "_"):
+        start -= 1
+    prefix = line[start:quote_index]
+    return len(prefix) == 1 or any(character == "_" or character.isupper() or character.isdigit() for character in prefix)
+
+
 def _last_unescaped_quotes(line: str) -> dict[str, int]:
     escaped = False
     positions: dict[str, int] = {}
@@ -261,14 +272,12 @@ def _identifier_prefixed_quote_opener(
 
 def _relation_quote_states(
     line: str,
-    initial_quote: str | None,
-    sensitive_relation_starts: frozenset[int],
-) -> tuple[dict[int, str | None], str | None, int | None]:
+    initial_quote: tuple[str, bool] | None,
+) -> tuple[dict[int, tuple[str, bool] | None], tuple[str, bool] | None]:
+    """Lex every quote transition in order, retaining apostrophe uncertainty."""
     quote = initial_quote
     escaped = False
-    points: dict[int, str | None] = {}
-    ambiguous_opener: int | None = None
-    last_unescaped_quotes = _last_unescaped_quotes(line)
+    points: dict[int, tuple[str, bool] | None] = {}
     for index, character in enumerate(line):
         if character in ":=":
             points[index] = quote
@@ -277,27 +286,22 @@ def _relation_quote_states(
         elif character == "\\":
             escaped = True
         elif quote is not None:
-            if character == quote:
+            if character == quote[0]:
                 quote = None
         elif character in "\"'":
-            possible_apostrophe = (
+            contraction = (
                 character == "'"
                 and 0 < index < len(line) - 1
                 and line[index - 1].isalnum()
                 and line[index + 1].isalnum()
             )
-            definite_opener = _identifier_prefixed_quote_opener(
-                line,
-                index,
-                sensitive_relation_starts,
-                last_unescaped_quotes,
+            ambiguous = (
+                contraction
+                and _ambiguous_identifier_quote(line, index)
             )
-            if possible_apostrophe and not definite_opener:
-                if ambiguous_opener is None and _ascii_identifier_before_quote(line, index):
-                    ambiguous_opener = index
-            else:
-                quote = character
-    return points, quote, ambiguous_opener
+            if not contraction or ambiguous:
+                quote = (character, ambiguous)
+    return points, quote
 
 
 def _label_relation_candidates(line: str) -> dict[int, list[tuple[str, int]]]:
@@ -371,6 +375,19 @@ def _initial_quoted_fragment(line: str, quote: str) -> tuple[str, bool]:
     return line, False
 
 
+def _unescaped_quote_count(line: str, quote: str) -> int:
+    escaped = False
+    count = 0
+    for character in line:
+        if escaped:
+            escaped = False
+        elif character == "\\":
+            escaped = True
+        elif character == quote:
+            count += 1
+    return count
+
+
 def _quoted_fragment_is_inert(fragment: str) -> bool:
     stripped = fragment.strip()
     return not stripped or _INERT_PLACEHOLDER.fullmatch(stripped) is not None
@@ -378,30 +395,30 @@ def _quoted_fragment_is_inert(fragment: str) -> bool:
 
 def _machine_label_classes(text: str) -> set[str]:
     findings: set[str] = set()
-    quote: str | None = None
-    pending_quote_classes: set[str] = set()
-    ambiguous_quote: str | None = None
-    pending_ambiguous_classes: set[str] = set()
+    quote: tuple[str, bool] | None = None
+    pending_classes: set[str] = set()
     for line in text.splitlines():
-        if quote is not None and pending_quote_classes:
-            fragment, quote_closes = _initial_quoted_fragment(line, quote)
+        suspended_ambiguous: set[str] = set()
+        if quote is not None and pending_classes:
+            fragment, quote_closes = _initial_quoted_fragment(line, quote[0])
             if not _quoted_fragment_is_inert(fragment):
-                findings.update(pending_quote_classes)
-                pending_quote_classes.clear()
+                findings.update(pending_classes)
+                pending_classes.clear()
             elif quote_closes:
-                pending_quote_classes.clear()
+                if quote[1]:
+                    suspended_ambiguous = pending_classes.copy()
+                pending_classes.clear()
         candidates = _label_relation_candidates(line)
-        sensitive_relation_starts = frozenset(
-            start
-            for relations in candidates.values()
-            for key, start in relations
-            if _machine_key_class(key) is not None
-        )
-        relation_quotes, next_quote, possible_ambiguous_opener = _relation_quote_states(
-            line,
-            quote,
-            sensitive_relation_starts,
-        )
+        relation_quotes, next_quote = _relation_quote_states(line, quote)
+        if suspended_ambiguous:
+            if _unescaped_quote_count(line, quote[0]) >= 2:
+                findings.update(suspended_ambiguous)
+            elif next_quote is not None and next_quote[0] == quote[0] and next_quote[1]:
+                trailing = line.rsplit(next_quote[0], 1)[-1]
+                if not _quoted_fragment_is_inert(trailing):
+                    findings.update(suspended_ambiguous)
+                else:
+                    pending_classes.update(suspended_ambiguous)
         if _exact_taxonomy_declaration(line):
             quote = next_quote
             continue
@@ -416,7 +433,11 @@ def _machine_label_classes(text: str) -> set[str]:
                 normalized_key = "_".join(_normalize_machine_key(key))
                 if diagnostic_prefix.endswith(("PHI_CURRENT:", "PHI_HISTORY:")) and normalized_key == finding:
                     continue
-                value_state = _same_line_value_state(line, separator + 1, containing_quote)
+                value_state = _same_line_value_state(
+                    line,
+                    separator + 1,
+                    containing_quote[0] if containing_quote is not None else None,
+                )
                 if value_state == "observable" or (
                     value_state == "empty" and containing_quote is None
                 ):
@@ -426,55 +447,10 @@ def _machine_label_classes(text: str) -> set[str]:
                     and containing_quote is not None
                     and next_quote == containing_quote
                 ):
-                    pending_quote_classes.add(finding)
-
-        ambiguous_start: int | None = None
-        ambiguous_end: int | None = None
-        ambiguous_continues = False
-        if ambiguous_quote is not None:
-            fragment, closes = _initial_quoted_fragment(line, ambiguous_quote)
-            ambiguous_start = 0
-            ambiguous_end = len(fragment)
-            ambiguous_continues = not closes
-            if pending_ambiguous_classes:
-                if not _quoted_fragment_is_inert(fragment):
-                    findings.update(pending_ambiguous_classes)
-                    pending_ambiguous_classes.clear()
-                elif closes:
-                    pending_ambiguous_classes.clear()
-        elif possible_ambiguous_opener is not None:
-            ambiguous_quote = line[possible_ambiguous_opener]
-            ambiguous_start = possible_ambiguous_opener + 1
-            ambiguous_end = len(line)
-            ambiguous_continues = True
-
-        if ambiguous_start is not None and ambiguous_end is not None:
-            for separator in relation_quotes:
-                if not ambiguous_start <= separator < ambiguous_end:
-                    continue
-                for key, start in candidates.get(separator, ()):
-                    finding = _machine_key_class(key)
-                    if finding is None:
-                        continue
-                    diagnostic_prefix = line[max(0, start - 16):start]
-                    normalized_key = "_".join(_normalize_machine_key(key))
-                    if diagnostic_prefix.endswith(("PHI_CURRENT:", "PHI_HISTORY:")) and normalized_key == finding:
-                        continue
-                    value_state = _same_line_value_state(
-                        line[:ambiguous_end],
-                        separator + 1,
-                        ambiguous_quote,
-                    )
-                    if value_state == "observable":
-                        findings.add(finding)
-                    elif value_state in {"empty", "placeholder"} and ambiguous_continues:
-                        pending_ambiguous_classes.add(finding)
-
-        if not ambiguous_continues:
-            ambiguous_quote = None
+                    pending_classes.add(finding)
         quote = next_quote
-    findings.update(pending_quote_classes)
-    findings.update(pending_ambiguous_classes)
+    if quote is not None and not quote[1]:
+        findings.update(pending_classes)
     return findings
 
 
