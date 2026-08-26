@@ -140,6 +140,37 @@ class Task0SnapshotStabilityTests(unittest.TestCase):
         self._snapshot_with_interruption(lambda target, package: os.link(target, package / "late-hardlink.txt"))
 
 
+class Task0MetadataWriteStabilityTests(unittest.TestCase):
+    def test_metadata_replacement_does_not_modify_an_old_inode_hardlinked_during_write(self):
+        guard = ROOT / "scripts" / "lexical_path_guard.py"
+        with _real_temporary_directory() as temporary, _script_namespace(guard, "task0_metadata_write") as namespace:
+            parent = temporary / "metadata-parent"
+            parent.mkdir()
+            metadata = parent / "release-metadata.json"
+            metadata.write_bytes(b"old metadata\n")
+            external = temporary / "external-hardlink.json"
+            original_write = namespace["os"].write
+            linked = False
+
+            def link_then_write(descriptor, content):
+                nonlocal linked
+                if not linked:
+                    os.link(metadata, external)
+                    linked = True
+                return original_write(descriptor, content)
+
+            with namespace["inspect_lexical_path"](parent) as identity, mock.patch.object(
+                namespace["os"], "write", side_effect=link_then_write
+            ):
+                try:
+                    identity.write_regular_file(metadata.name, b"new metadata\n")
+                except ValueError:
+                    pass
+            self.assertTrue(linked)
+            self.assertEqual(external.read_bytes(), b"old metadata\n")
+            self.assertEqual(metadata.read_bytes(), b"new metadata\n")
+
+
 class Task0InventoryAndOwnershipTests(unittest.TestCase):
     def test_clear_rejects_width_over_the_shared_entry_budget_before_deleting(self):
         guard = ROOT / "scripts" / "lexical_path_guard.py"

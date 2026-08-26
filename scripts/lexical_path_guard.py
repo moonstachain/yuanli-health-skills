@@ -232,30 +232,17 @@ class LexicalPathIdentity:
             raise ValueError(self.error_message) from exc
 
     def write_regular_file(self, relative: str, content: bytes) -> None:
-        """Write one metadata file below the anchored parent without following links."""
+        """Atomically replace one metadata file below the anchored parent."""
         parts = _safe_relative_parts(relative)
         if len(parts) != 1:
             raise ValueError(self.error_message)
         self._create_root()
         name = parts[0]
+        temporary_name = f".{name}.tmp"
         descriptor: int | None = None
+        renamed = False
         try:
-            try:
-                metadata = os.stat(name, dir_fd=self.descriptor, follow_symlinks=False)
-            except FileNotFoundError:
-                descriptor = os.open(name, _WRITE_FLAGS, 0o644, dir_fd=self.descriptor)
-            else:
-                initial = _stability(metadata)
-                if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
-                    raise ValueError(self.error_message)
-                descriptor = os.open(
-                    name,
-                    os.O_WRONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0),
-                    dir_fd=self.descriptor,
-                )
-                if _stability(os.fstat(descriptor)) != initial:
-                    raise ValueError(self.error_message)
-                os.ftruncate(descriptor, 0)
+            descriptor = os.open(temporary_name, _WRITE_FLAGS, 0o644, dir_fd=self.descriptor)
             view = memoryview(content)
             while view:
                 written = os.write(descriptor, view)
@@ -263,14 +250,21 @@ class LexicalPathIdentity:
                     raise ValueError(self.error_message)
                 view = view[written:]
             final = os.fstat(descriptor)
-            rebound = os.stat(name, dir_fd=self.descriptor, follow_symlinks=False)
             if (
                 not stat.S_ISREG(final.st_mode)
                 or final.st_nlink != 1
                 or final.st_size != len(content)
-                or _identity(final) != _identity(rebound)
-                or rebound.st_nlink != 1
             ):
+                raise ValueError(self.error_message)
+            os.rename(
+                temporary_name,
+                name,
+                src_dir_fd=self.descriptor,
+                dst_dir_fd=self.descriptor,
+            )
+            renamed = True
+            rebound = os.stat(name, dir_fd=self.descriptor, follow_symlinks=False)
+            if _identity(final) != _identity(rebound) or rebound.st_nlink != 1 or rebound.st_size != len(content):
                 raise ValueError(self.error_message)
         except ValueError:
             raise
@@ -279,6 +273,11 @@ class LexicalPathIdentity:
         finally:
             if descriptor is not None:
                 os.close(descriptor)
+            if not renamed:
+                try:
+                    os.unlink(temporary_name, dir_fd=self.descriptor)
+                except OSError:
+                    pass
 
     def snapshot(
         self,
