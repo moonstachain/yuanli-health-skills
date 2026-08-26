@@ -71,12 +71,26 @@ _CLINICAL_FIELDS = frozenset({"diagnosis", "medication", "medication_change", "t
 _SERVICE_FIELDS = frozenset({"provider_selection", "provider", "booking", "payment"})
 _FATAL_JSON_CODES = frozenset({"NON_JSON_VALUE", "CYCLIC_JSON", "MAX_DEPTH_EXCEEDED"})
 _PROSE_PATH_SUFFIXES = (".fact", ".rationale", ".description", ".guidance.zh", ".guidance.en")
-_PATH_CONTENT = re.compile(
-    r"(?:^|[\s\"'(])(?:[A-Za-z]:[\\/]|/|\.\.?[\\/]|[A-Za-z0-9._-]+[\\/])"
+_URI_CONTENT = re.compile(r"(?i)\b[a-z][a-z0-9+.-]*://[^\s]+")
+_ABSOLUTE_PATH_CONTENT = re.compile(
+    r"(?:^|[\s\"'(])(?:[A-Za-z]:[\\/][^\s]+|\\\\[^\s\\/]+\\[^\s]+|/[A-Za-z0-9._~-][^\s]*)"
+)
+_DOT_PATH_CONTENT = re.compile(
+    r"(?:^|[\s\"'(])\.\.?[\\/][^\s]+|(?:^|[\\/])\.\.(?=[\\/]|$)"
+)
+_RELATIVE_FILE_PATH_CONTENT = re.compile(
+    r"(?:^|[\s\"'(])(?:[A-Za-z0-9._-]+[\\/])+(?:[A-Za-z0-9._-]+\.[A-Za-z0-9]{1,12})"
+    r"(?=$|[\s.,;:!?\"')])"
 )
 _IDENTIFIER_CONTENT = re.compile(
     r"(?i)\b(?:dob|date of birth|(?:health|medical) record(?: id| identifier)?|record id|(?:full )?name|phone)\s*[:#]"
+    r"|\bmrn\s*[:#-]?\s*[A-Za-z0-9]{4,}\b"
     r"|(?:出生日期|出生年月|健康记录|病历号|病例号|姓名|电话)\s*[：:#]"
+)
+_DOMESTIC_MOBILE_CONTENT = re.compile(r"(?<!\d)1[3-9]\d{9}(?!\d)")
+_PERSON_NAME_CONTENT = re.compile(
+    r"\b(?:(?:Dr|Doctor|Mr|Mrs|Ms|Prof)\.?\s+[A-Z][a-z]{1,40}(?:\s+[A-Z][a-z]{1,40}){0,2}|"
+    r"[A-Z][a-z]{1,40}\s+[A-Z][a-z]{1,40}(?:\s+[A-Z][a-z]{1,40})?)\b"
 )
 _CLINICAL_PROSE = re.compile(
     r"(?i)\b(?:diagnos(?:is|ed|tic)|prescrib(?:e|ed|ing)|prescription|effectiveness|effective|"
@@ -84,10 +98,32 @@ _CLINICAL_PROSE = re.compile(
     r"诊断|确诊|治疗|疗效|处方|用药|服用|药物|药品|开药"
 )
 _SERVICE_PROSE = re.compile(
-    r"(?i)\b(?:provider|book(?:ing|ed)?|appointment|payment|pay|billing|"
+    r"(?i)\b(?:provider|book(?:ing|ed)?|schedule|arrange|appointment|payment|pay|billing|"
+    r"visit with|see (?:a )?(?:doctor|dr\.)|"
     r"select(?:ing|ed)? (?:a )?doctor|choose (?:a )?doctor|doctor selection)\b|"
     r"预约|挂号|支付|付款|缴费|(?:选择|推荐)[^，。；]{0,12}(?:医生|医师|医院|机构)|服务商"
 )
+_TREATMENT_INSTRUCTION = re.compile(
+    r"(?i)^\s*(?:please\s+)?(?:take|consume|swallow|apply|inject|start|stop|increase|decrease)\b|"
+    r"(?:每天|每日|每晚|每次)[^，。；]{0,24}(?:吃|喝|口服|吞服|注射|涂抹|使用)"
+)
+_APPROVED_GUIDANCE = frozenset(
+    {
+        "请携带证据摘要，由临床专业人员评估。",
+        "Bring the evidence summary for clinician review.",
+    }
+)
+_SAFE_PROSE_WORDS = frozenset(
+    {
+        "a", "and", "another", "as", "candidate", "consistent", "conflicts", "current",
+        "declining", "down", "evidence", "freshness", "habits", "health", "improving",
+        "insufficient", "makes", "or", "pattern", "ratio", "recovery", "remains", "reported",
+        "review", "rhythm", "routine", "sleep", "source", "stable", "stale", "stress", "summary",
+        "synthetic", "the", "trend", "unknown", "unresolved", "use", "was", "wind-down", "with",
+    }
+)
+_SAFE_PROSE_CHARACTERS = re.compile(r"^[A-Za-z0-9 ./-]+$")
+_SAFE_PROSE_TOKENS = re.compile(r"[A-Za-z]+(?:-[A-Za-z]+)?|\d{1,3}/\d{1,3}|\d+")
 
 
 def _shape_errors(value: dict[str, Any], fields: tuple[str, ...]) -> list[ValidationError]:
@@ -170,6 +206,32 @@ def _json_boundary_errors(value: Any, *, max_depth: int = 32) -> list[Validation
     return sorted(errors, key=lambda error: (error.path, error.code))
 
 
+def _contains_path_structure(value: str) -> bool:
+    return any(
+        pattern.search(value) is not None
+        for pattern in (
+            _URI_CONTENT,
+            _ABSOLUTE_PATH_CONTENT,
+            _DOT_PATH_CONTENT,
+            _RELATIVE_FILE_PATH_CONTENT,
+        )
+    )
+
+
+def _is_approved_prose(value: str, path: str) -> bool:
+    if path.endswith((".guidance.zh", ".guidance.en")):
+        return value in _APPROVED_GUIDANCE
+    if path.endswith(".action_candidate.description"):
+        if not value.startswith("Use a synthetic "):
+            return False
+    elif not value.startswith("Synthetic "):
+        return False
+    if _SAFE_PROSE_CHARACTERS.fullmatch(value) is None or not value.endswith("."):
+        return False
+    tokens = _SAFE_PROSE_TOKENS.findall(value)
+    return all("/" in token or token.lower() in _SAFE_PROSE_WORDS for token in tokens)
+
+
 def _content_boundary_errors(value: Any) -> list[ValidationError]:
     """Recursively gate forbidden fields and prose without interpreting content."""
 
@@ -196,20 +258,28 @@ def _content_boundary_errors(value: Any) -> list[ValidationError]:
             for index in range(len(current) - 1, -1, -1):
                 stack.append((current[index], f"{path}[{index}]"))
         elif isinstance(current, str) and (
-            _PATH_CONTENT.search(current)
+            _contains_path_structure(current)
             or re.search(r"\b(?:19|20)\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])\b", current)
             or re.search(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", current)
             or re.search(r"(?<!\w)\+\d{1,3}(?:[ .-]?\d){7,14}(?!\d)", current)
             or _IDENTIFIER_CONTENT.search(current)
+            or _DOMESTIC_MOBILE_CONTENT.search(current)
+            or _PERSON_NAME_CONTENT.search(current)
         ):
             errors.append(_invalid("FORBIDDEN_SENSITIVE_CONTENT", path, "paths, contact data, and exact personal dates are forbidden"))
         is_prose = isinstance(current, str) and (
             path.endswith(_PROSE_PATH_SUFFIXES) or re.search(r"\.unknowns\[\d+\]$", path) is not None
         )
-        if is_prose and _CLINICAL_PROSE.search(current):
+        has_clinical_content = is_prose and (
+            _CLINICAL_PROSE.search(current) is not None or _TREATMENT_INSTRUCTION.search(current) is not None
+        )
+        has_service_content = is_prose and _SERVICE_PROSE.search(current) is not None
+        if has_clinical_content:
             errors.append(_invalid("CLINICAL_OVERREACH", path, "clinical conclusions and treatment guidance are forbidden"))
-        if is_prose and _SERVICE_PROSE.search(current):
+        if has_service_content:
             errors.append(_invalid("FORBIDDEN_SERVICE_OPERATION", path, "provider selection, booking, and payment guidance are forbidden"))
+        if is_prose and not has_clinical_content and not has_service_content and not _is_approved_prose(current, path):
+            errors.append(_invalid("UNSAFE_PROSE", path, "prose must use an approved synthetic non-clinical form"))
         if isinstance(current, str) and path.endswith(".action_candidate.description") and re.search(
             r"\b(?:OUT|LRN)\b",
             current,

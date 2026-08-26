@@ -32,7 +32,7 @@
   },
   "$defs": {
     "token": {"type": "string", "pattern": "^synthetic:[a-z0-9][a-z0-9._:-]{0,127}$"},
-    "text": {"type": "string", "minLength": 1, "maxLength": 280},
+    "text": {"type": "string", "minLength": 1, "maxLength": 280, "pattern": "^Synthetic [A-Za-z0-9 ./-]+\\.$"},
     "references": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/token"}},
     "text_array": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/text"}},
     "phase": {

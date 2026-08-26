@@ -11,6 +11,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 
+def safe_bounded_prose(size):
+    base = "Synthetic sleep pattern was stable"
+    return base + (" " * (size - len(base) - 1)) + "."
+
+
 class ProductContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -425,6 +430,86 @@ class ProductContractTests(unittest.TestCase):
             with self.subTest(validator=validate.__name__, expected_code=expected_code):
                 self.assertIn(expected_code, [error.code for error in validate(document).errors])
 
+    def test_paraphrased_treatment_service_record_phone_and_name_content_is_rejected(self):
+        from yuanli_health_skills import product_contracts
+
+        cases = []
+        english_medicine = self.load_valid("professional-escalation.json")
+        english_medicine["guidance"]["en"] = "Take aspirin daily."
+        cases.append((product_contracts.validate_professional_escalation, english_medicine, "CLINICAL_OVERREACH"))
+        chinese_medicine = self.load_valid("professional-escalation.json")
+        chinese_medicine["guidance"]["zh"] = "每天吃一片阿司匹林。"
+        cases.append((product_contracts.validate_professional_escalation, chinese_medicine, "CLINICAL_OVERREACH"))
+        booking = self.load_valid("professional-escalation.json")
+        booking["guidance"]["en"] = "Schedule a visit with Dr. Smith."
+        cases.append((product_contracts.validate_professional_escalation, booking, "FORBIDDEN_SERVICE_OPERATION"))
+        record = self.load_valid("health-evidence-view.json")
+        record["fact"] = "MRN " + "12345678"
+        cases.append((product_contracts.validate_health_evidence_view, record, "FORBIDDEN_SENSITIVE_CONTENT"))
+        contact_probe = self.load_valid("health-evidence-view.json")
+        contact_probe["fact"] = "Contact " + "13800000000."
+        cases.append((product_contracts.validate_health_evidence_view, contact_probe, "FORBIDDEN_SENSITIVE_CONTENT"))
+        named_provider = self.load_valid("health-evidence-view.json")
+        named_provider["fact"] = "Dr. Smith reported stable sleep."
+        cases.append((product_contracts.validate_health_evidence_view, named_provider, "FORBIDDEN_SENSITIVE_CONTENT"))
+
+        for validate, document, expected_code in cases:
+            with self.subTest(validator=validate.__name__, value=document.get("fact") or document.get("guidance")):
+                self.assertIn(expected_code, [error.code for error in validate(document).errors])
+
+    def test_unsafe_content_classes_are_rejected_from_every_prose_slot(self):
+        from yuanli_health_skills import product_contracts
+
+        cases = []
+        health_fact = self.load_valid("health-evidence-view.json")
+        health_fact["fact"] = "Take a daily tablet."
+        cases.append((product_contracts.validate_health_evidence_view, health_fact, "fact"))
+        health_unknown = self.load_valid("health-evidence-view.json")
+        health_unknown["unknowns"] = ["MRN " + "87654321"]
+        cases.append((product_contracts.validate_health_evidence_view, health_unknown, "unknowns"))
+        compass_rationale = self.load_valid("recovery-compass-snapshot.json")
+        compass_rationale["season_focus"]["rationale"] = "Dr. Jones advised this candidate."
+        cases.append((product_contracts.validate_recovery_compass_snapshot, compass_rationale, "rationale"))
+        compass_unknown = self.load_valid("recovery-compass-snapshot.json")
+        compass_unknown["unknowns"] = ["Contact " + "13900000000."]
+        cases.append((product_contracts.validate_recovery_compass_snapshot, compass_unknown, "unknowns"))
+        campaign_unknown = self.load_valid("quarter-health-campaign.json")
+        campaign_unknown["unknowns"] = ["每天吃一粒合成药片。"]
+        cases.append((product_contracts.validate_quarter_health_campaign, campaign_unknown, "unknowns"))
+        weekly_description = self.load_valid("weekly-experiment.json")
+        weekly_description["action_candidate"]["description"] = "Schedule a visit with Dr. Lee."
+        cases.append((product_contracts.validate_weekly_experiment, weekly_description, "description"))
+        weekly_unknown = self.load_valid("weekly-experiment.json")
+        weekly_unknown["unknowns"] = ["Alex Smith reported the result."]
+        cases.append((product_contracts.validate_weekly_experiment, weekly_unknown, "unknowns"))
+        guidance_zh = self.load_valid("professional-escalation.json")
+        guidance_zh["guidance"]["zh"] = "每天吃一片合成药片。"
+        cases.append((product_contracts.validate_professional_escalation, guidance_zh, "guidance.zh"))
+        guidance_en = self.load_valid("professional-escalation.json")
+        guidance_en["guidance"]["en"] = "Take one tablet daily."
+        cases.append((product_contracts.validate_professional_escalation, guidance_en, "guidance.en"))
+        escalation_unknown = self.load_valid("professional-escalation.json")
+        escalation_unknown["unknowns"] = ["MRN " + "11223344"]
+        cases.append((product_contracts.validate_professional_escalation, escalation_unknown, "unknowns"))
+
+        for validate, document, slot in cases:
+            with self.subTest(validator=validate.__name__, slot=slot):
+                self.assertFalse(validate(document).ok)
+
+    def test_safe_slash_terms_and_numeric_ratios_remain_valid_prose(self):
+        from yuanli_health_skills import validate_health_evidence_view
+
+        facts = (
+            "Synthetic sleep/recovery pattern was stable.",
+            "Synthetic sleep and/or recovery pattern was stable.",
+            "Synthetic ratio was 1/2.",
+        )
+        for fact in facts:
+            with self.subTest(fact=fact):
+                document = copy.deepcopy(self.health_evidence)
+                document["fact"] = fact
+                self.assertEqual(validate_health_evidence_view(document).errors, ())
+
     def test_relative_absolute_and_traversal_paths_are_rejected_from_prose(self):
         from yuanli_health_skills import validate_health_evidence_view
 
@@ -435,6 +520,10 @@ class ProductContractTests(unittest.TestCase):
             "./synthetic/report.txt",
             "synthetic\\files\\report.txt",
             "C:\\synthetic\\report.txt",
+            "file:///private/synthetic-report.txt",
+            "https://synthetic.invalid/files/report.txt",
+            "\\\\synthetic-server\\share\\report.txt",
+            "synthetic/files/../report.txt",
         )
         for path in paths:
             with self.subTest(path=path):
@@ -611,7 +700,7 @@ class ProductContractTests(unittest.TestCase):
             for size, expected_ok in ((280, True), (281, False)):
                 with self.subTest(filename=filename, size=size):
                     document = self.load_valid(filename)
-                    document["unknowns"] = ["x" * size]
+                    document["unknowns"] = [safe_bounded_prose(size)]
                     self.assertEqual(validate(document).ok, expected_ok)
                     payload = {
                         key: copy.deepcopy(value)

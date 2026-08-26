@@ -20,6 +20,11 @@ except ModuleNotFoundError:
 DELETE = object()
 
 
+def safe_bounded_prose(size):
+    base = "Synthetic sleep pattern was stable"
+    return base + (" " * (size - len(base) - 1)) + "."
+
+
 def changed(document, dotted_path, value):
     result = copy.deepcopy(document)
     target = result
@@ -329,7 +334,7 @@ class ProductContractSchemaParityTests(unittest.TestCase):
             for text_size in (0, 280):
                 with self.subTest(schema=schema_name, unknown_size=text_size):
                     document = copy.deepcopy(self.fixtures[filename])
-                    document["unknowns"] = [] if text_size == 0 else ["x" * text_size]
+                    document["unknowns"] = [] if text_size == 0 else [safe_bounded_prose(text_size)]
                     payload = {
                         key: copy.deepcopy(value)
                         for key, value in document.items()
@@ -339,6 +344,35 @@ class ProductContractSchemaParityTests(unittest.TestCase):
                     self.assertTrue(result.ok, result.errors)
                     if schema_validator:
                         self.assertEqual(list(schema_validator.iter_errors(result.value)), [])
+
+    def test_product_schemas_and_runtime_share_structural_prose_boundaries(self):
+        unsafe_cases = (
+            ("health-evidence-view-v1", "health-evidence-view.json", product_contracts.validate_health_evidence_view, "fact", "MRN 12345678"),
+            ("recovery-compass-snapshot-v1", "recovery-compass-snapshot.json", product_contracts.validate_recovery_compass_snapshot, "season_focus.rationale", "Dr. Smith advised this candidate."),
+            ("quarter-health-campaign-v1", "quarter-health-campaign.json", product_contracts.validate_quarter_health_campaign, "unknowns", ["每天吃一片药。"]),
+            ("weekly-experiment-v1", "weekly-experiment.json", product_contracts.validate_weekly_experiment, "action_candidate.description", "Take one tablet daily."),
+            ("weekly-experiment-v1", "weekly-experiment.json", product_contracts.validate_weekly_experiment, "action_candidate.description", "Synthetic sleep pattern was stable."),
+            ("weekly-experiment-v1", "weekly-experiment.json", product_contracts.validate_weekly_experiment, "unknowns", ["Use a synthetic sleep routine candidate."]),
+            ("professional-escalation-v1", "professional-escalation.json", product_contracts.validate_professional_escalation, "guidance.en", "Schedule a visit with Dr. Smith."),
+            ("professional-escalation-v1", "professional-escalation.json", product_contracts.validate_professional_escalation, "unknowns", ["Contact 13800000000."]),
+        )
+        for schema_name, filename, validate, path, value in unsafe_cases:
+            with self.subTest(schema=schema_name, path=path):
+                document = changed(self.fixtures[filename], path, value)
+                schema = json.loads((ROOT / "contracts" / f"{schema_name}.schema.json").read_text())
+                if Draft202012Validator:
+                    self.assertTrue(list(Draft202012Validator(schema).iter_errors(document)))
+                self.assertFalse(validate(document).ok)
+
+        safe = changed(
+            self.fixtures["health-evidence-view.json"],
+            "fact",
+            "Synthetic sleep/recovery ratio was 1/2.",
+        )
+        schema = json.loads((ROOT / "contracts/health-evidence-view-v1.schema.json").read_text())
+        if Draft202012Validator:
+            self.assertEqual(list(Draft202012Validator(schema).iter_errors(safe)), [])
+        self.assertTrue(product_contracts.validate_health_evidence_view(safe).ok)
 
 
 if __name__ == "__main__":
