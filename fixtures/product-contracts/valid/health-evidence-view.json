@@ -1,0 +1,15 @@
+{
+  "schema": "health-evidence-view-v1",
+  "synthetic": true,
+  "canonical_write": false,
+  "persistence": "none",
+  "evidence_id": "synthetic:evidence:001",
+  "source_type": "self_report",
+  "observed_window": "synthetic:window:001",
+  "status": "supports",
+  "fact": "Synthetic sleep routine was reported as consistent.",
+  "provenance_reference": "synthetic:provenance:001",
+  "freshness": "current",
+  "conflicts_with": [],
+  "unknowns": []
+}

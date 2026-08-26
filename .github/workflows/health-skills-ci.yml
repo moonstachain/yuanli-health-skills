@@ -21,7 +21,7 @@ jobs:
       - name: Unit and regression tests
         run: PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v
       - name: Source ABI
-        run: PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_capabilities.py capabilities/*/contract.json registry/source-capabilities.json dist/codex/yuanli-health/contracts/qualification-receipts/*.json
+        run: PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_capabilities.py capabilities/*/contract.json registry/source-capabilities.json fixtures/product-contracts/valid dist/codex/yuanli-health/contracts/qualification-receipts/*.json
       - name: Deterministic adapter
         run: PYTHONDONTWRITEBYTECODE=1 python3 scripts/generate_codex_adapter.py --check
       - name: Package and candidate surfaces

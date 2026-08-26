@@ -1,0 +1,22 @@
+{
+  "schema": "weekly-experiment-v1",
+  "synthetic": true,
+  "canonical_write": false,
+  "persistence": "none",
+  "experiment_id": "synthetic:experiment:001",
+  "action_candidate": {
+    "action_id": "synthetic:action:001",
+    "description": "Use a synthetic wind-down routine candidate.",
+    "evidence_references": ["synthetic:evidence:001"]
+  },
+  "observation_window": "synthetic:window:weekly:001",
+  "expected_evidence_references": ["synthetic:evidence:004"],
+  "stop_conditions": ["subject_stops"],
+  "escalation_conditions": ["clinical_request"],
+  "authority_gate": {
+    "level": "YELLOW",
+    "final_authority": "subject"
+  },
+  "unknowns": [],
+  "conflicts": []
+}

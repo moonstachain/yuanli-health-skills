@@ -19,6 +19,13 @@ from yuanli_health_skills.validator import (  # noqa: E402
     validate_receipt,
     validate_source_registry,
 )
+from yuanli_health_skills.product_contracts import (  # noqa: E402
+    validate_health_evidence_view,
+    validate_professional_escalation,
+    validate_quarter_health_campaign,
+    validate_recovery_compass_snapshot,
+    validate_weekly_experiment,
+)
 
 
 class DuplicateJsonKeyError(ValueError):
@@ -68,6 +75,11 @@ def _validate(document: object) -> ValidationResult:
         "typed-candidate-envelope-v1": validate_envelope,
         "qualification-receipt-v1": validate_receipt,
         "suite-source-manifest-v1": validate_source_registry,
+        "health-evidence-view-v1": validate_health_evidence_view,
+        "recovery-compass-snapshot-v1": validate_recovery_compass_snapshot,
+        "quarter-health-campaign-v1": validate_quarter_health_campaign,
+        "weekly-experiment-v1": validate_weekly_experiment,
+        "professional-escalation-v1": validate_professional_escalation,
     }
     validator = validators.get(schema)
     if validator is None:

@@ -31,6 +31,13 @@ SOURCE_IDS = (
     "yuanli.health.meta.review",
     "yuanli.health.meta.qualify",
 )
+PRODUCT_SCHEMA_NAMES = (
+    "health-evidence-view-v1",
+    "recovery-compass-snapshot-v1",
+    "quarter-health-campaign-v1",
+    "weekly-experiment-v1",
+    "professional-escalation-v1",
+)
 
 
 def run_script(script: Path, *arguments: object, cwd: Path | None = None, env: dict[str, str] | None = None):
@@ -80,6 +87,7 @@ def expected_package_paths() -> set[str]:
     paths.update(f"references/{source_id}.md" for source_id in SOURCE_IDS)
     paths.update(f"contracts/capabilities/{source_id}.json" for source_id in SOURCE_IDS)
     paths.update(f"contracts/qualification-receipts/{source_id}.json" for source_id in SOURCE_IDS)
+    paths.update(f"contracts/product-contracts/{schema_name}.schema.json" for schema_name in PRODUCT_SCHEMA_NAMES)
     return paths
 
 

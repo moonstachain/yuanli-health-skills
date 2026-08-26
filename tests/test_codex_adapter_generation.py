@@ -26,7 +26,7 @@ class CodexAdapterGenerationTests(unittest.TestCase):
             generate(package)
             files = regular_files(package)
             self.assertEqual(set(files), expected_package_paths())
-            self.assertEqual(len(files), 54)
+            self.assertEqual(len(files), 59)
             for relative, content in files.items():
                 with self.subTest(relative=relative):
                     self.assertNotRegex(content.decode("utf-8"), r"(?m)[ \t]+$")

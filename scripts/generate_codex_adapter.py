@@ -25,6 +25,13 @@ from lexical_path_guard import (
 
 PACKAGE_RELATIVE = Path("dist/codex/yuanli-health")
 METADATA_RELATIVE = Path("releases/v0.1.0/release-metadata.json")
+PRODUCT_SCHEMA_NAMES = (
+    "health-evidence-view-v1",
+    "recovery-compass-snapshot-v1",
+    "quarter-health-campaign-v1",
+    "weekly-experiment-v1",
+    "professional-escalation-v1",
+)
 
 
 def _json_bytes(value: Any) -> bytes:
@@ -65,6 +72,16 @@ def build_package(root: Path) -> tuple[dict[str, bytes], dict[str, Any]]:
             }
         ),
     }
+    for schema_name in PRODUCT_SCHEMA_NAMES:
+        schema_path = root / "contracts" / f"{schema_name}.schema.json"
+        schema_bytes = schema_path.read_bytes()
+        schema = json.loads(schema_bytes.decode("utf-8"))
+        if (
+            schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema"
+            or schema.get("properties", {}).get("schema", {}).get("const") != schema_name
+        ):
+            raise ValueError(f"product schema identity mismatch: {schema_name}")
+        files[f"contracts/product-contracts/{schema_name}.schema.json"] = schema_bytes
     for source_id in source_ids:
         source_directory = root / "capabilities" / source_id
         contract = _load_json(source_directory / "contract.json")

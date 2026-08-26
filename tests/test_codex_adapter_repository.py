@@ -30,7 +30,7 @@ class CodexAdapterRepositoryTests(unittest.TestCase):
             self.assertEqual(document["n5_pilot"], "waived_by_human_owner")
             self.assertEqual(document["package_path"], "dist/codex/yuanli-health")
             self.assertEqual(document["package_content_sha256"], hashlib.sha256(sums).hexdigest())
-            self.assertEqual(document["package_file_count"], 54)
+            self.assertEqual(document["package_file_count"], 59)
             self.assertEqual(document["package_file_count_convention"], "all_regular_files_including_SHA256SUMS")
             self.assertIsNone(document["source_commit"])
             self.assertIsNone(document["source_tree"])

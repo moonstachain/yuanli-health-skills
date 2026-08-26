@@ -27,6 +27,13 @@ from lexical_path_guard import (
 
 PACKAGE_RELATIVE = Path("dist/codex/yuanli-health")
 METADATA_RELATIVE = Path("releases/v0.1.0/release-metadata.json")
+PRODUCT_SCHEMA_NAMES = (
+    "health-evidence-view-v1",
+    "recovery-compass-snapshot-v1",
+    "quarter-health-campaign-v1",
+    "weekly-experiment-v1",
+    "professional-escalation-v1",
+)
 
 
 class DuplicateKeyError(ValueError):
@@ -87,6 +94,7 @@ def _expected_paths(source_ids: tuple[str, ...]) -> set[str]:
     paths.update(f"references/{item}.md" for item in source_ids)
     paths.update(f"contracts/capabilities/{item}.json" for item in source_ids)
     paths.update(f"contracts/qualification-receipts/{item}.json" for item in source_ids)
+    paths.update(f"contracts/product-contracts/{item}.schema.json" for item in PRODUCT_SCHEMA_NAMES)
     return paths
 
 
@@ -201,6 +209,18 @@ def validate_package(
     source_registry = _json(root / "registry/source-capabilities.json")
     if manifest != source_registry:
         issues.append("suite source manifest mismatch")
+    for schema_name in PRODUCT_SCHEMA_NAMES:
+        relative = f"contracts/product-contracts/{schema_name}.schema.json"
+        source_bytes = (root / "contracts" / f"{schema_name}.schema.json").read_bytes()
+        if files[relative] != source_bytes:
+            issues.append(f"product schema mismatch: {schema_name}")
+            continue
+        schema = _json_bytes(files[relative])
+        if (
+            schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema"
+            or schema.get("properties", {}).get("schema", {}).get("const") != schema_name
+        ):
+            issues.append(f"product schema identity mismatch: {schema_name}")
     expected_markdown: dict[str, bytes] = {"SKILL.md": render_root(source_ids)}
     for source_id in source_ids:
         source_directory = root / "capabilities" / source_id

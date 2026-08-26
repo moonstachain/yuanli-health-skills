@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://yuanli.example/contracts/weekly-experiment-v1.schema.json",
+  "title": "WeeklyExperiment v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "synthetic", "canonical_write", "persistence", "experiment_id", "action_candidate", "observation_window", "expected_evidence_references", "stop_conditions", "escalation_conditions", "authority_gate", "unknowns", "conflicts"],
+  "properties": {
+    "schema": {"const": "weekly-experiment-v1"},
+    "synthetic": {"const": true},
+    "canonical_write": {"const": false},
+    "persistence": {"const": "none"},
+    "experiment_id": {"$ref": "#/$defs/token"},
+    "action_candidate": {"$ref": "#/$defs/action_candidate"},
+    "observation_window": {"$ref": "#/$defs/token"},
+    "expected_evidence_references": {"$ref": "#/$defs/non_empty_references"},
+    "stop_conditions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["new_or_worsening_symptom", "safety_concern", "subject_stops"]}},
+    "escalation_conditions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["clinical_device_conflict", "clinical_request", "medication_change", "urgent_risk"]}},
+    "authority_gate": {"$ref": "#/$defs/authority_gate"},
+    "unknowns": {"$ref": "#/$defs/text_array"},
+    "conflicts": {"$ref": "#/$defs/references"}
+  },
+  "$defs": {
+    "token": {"type": "string", "pattern": "^synthetic:[a-z0-9][a-z0-9._:-]{0,127}$"},
+    "text": {"type": "string", "minLength": 1, "maxLength": 280},
+    "references": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/token"}},
+    "non_empty_references": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/token"}},
+    "text_array": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/text"}},
+    "action_candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action_id", "description", "evidence_references"],
+      "properties": {
+        "action_id": {"$ref": "#/$defs/token"},
+        "description": {"$ref": "#/$defs/text"},
+        "evidence_references": {"$ref": "#/$defs/non_empty_references"}
+      }
+    },
+    "authority_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "final_authority"],
+      "properties": {"level": {"enum": ["GREEN", "YELLOW"]}, "final_authority": {"const": "subject"}}
+    }
+  }
+}
