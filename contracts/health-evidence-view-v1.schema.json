@@ -28,7 +28,7 @@
   ],
   "$defs": {
     "token": {"type": "string", "pattern": "^synthetic:[a-z0-9][a-z0-9._:-]{0,127}$"},
-    "text": {"type": "string", "minLength": 1, "maxLength": 280, "pattern": "^Synthetic [A-Za-z0-9 ./-]+\\.$"},
+    "text": {"type": "string", "minLength": 1, "maxLength": 280, "pattern": "^Synthetic (a|and|another|as|candidate|conflicts|consistent|current|declining|down|evidence|freshness|habits|health|improving|insufficient|makes|or|pattern|ratio|recovery|remains|reported|review|rhythm|routine|sleep|source|stable|stale|stress|summary|synthetic|the|trend|unknown|unresolved|use|was|wind-down|with|[0-9]{1,3}/[0-9]{1,3})(( +|/)(a|and|another|as|candidate|conflicts|consistent|current|declining|down|evidence|freshness|habits|health|improving|insufficient|makes|or|pattern|ratio|recovery|remains|reported|review|rhythm|routine|sleep|source|stable|stale|stress|summary|synthetic|the|trend|unknown|unresolved|use|was|wind-down|with|[0-9]{1,3}/[0-9]{1,3}))* *\\.(?![\\s\\S])"},
     "references": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/token"}},
     "text_array": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/text"}}
   }

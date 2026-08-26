@@ -374,6 +374,84 @@ class ProductContractSchemaParityTests(unittest.TestCase):
             self.assertEqual(list(Draft202012Validator(schema).iter_errors(safe)), [])
         self.assertTrue(product_contracts.validate_health_evidence_view(safe).ok)
 
+    def test_all_source_and_packaged_schemas_reject_prefixed_unsafe_vocabulary(self):
+        if Draft202012Validator is None:
+            self.skipTest("jsonschema is required for direct Draft 2020-12 parity probes")
+
+        unsafe_bodies = (
+            ("diagnosis", "diagnosis was confirmed"),
+            ("aspirin", "aspirin was reported"),
+            ("medication", "medication was reported"),
+            ("treatment", "treatment was reported"),
+            ("provider", "provider was reported"),
+            ("booking", "booking was reported"),
+            ("payment", "payment was reported"),
+            ("identifier", "MRN 12345678 was reported"),
+            ("path", "path synthetic/files/report.txt was reported"),
+        )
+        prose_slots = {
+            "health-evidence-view-v1": ("fact", False),
+            "recovery-compass-snapshot-v1": ("season_focus.rationale", False),
+            "quarter-health-campaign-v1": ("unknowns", False),
+            "weekly-experiment-v1": ("action_candidate.description", True),
+            "professional-escalation-v1": ("unknowns", False),
+        }
+        for schema_name, filename, validate, _ in self.cases:
+            path, is_action = prose_slots[schema_name]
+            for label, body in unsafe_bodies:
+                prose = f"Use a synthetic {body}." if is_action else f"Synthetic {body}."
+                value = [prose] if path == "unknowns" else prose
+                document = changed(self.fixtures[filename], path, value)
+                with self.subTest(schema=schema_name, category=label):
+                    for schema_path in (
+                        ROOT / "contracts" / f"{schema_name}.schema.json",
+                        ROOT / "dist/codex/yuanli-health/contracts/product-contracts" / f"{schema_name}.schema.json",
+                    ):
+                        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+                        self.assertTrue(
+                            list(Draft202012Validator(schema).iter_errors(document)),
+                            f"{schema_path} accepted prefixed unsafe {label} prose",
+                        )
+                    self.assertFalse(validate(document).ok, "runtime must retain its conservative content gate")
+
+    def test_source_and_packaged_schemas_retain_safe_slash_ratio_and_guidance_controls(self):
+        if Draft202012Validator is None:
+            self.skipTest("jsonschema is required for direct Draft 2020-12 parity probes")
+
+        controls = (
+            (
+                "health-evidence-view-v1",
+                "health-evidence-view.json",
+                product_contracts.validate_health_evidence_view,
+                "fact",
+                "Synthetic sleep/recovery ratio was 1/2.",
+            ),
+            (
+                "professional-escalation-v1",
+                "professional-escalation.json",
+                product_contracts.validate_professional_escalation,
+                "guidance.en",
+                "Bring the evidence summary for clinician review.",
+            ),
+            (
+                "professional-escalation-v1",
+                "professional-escalation.json",
+                product_contracts.validate_professional_escalation,
+                "guidance.zh",
+                "请携带证据摘要，由临床专业人员评估。",
+            ),
+        )
+        for schema_name, filename, validate, path, value in controls:
+            document = changed(self.fixtures[filename], path, value)
+            with self.subTest(schema=schema_name, path=path):
+                for schema_path in (
+                    ROOT / "contracts" / f"{schema_name}.schema.json",
+                    ROOT / "dist/codex/yuanli-health/contracts/product-contracts" / f"{schema_name}.schema.json",
+                ):
+                    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+                    self.assertEqual(list(Draft202012Validator(schema).iter_errors(document)), [])
+                self.assertTrue(validate(document).ok)
+
 
 if __name__ == "__main__":
     unittest.main()

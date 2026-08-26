@@ -7,6 +7,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
 
+from .product_prose_policy import ACTION_PROSE, APPROVED_GUIDANCE, EVIDENCE_PROSE
 from .validator import ValidationError, ValidationResult
 
 
@@ -107,25 +108,6 @@ _TREATMENT_INSTRUCTION = re.compile(
     r"(?i)^\s*(?:please\s+)?(?:take|consume|swallow|apply|inject|start|stop|increase|decrease)\b|"
     r"(?:每天|每日|每晚|每次)[^，。；]{0,24}(?:吃|喝|口服|吞服|注射|涂抹|使用)"
 )
-_APPROVED_GUIDANCE = frozenset(
-    {
-        "请携带证据摘要，由临床专业人员评估。",
-        "Bring the evidence summary for clinician review.",
-    }
-)
-_SAFE_PROSE_WORDS = frozenset(
-    {
-        "a", "and", "another", "as", "candidate", "consistent", "conflicts", "current",
-        "declining", "down", "evidence", "freshness", "habits", "health", "improving",
-        "insufficient", "makes", "or", "pattern", "ratio", "recovery", "remains", "reported",
-        "review", "rhythm", "routine", "sleep", "source", "stable", "stale", "stress", "summary",
-        "synthetic", "the", "trend", "unknown", "unresolved", "use", "was", "wind-down", "with",
-    }
-)
-_SAFE_PROSE_CHARACTERS = re.compile(r"^[A-Za-z0-9 ./-]+$")
-_SAFE_PROSE_TOKENS = re.compile(r"[A-Za-z]+(?:-[A-Za-z]+)?|\d{1,3}/\d{1,3}|\d+")
-
-
 def _shape_errors(value: dict[str, Any], fields: tuple[str, ...]) -> list[ValidationError]:
     errors = [
         ValidationError("MISSING_REQUIRED_FIELD", field, f"required field is missing: {field}")
@@ -220,16 +202,10 @@ def _contains_path_structure(value: str) -> bool:
 
 def _is_approved_prose(value: str, path: str) -> bool:
     if path.endswith((".guidance.zh", ".guidance.en")):
-        return value in _APPROVED_GUIDANCE
+        return value in APPROVED_GUIDANCE
     if path.endswith(".action_candidate.description"):
-        if not value.startswith("Use a synthetic "):
-            return False
-    elif not value.startswith("Synthetic "):
-        return False
-    if _SAFE_PROSE_CHARACTERS.fullmatch(value) is None or not value.endswith("."):
-        return False
-    tokens = _SAFE_PROSE_TOKENS.findall(value)
-    return all("/" in token or token.lower() in _SAFE_PROSE_WORDS for token in tokens)
+        return ACTION_PROSE.fullmatch(value) is not None
+    return EVIDENCE_PROSE.fullmatch(value) is not None
 
 
 def _content_boundary_errors(value: Any) -> list[ValidationError]:

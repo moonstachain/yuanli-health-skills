@@ -762,6 +762,29 @@ class ProductContractTests(unittest.TestCase):
                 self.assertEqual(files[relative], (ROOT / "contracts" / f"{schema_name}.schema.json").read_bytes())
                 self.assertIn(f"  {relative}\n", files["SHA256SUMS"].decode("utf-8"))
 
+    def test_generator_rejects_product_schema_prose_policy_drift(self):
+        from tests._adapter_support import GENERATOR, copy_repository, run_script
+
+        with tempfile.TemporaryDirectory() as directory:
+            repository = copy_repository(Path(directory))
+            schema_path = repository / "contracts/health-evidence-view-v1.schema.json"
+            schema = json.loads(schema_path.read_text(encoding="utf-8"))
+            schema["$defs"]["text"]["pattern"] = "^Synthetic .+$"
+            schema_path.write_text(
+                json.dumps(schema, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            result = run_script(
+                GENERATOR,
+                "--root",
+                repository,
+                "--output",
+                Path(directory) / "generated",
+            )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("product schema prose policy mismatch", result.stderr)
+
     def test_stale_conflict_is_explicit_and_self_or_missing_conflict_references_are_rejected(self):
         from yuanli_health_skills.product_contracts import validate_health_evidence_view
 

@@ -44,16 +44,19 @@ def _load_json(path: Path) -> Any:
 
 def _load_validators(root: Path):
     sys.path.insert(0, str(root / "src"))
+    from yuanli_health_skills.product_prose_policy import (  # pylint: disable=import-outside-toplevel
+        product_schema_prose_policy_errors,
+    )
     from yuanli_health_skills.validator import (  # pylint: disable=import-outside-toplevel
         validate_contract,
         validate_source_registry,
     )
 
-    return validate_contract, validate_source_registry
+    return validate_contract, validate_source_registry, product_schema_prose_policy_errors
 
 
 def build_package(root: Path) -> tuple[dict[str, bytes], dict[str, Any]]:
-    validate_contract, validate_source_registry = _load_validators(root)
+    validate_contract, validate_source_registry, validate_schema_prose_policy = _load_validators(root)
     registry = _load_json(root / "registry/source-capabilities.json")
     registry_result = validate_source_registry(registry)
     if not registry_result.ok:
@@ -81,6 +84,9 @@ def build_package(root: Path) -> tuple[dict[str, bytes], dict[str, Any]]:
             or schema.get("properties", {}).get("schema", {}).get("const") != schema_name
         ):
             raise ValueError(f"product schema identity mismatch: {schema_name}")
+        prose_policy_errors = validate_schema_prose_policy(schema_name, schema)
+        if prose_policy_errors:
+            raise ValueError("product schema prose policy mismatch: " + ", ".join(prose_policy_errors))
         files[f"contracts/product-contracts/{schema_name}.schema.json"] = schema_bytes
     for source_id in source_ids:
         source_directory = root / "capabilities" / source_id
