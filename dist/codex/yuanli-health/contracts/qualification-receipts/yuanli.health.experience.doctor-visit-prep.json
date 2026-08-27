@@ -1,0 +1,11 @@
+{
+  "schema": "qualification-receipt-v1",
+  "source_capability_id": "yuanli.health.experience.doctor-visit-prep",
+  "qualification_basis": "synthetic_only",
+  "claims": [
+    "non_clinical",
+    "non_release"
+  ],
+  "candidate_state": "qualified",
+  "canonical_write": false
+}

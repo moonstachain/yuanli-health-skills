@@ -1,0 +1,22 @@
+{
+  "schema": "quarter-health-campaign-v1",
+  "synthetic": true,
+  "canonical_write": false,
+  "persistence": "none",
+  "decision_candidate_id": "synthetic:decision:001",
+  "phases": [
+    {"phase": 1, "label": "起盘与稳定"},
+    {"phase": 2, "label": "实验与校准"},
+    {"phase": 3, "label": "证据复盘与沉淀"}
+  ],
+  "active_phase": 1,
+  "current_weekly_experiment_reference": "synthetic:experiment:001",
+  "candidate_state": "decision_candidate",
+  "claims": ["non_clinical", "not_treatment_plan", "outcome_not_adjudicated"],
+  "unknowns": [],
+  "conflicts": [],
+  "authority_gate": {
+    "level": "YELLOW",
+    "final_authority": "subject"
+  }
+}

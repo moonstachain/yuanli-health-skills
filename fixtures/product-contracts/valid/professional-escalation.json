@@ -1,0 +1,17 @@
+{
+  "schema": "professional-escalation-v1",
+  "synthetic": true,
+  "canonical_write": false,
+  "persistence": "none",
+  "escalation_id": "synthetic:escalation:001",
+  "level": "clinician",
+  "trigger_category": "clinical_request",
+  "evidence_references": ["synthetic:evidence:001"],
+  "final_authority": "clinician",
+  "guidance": {
+    "zh": "请携带证据摘要，由临床专业人员评估。",
+    "en": "Bring the evidence summary for clinician review."
+  },
+  "unknowns": [],
+  "conflicts": []
+}

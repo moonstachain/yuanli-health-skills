@@ -1,0 +1,28 @@
+{
+  "schema": "suite-source-manifest-v1",
+  "source_suite_id": "YL-SUITE-HEALTH-20260823-0001",
+  "catalog_suite_id": "zk:suite:yuanli-health",
+  "name": "yuanli-health",
+  "version": "0.1.0",
+  "member_count": 16,
+  "license": "Apache-2.0",
+  "release_basis": "synthetic_qualification_only",
+  "members": [
+    {"source_capability_id": "yuanli.health.kernel.ctx", "registry_capability_id": null},
+    {"source_capability_id": "yuanli.health.kernel.evd", "registry_capability_id": null},
+    {"source_capability_id": "yuanli.health.kernel.dec", "registry_capability_id": null},
+    {"source_capability_id": "yuanli.health.kernel.wpk", "registry_capability_id": null},
+    {"source_capability_id": "yuanli.health.kernel.act", "registry_capability_id": null},
+    {"source_capability_id": "yuanli.health.kernel.out", "registry_capability_id": null},
+    {"source_capability_id": "yuanli.health.kernel.lrn", "registry_capability_id": null},
+    {"source_capability_id": "yuanli.health.experience.first-health-session", "registry_capability_id": null},
+    {"source_capability_id": "yuanli.health.experience.ninety-day-health-experiment", "registry_capability_id": null},
+    {"source_capability_id": "yuanli.health.experience.weekly-health-checkpoint", "registry_capability_id": null},
+    {"source_capability_id": "yuanli.health.experience.doctor-visit-prep", "registry_capability_id": null},
+    {"source_capability_id": "yuanli.health.experience.outcome-review", "registry_capability_id": null},
+    {"source_capability_id": "yuanli.health.experience.learning-reuse", "registry_capability_id": null},
+    {"source_capability_id": "yuanli.health.meta.build", "registry_capability_id": null},
+    {"source_capability_id": "yuanli.health.meta.review", "registry_capability_id": null},
+    {"source_capability_id": "yuanli.health.meta.qualify", "registry_capability_id": null}
+  ]
+}

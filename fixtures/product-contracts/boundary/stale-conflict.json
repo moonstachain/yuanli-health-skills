@@ -1,0 +1,15 @@
+{
+  "schema": "health-evidence-view-v1",
+  "synthetic": true,
+  "canonical_write": false,
+  "persistence": "none",
+  "evidence_id": "synthetic:evidence:010",
+  "source_type": "wearable_summary",
+  "observed_window": "synthetic:window:010",
+  "status": "contradicts",
+  "fact": "Synthetic stale evidence conflicts with another summary.",
+  "provenance_reference": "synthetic:provenance:010",
+  "freshness": "stale",
+  "conflicts_with": ["synthetic:evidence:011"],
+  "unknowns": ["Synthetic source freshness remains unresolved."]
+}

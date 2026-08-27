@@ -1,0 +1,41 @@
+{
+  "schema": "recovery-compass-snapshot-v1",
+  "synthetic": true,
+  "canonical_write": false,
+  "persistence": "none",
+  "directions": [
+    {
+      "direction": "sleep",
+      "trend": "stable",
+      "evidence_references": ["synthetic:evidence:001"]
+    },
+    {
+      "direction": "recovery",
+      "trend": "insufficient_evidence",
+      "evidence_references": []
+    },
+    {
+      "direction": "stress_rhythm",
+      "trend": "declining",
+      "evidence_references": ["synthetic:evidence:002"]
+    },
+    {
+      "direction": "health_habits",
+      "trend": "improving",
+      "evidence_references": ["synthetic:evidence:003"]
+    }
+  ],
+  "season_focus": {
+    "direction": "sleep",
+    "bottleneck_candidate": "synthetic:bottleneck:001",
+    "rationale": "Synthetic evidence makes sleep the current review candidate.",
+    "evidence_references": ["synthetic:evidence:001"]
+  },
+  "unknowns": ["Synthetic recovery trend remains unknown."],
+  "conflicts": [],
+  "authority_gate": {
+    "level": "YELLOW",
+    "final_authority": "subject"
+  },
+  "guardrails": ["no_aggregate_score", "non_clinical"]
+}

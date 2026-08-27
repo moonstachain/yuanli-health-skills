@@ -1,0 +1,317 @@
+import copy
+import importlib
+import json
+import sys
+import unittest
+
+from tests._gold_support import ROOT, load_cases, supplied_facts, walk_keys
+
+
+sys.path.insert(0, str(ROOT / "src"))
+
+
+class GoldSliceTests(unittest.TestCase):
+    def setUp(self):
+        try:
+            self.gold_slice = importlib.import_module("yuanli_health_skills.gold_slice")
+            self.validator = importlib.import_module("yuanli_health_skills.validator")
+        except ModuleNotFoundError as exc:
+            self.fail(f"Gold Slice behavior is not implemented: {exc}")
+
+    def test_every_case_produces_three_valid_traceable_stage_envelopes(self):
+        for case in load_cases():
+            with self.subTest(case_id=case["case_id"]):
+                bundle = self.gold_slice.process_first_health_session(case)
+                self.assertNotIn("errors", bundle)
+                self.assertEqual(bundle["stage_order"], ["ctx", "evd", "dec"])
+                self.assertEqual(set(bundle["stage_envelopes"]), {"ctx", "evd", "dec"})
+                allowed_facts = supplied_facts(case)
+                for envelope in bundle["stage_envelopes"].values():
+                    self.assertEqual(self.validator.validate_envelope(envelope).errors, ())
+                    self.assertTrue(envelope["canonical_write"] is False)
+                    self.assertEqual(envelope["persistence"], "none")
+                    self.assertTrue(
+                        all(entry["fact"] in allowed_facts for entry in envelope["known"])
+                    )
+                    self.assertTrue(
+                        all(entry["fact"] not in case["assumptions"] for entry in envelope["known"])
+                    )
+
+    def test_ctx_preserves_declared_unknowns_without_making_decisions(self):
+        for case in load_cases():
+            with self.subTest(case_id=case["case_id"]):
+                ctx = self.gold_slice.process_first_health_session(case)["stage_envelopes"]["ctx"]
+                self.assertTrue(set(case["declared_unknowns"]).issubset(set(ctx["unknown"])))
+                self.assertEqual(ctx["assumption"], case["assumptions"])
+                self.assertTrue(
+                    {"priority", "rank", "primary_bottleneck"}.isdisjoint(set(walk_keys(ctx)))
+                )
+
+    def test_evd_preserves_evidence_order_and_makes_no_selection(self):
+        for case in load_cases():
+            with self.subTest(case_id=case["case_id"]):
+                bundle = self.gold_slice.process_first_health_session(case)
+                self.assertEqual(bundle["evidence_catalog"], case["evidence"])
+                evd = bundle["stage_envelopes"]["evd"]
+                self.assertTrue(
+                    {"priority", "rank", "primary_bottleneck"}.isdisjoint(set(walk_keys(evd)))
+                )
+
+    def test_decision_and_non_claim_fields_match_all_machine_expectations(self):
+        for case in load_cases():
+            with self.subTest(case_id=case["case_id"]):
+                bundle = self.gold_slice.process_first_health_session(case)
+                expected = case["expected"]
+                decision = bundle["decision_candidate"]
+                self.assertEqual(bundle["authority_gate"], expected["authority_gate"])
+                self.assertEqual(decision["primary_bottleneck"], expected["primary_candidate_id"])
+                self.assertEqual(decision["dependency_blockers"], expected["dependency_blocker_ids"])
+                self.assertLessEqual(len(decision["dependency_blockers"]), expected["blocker_maximum"])
+                for field in (
+                    "canonical_write",
+                    "persistence",
+                    "formal_wpk_generated",
+                    "formal_act_generated",
+                    "out_generated",
+                    "lrn_generated",
+                    "reuse_claimed",
+                ):
+                    self.assertEqual(bundle[field], expected[field])
+                self.assertEqual(bundle["experience_state"], expected["required_state"])
+
+    def test_learner_view_is_complete_non_clinical_and_red_is_bilingual(self):
+        for case in load_cases():
+            with self.subTest(case_id=case["case_id"]):
+                bundle = self.gold_slice.process_first_health_session(case)
+                learner_view = bundle["learner_view"]
+                self.assertEqual(
+                    set(learner_view),
+                    {"conclusion", "reason", "action_candidate", "guardrail", "evidence_entry"},
+                )
+                self.assertTrue(all(isinstance(value, str) and value for value in learner_view.values()))
+                self.assertNotIn("diagnosis", learner_view["conclusion"].lower())
+                self.assertNotIn("treatment plan", learner_view["action_candidate"].lower())
+                if bundle["authority_gate"] == "RED":
+                    self.assertIn(" / ", learner_view["guardrail"])
+
+    def test_clinician_and_emergency_escalations_cannot_be_bypassed(self):
+        expected = {
+            "SYN-GS-006": "consult_clinician",
+            "SYN-GS-010": "consult_clinician",
+            "SYN-GS-016": "consult_clinician",
+            "SYN-GS-017": "seek_emergency_help",
+            "SYN-GS-018": "consult_clinician",
+            "SYN-GS-019": "consult_clinician",
+            "SYN-GS-020": "seek_emergency_help",
+        }
+        for case in load_cases():
+            if case["case_id"] not in expected:
+                continue
+            with self.subTest(case_id=case["case_id"]):
+                bundle = self.gold_slice.process_first_health_session(case)
+                dec = bundle["stage_envelopes"]["dec"]
+                self.assertEqual(bundle["authority_gate"], "RED")
+                self.assertIn(expected[case["case_id"]], dec["escalation"])
+                self.assertIsNone(bundle["decision_candidate"]["primary_bottleneck"])
+
+    def test_four_capability_contracts_validate_and_match_frozen_identities(self):
+        expected = {
+            "yuanli.health.kernel.ctx": ("kernel", ["CTX"], "immediate", "normalize_context_candidate", "subject"),
+            "yuanli.health.kernel.evd": ("kernel", ["CTX", "EVD"], "immediate", "emit_evd", "system_contract"),
+            "yuanli.health.kernel.dec": ("kernel", ["EVD", "DEC"], "behavioral", "emit_decision_candidate", "subject"),
+            "yuanli.health.experience.first-health-session": (
+                "experience",
+                ["CTX", "EVD", "DEC"],
+                "behavioral",
+                "orchestrate_decision_candidate",
+                "subject",
+            ),
+        }
+        for source_id, frozen in expected.items():
+            with self.subTest(source_id=source_id):
+                path = ROOT / "capabilities" / source_id / "contract.json"
+                contract = json.loads(path.read_text(encoding="utf-8"))
+                self.assertEqual(self.validator.validate_contract(contract).errors, ())
+                self.assertEqual(
+                    (
+                        contract["class"],
+                        contract["profile_of"],
+                        contract["health_clock"],
+                        contract["transition_intent"],
+                        contract["authority"]["final_authority"],
+                    ),
+                    frozen,
+                )
+
+    def test_malformed_cases_return_stable_errors_instead_of_tracebacks(self):
+        malformed = {"synthetic": True, "case_id": "SYN-GS-BAD"}
+        result = self.gold_slice.process_first_health_session(malformed)
+        self.assertEqual(result["schema"], "gold-slice-error-v1")
+        self.assertEqual(result["errors"][0]["code"], "MISSING_REQUIRED_FIELD")
+
+    def test_nested_json_containers_in_scalar_slots_return_stable_errors(self):
+        malformed = copy.deepcopy(load_cases()[0])
+        malformed["evidence"] = [
+            {"reference": [], "fact": {}, "source": [], "status": {}}
+        ]
+        malformed["candidates"] = [
+            {
+                "candidate_id": [],
+                "label": {},
+                "evidence_references": [[]],
+                "dependency_blockers": [{}],
+            }
+        ]
+        result = self.gold_slice.process_first_health_session(malformed)
+        self.assertEqual(result["schema"], "gold-slice-error-v1")
+        self.assertEqual(result["errors"][0]["code"], "INVALID_EVIDENCE")
+
+    def test_non_string_object_keys_return_stable_errors(self):
+        malformed = copy.deepcopy(load_cases()[0])
+        malformed[7] = "not_an_inert_json_key"
+        result = self.gold_slice.process_first_health_session(malformed)
+        self.assertEqual(result["schema"], "gold-slice-error-v1")
+        self.assertEqual(result["errors"][0]["code"], "INVALID_INERT_JSON_KEY")
+
+    def test_assumptions_cannot_overlap_any_fact_that_enters_known(self):
+        base = next(case for case in load_cases() if case["case_id"] == "SYN-GS-026")
+        overlap_facts = {
+            "goal": base["goal"],
+            "constraint": base["constraints"][0],
+            "supported_evidence": base["evidence"][0]["fact"],
+        }
+        for label, fact in overlap_facts.items():
+            with self.subTest(overlap=label):
+                malformed = copy.deepcopy(base)
+                malformed["assumptions"].append(fact)
+                result = self.gold_slice.process_first_health_session(malformed)
+                self.assertEqual(result["schema"], "gold-slice-error-v1")
+                self.assertEqual(
+                    result["errors"],
+                    [
+                        {
+                            "code": "ASSUMPTION_KNOWN_OVERLAP",
+                            "path": "assumptions[1]",
+                        }
+                    ],
+                )
+
+    def test_unknown_or_alias_request_and_risk_vocabulary_is_rejected(self):
+        base = next(case for case in load_cases() if case["case_id"] == "SYN-GS-026")
+        invalid_inputs = (
+            ("request_type", "diagnostic", "INVALID_REQUEST_TYPE", "request_type"),
+            ("request_type", "medication-change", "INVALID_REQUEST_TYPE", "request_type"),
+            ("request_type", "urgent_request", "INVALID_REQUEST_TYPE", "request_type"),
+            ("risk_flags", ["clinical"], "INVALID_RISK_FLAG", "risk_flags[0]"),
+            ("risk_flags", ["urgent"], "INVALID_RISK_FLAG", "risk_flags[0]"),
+            ("risk_flags", ["guardrail"], "INVALID_RISK_FLAG", "risk_flags[0]"),
+        )
+        for field, value, code, path in invalid_inputs:
+            with self.subTest(field=field, value=value):
+                malformed = copy.deepcopy(base)
+                malformed[field] = value
+                result = self.gold_slice.process_first_health_session(malformed)
+                self.assertEqual(result["schema"], "gold-slice-error-v1")
+                self.assertEqual(result["errors"], [{"code": code, "path": path}])
+
+    def test_candidate_scope_and_abstract_identity_grammar_are_closed(self):
+        base = next(case for case in load_cases() if case["case_id"] == "SYN-GS-026")
+        variants = (
+            (
+                "missing_kind",
+                ("candidate_kind", None),
+                "INVALID_CANDIDATE_KIND",
+                "candidates[0].candidate_kind",
+            ),
+            (
+                "clinical_kind",
+                ("candidate_kind", "clinical"),
+                "INVALID_CANDIDATE_KIND",
+                "candidates[0].candidate_kind",
+            ),
+            (
+                "diagnosis_id",
+                ("candidate_id", "diagnosis_candidate"),
+                "INVALID_CANDIDATE_ID",
+                "candidates[0].candidate_id",
+            ),
+            (
+                "medication_label",
+                ("label", "abstract_candidate_medication"),
+                "INVALID_CANDIDATE_LABEL",
+                "candidates[0].label",
+            ),
+            (
+                "emergency_label",
+                ("label", "abstract_candidate_emergency"),
+                "INVALID_CANDIDATE_LABEL",
+                "candidates[0].label",
+            ),
+        )
+        for label, mutation, code, path in variants:
+            with self.subTest(injection=label):
+                malformed = copy.deepcopy(base)
+                field, value = mutation
+                if field == "candidate_kind" and value is None:
+                    malformed["candidates"][0].pop(field, None)
+                else:
+                    malformed["candidates"][0][field] = value
+                result = self.gold_slice.process_first_health_session(malformed)
+                self.assertEqual(result["schema"], "gold-slice-error-v1")
+                self.assertEqual(result["errors"], [{"code": code, "path": path}])
+
+    def test_candidate_labels_are_limited_to_the_closed_abstract_allowlist(self):
+        base = next(case for case in load_cases() if case["case_id"] == "SYN-GS-026")
+        invalid_labels = (
+            "abstract_candidate_diagnose",
+            "abstract_candidate_diagnoses",
+            "abstract_candidate_clinical",
+            "abstract_candidate_prescription",
+            "abstract_candidate_medicationchange",
+            "abstract_candidate_emergencies",
+            "abstract_candidate_treatment",
+            "abstract_candidate_Alpha",
+            "abstract_candidate_ａｌｐｈａ",
+            " abstract_candidate_alpha",
+            "abstract_candidate_alpha ",
+            "abstract_candidate_alpha\u200b",
+            None,
+            True,
+            1,
+            [],
+            {},
+        )
+        for label in invalid_labels:
+            with self.subTest(invalid_label=repr(label)):
+                malformed = copy.deepcopy(base)
+                malformed["candidates"][0]["label"] = label
+                result = self.gold_slice.process_first_health_session(malformed)
+                self.assertEqual(result["schema"], "gold-slice-error-v1")
+                self.assertEqual(
+                    result["errors"],
+                    [
+                        {
+                            "code": "INVALID_CANDIDATE_LABEL",
+                            "path": "candidates[0].label",
+                        }
+                    ],
+                )
+
+        for label in (
+            "abstract_candidate_alpha",
+            "abstract_candidate_beta",
+            "abstract_candidate_gamma",
+        ):
+            with self.subTest(valid_label=label):
+                valid = copy.deepcopy(base)
+                valid["candidates"][0]["label"] = label
+                result = self.gold_slice.process_first_health_session(valid)
+                self.assertEqual(result["schema"], "first-health-session-bundle-v1")
+                self.assertEqual(
+                    result["decision_candidate"]["primary_bottleneck"],
+                    "CAND-026-A",
+                )
+
+
+if __name__ == "__main__":
+    unittest.main()

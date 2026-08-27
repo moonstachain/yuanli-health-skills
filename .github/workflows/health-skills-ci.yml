@@ -1,0 +1,36 @@
+name: health-skills-candidate
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Unit and regression tests
+        run: PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -v
+      - name: Source ABI
+        run: PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_capabilities.py capabilities/*/contract.json registry/source-capabilities.json fixtures/product-contracts/valid dist/codex/yuanli-health/contracts/qualification-receipts/*.json
+      - name: Deterministic adapter
+        run: PYTHONDONTWRITEBYTECODE=1 python3 scripts/generate_codex_adapter.py --check
+      - name: Package and candidate surfaces
+        run: PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_codex_adapter.py --check-repository
+      - name: Zero-PHI, secret, marker, and cache gates
+        shell: bash
+        run: |
+          PYTHONDONTWRITEBYTECODE=1 python3 scripts/scan_public_content.py --check-current --check-history
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.test_full_suite_cases.FullSuiteCaseTests.test_fixture_contains_no_phi_shaped_fields_or_realistic_values tests.test_gold_cases.GoldCaseCorpusTests.test_corpus_omits_phi_shaped_fields_and_realistic_measurements -v
+          ! rg -n 'AKIA[0-9A-Z]{16}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|gh[pousr]_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{20,}' .
+          ! rg -n '^(<<<<<<<|=======|>>>>>>>)' .
+          test -z "$(find . -type d \( -name __pycache__ -o -name .pytest_cache \) -print -quit)"

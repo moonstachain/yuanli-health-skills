@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://yuanli.example/contracts/typed-candidate-envelope-v1.schema.json",
+  "title": "Typed Candidate Envelope v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "source_capability_id", "known", "unknown", "assumption", "evidence_references", "authority_gate", "candidate_state", "canonical_write", "persistence", "escalation", "guardrail"],
+  "properties": {
+    "schema": {"const": "typed-candidate-envelope-v1"},
+    "source_capability_id": {"type": "string", "pattern": "^yuanli\\.health\\."},
+    "known": {"type": "array", "items": {"$ref": "#/$defs/known_entry"}},
+    "unknown": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "assumption": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "evidence_references": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "authority_gate": {"enum": ["GREEN", "YELLOW", "RED"]},
+    "candidate_state": {"enum": ["proposed", "qualified", "human_review_ready"]},
+    "canonical_write": {"const": false},
+    "persistence": {"const": "none"},
+    "escalation": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "guardrail": {"type": "array", "items": {"type": "string", "minLength": 1}}
+  },
+  "$defs": {
+    "known_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fact", "evidence_reference"],
+      "properties": {"fact": {"type": "string", "minLength": 1}, "evidence_reference": {"type": "string", "minLength": 1}}
+    }
+  }
+}

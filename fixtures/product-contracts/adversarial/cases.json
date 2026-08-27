@@ -1,0 +1,80 @@
+[
+  {
+    "name": "missing-and-extra-field",
+    "contract": "health-evidence-view",
+    "base": "health-evidence-view.json",
+    "remove": ["fact"],
+    "set": {"extension": true},
+    "expected_codes": ["MISSING_REQUIRED_FIELD", "STRICT_SCHEMA_VIOLATION"]
+  },
+  {
+    "name": "invalid-enum-and-type",
+    "contract": "health-evidence-view",
+    "base": "health-evidence-view.json",
+    "set": {"source_type": "raw_record", "fact": 7},
+    "expected_codes": ["INVALID_ENUM", "INVALID_STRING"]
+  },
+  {
+    "name": "duplicate-evidence-reference",
+    "contract": "health-evidence-view",
+    "base": "health-evidence-view.json",
+    "set": {"conflicts_with": ["synthetic:evidence:002", "synthetic:evidence:002"]},
+    "expected_codes": ["DUPLICATE_REFERENCE"]
+  },
+  {
+    "name": "stale-conflict-without-reference",
+    "contract": "health-evidence-view",
+    "base": "health-evidence-view.json",
+    "set": {"freshness": "stale", "status": "contradicts", "conflicts_with": []},
+    "expected_codes": ["CONFLICT_REFERENCE_REQUIRED"]
+  },
+  {
+    "name": "multiple-focus",
+    "contract": "recovery-compass-snapshot",
+    "base": "recovery-compass-snapshot.json",
+    "operation": "duplicate_focus",
+    "expected_codes": ["MULTIPLE_ACTIVE_FOCUS"]
+  },
+  {
+    "name": "multiple-action",
+    "contract": "weekly-experiment",
+    "base": "weekly-experiment.json",
+    "operation": "duplicate_action",
+    "expected_codes": ["MULTIPLE_ACTION_CANDIDATES"]
+  },
+  {
+    "name": "forbidden-score",
+    "contract": "quarter-health-campaign",
+    "base": "quarter-health-campaign.json",
+    "set": {"health_score": 80},
+    "expected_codes": ["FORBIDDEN_AGGREGATE_SCORE"]
+  },
+  {
+    "name": "wrong-authority",
+    "contract": "professional-escalation",
+    "base": "professional-escalation.json",
+    "set": {"final_authority": "ai"},
+    "expected_codes": ["WRONG_AUTHORITY"]
+  },
+  {
+    "name": "clinical-overreach",
+    "contract": "weekly-experiment",
+    "base": "weekly-experiment.json",
+    "set": {"diagnosis": "synthetic conclusion"},
+    "expected_codes": ["CLINICAL_OVERREACH"]
+  },
+  {
+    "name": "deep-json",
+    "contract": "weekly-experiment",
+    "base": "weekly-experiment.json",
+    "operation": "deep_json",
+    "expected_codes": ["MAX_DEPTH_EXCEEDED"]
+  },
+  {
+    "name": "non-json",
+    "contract": "weekly-experiment",
+    "base": "weekly-experiment.json",
+    "operation": "non_json_set",
+    "expected_codes": ["NON_JSON_VALUE"]
+  }
+]

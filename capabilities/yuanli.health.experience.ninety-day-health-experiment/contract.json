@@ -1,0 +1,42 @@
+{
+  "schema": "health-skill-contract-v1",
+  "source_capability_id": "yuanli.health.experience.ninety-day-health-experiment",
+  "registry_capability_id": null,
+  "class": "experience",
+  "profile_of": [
+    "WPK",
+    "ACT"
+  ],
+  "transition_intent": "orchestrate_ninety_day_experiment",
+  "mutates_canon": false,
+  "authority": {
+    "final_authority": "subject",
+    "ai": "assistive",
+    "device": "evidence_source",
+    "automation": "non_final",
+    "router": "non_final"
+  },
+  "privacy": {
+    "repository_phi": "forbidden"
+  },
+  "runtime_requirements": {
+    "ephemeral": true,
+    "persistence": "none",
+    "logs": "none"
+  },
+  "lifecycle": "qualified",
+  "qualification": {
+    "basis": "synthetic_only",
+    "status": "passed"
+  },
+  "objects": [
+    "DEC",
+    "WPK",
+    "ACT"
+  ],
+  "health_clock": "experimental",
+  "claims": [
+    "non_clinical",
+    "non_release"
+  ]
+}

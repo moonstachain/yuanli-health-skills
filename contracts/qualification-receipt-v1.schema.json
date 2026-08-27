@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://yuanli.example/contracts/qualification-receipt-v1.schema.json",
+  "title": "Synthetic Qualification and Non-Claims Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "source_capability_id", "qualification_basis", "claims", "candidate_state", "canonical_write"],
+  "properties": {
+    "schema": {"const": "qualification-receipt-v1"},
+    "source_capability_id": {"type": "string", "pattern": "^yuanli\\.health\\."},
+    "qualification_basis": {"const": "synthetic_only"},
+    "claims": {"type": "array", "uniqueItems": true, "items": {"enum": ["non_clinical", "non_release"]}},
+    "candidate_state": {"enum": ["proposed", "qualified", "human_review_ready"]},
+    "canonical_write": {"const": false}
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "health-skill-contract-v1",
+  "source_capability_id": "yuanli.health.kernel.evd",
+  "registry_capability_id": null,
+  "class": "kernel",
+  "profile_of": [
+    "CTX",
+    "EVD"
+  ],
+  "transition_intent": "emit_evd",
+  "mutates_canon": false,
+  "authority": {
+    "final_authority": "system_contract",
+    "ai": "assistive",
+    "device": "evidence_source",
+    "automation": "non_final",
+    "router": "non_final"
+  },
+  "privacy": {
+    "repository_phi": "forbidden"
+  },
+  "runtime_requirements": {
+    "ephemeral": true,
+    "persistence": "none",
+    "logs": "none"
+  },
+  "lifecycle": "qualified",
+  "qualification": {
+    "basis": "synthetic_only",
+    "status": "passed"
+  },
+  "objects": [
+    "CTX",
+    "EVD"
+  ],
+  "health_clock": "immediate",
+  "claims": [
+    "non_clinical",
+    "non_release"
+  ]
+}
